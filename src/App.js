@@ -20,7 +20,6 @@ import ChannelCard from "./components/channelCard";
 import Tooltip from "@material-ui/core/Tooltip";
 import AppBar from "@material-ui/core/AppBar";
 import QRIcon from "mdi-material-ui/Qrcode"
-import FAB from "@material-ui/core/Fab"
 import Toolbar from "@material-ui/core/Toolbar";
 import SettingIcon from "@material-ui/icons/Settings"
 import IconButton from "@material-ui/core/IconButton";
@@ -31,11 +30,13 @@ import Popover from "@material-ui/core/Popover";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import Connext from "./assets/Connext.svg";
 import { Typography, Fab } from "@material-ui/core";
+import blockies from "ethereum-blockies-png"
 const Web3 = require("web3");
 const Tx = require("ethereumjs-tx");
 const eth = require("ethers");
 const humanTokenAbi = require("./abi/humanToken.json");
 const wethAbi = require("./abi/weth.json");
+const noAddrBlocky = require("./assets/noAddress.png")
 require("dotenv").config();
 
 let tokenAbi
@@ -78,7 +79,6 @@ class App extends Component {
       modalOpen: false,
       connext: null,
       delegateSigner: null,
-      delegateAddress:null,
       metamask: {
         address: null,
         balance: 0,
@@ -456,7 +456,10 @@ class App extends Component {
       <div>
         <AppBar position="sticky" elevation="0" color="secondary">
           <Toolbar>
-            <img src={Connext} style={{ width: "60px", height: "60px" }} />
+            <img src={blockies.createDataURL({seed: this.state.address})} alt={noAddrBlocky} style={{ width: "40px", height: "40px", marginTop: "5px" }} />
+            <Typography variant="body2" noWrap style={{ width: "75px", marginLeft: "6px", color: "#c1c6ce"}}>
+              {this.state.address}
+            </Typography>
             <Typography variant="h6" style={{ flexGrow: 1 }} />
             <IconButton
               color="inherit"
