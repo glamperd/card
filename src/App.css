@@ -1,15 +1,14 @@
 .app {
   margin: 0 auto;
-  padding-top: 0%;
-  padding-left: 5%;
-  padding-right: 5%;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   font-family: "proxima-nova", sans-serif;
   /* background-color: #fcfbf3; */
   /* background-color:  //#c8d0de */
-  background-color: #F4F5F7
+  /* background-color: #F4F5F7; */
+  background-color: #FFF;
+  height: "100%"
 }
 
 .row {
@@ -24,10 +23,10 @@
   flex-direction: column;
   flex-basis: 80%;
   flex: 1;
-  padding-bottom: 2.5%;
+  /* padding-bottom: 2.5%;
   padding-top: 2.5%;
   padding-left: 1%;
-  padding-right: 1%;
+  padding-right: 1%; */
   font-family: "proxima-nova", sans-serif;
 }
 .modal_inner {

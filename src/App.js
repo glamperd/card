@@ -17,10 +17,12 @@ import SwapCard from "./components/swapCard";
 import PayCard from "./components/payCard";
 import WithdrawCard from "./components/withdrawCard";
 import ChannelCard from "./components/channelCard";
-import FullWidthTabs from "./components/walletTabs";
+import Tooltip from "@material-ui/core/Tooltip";
 import AppBar from "@material-ui/core/AppBar";
+import QRIcon from "mdi-material-ui/Qrcode"
+import FAB from "@material-ui/core/Fab"
 import Toolbar from "@material-ui/core/Toolbar";
-import InfoIcon from "@material-ui/icons/Info";
+import SettingIcon from "@material-ui/icons/Settings"
 import IconButton from "@material-ui/core/IconButton";
 import Modal from "@material-ui/core/Modal";
 import Button from "@material-ui/core/Button";
@@ -28,7 +30,7 @@ import TextField from "@material-ui/core/TextField";
 import Popover from "@material-ui/core/Popover";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import Connext from "./assets/Connext.svg";
-import { Typography } from "@material-ui/core";
+import { Typography, Fab } from "@material-ui/core";
 const Web3 = require("web3");
 const Tx = require("ethereumjs-tx");
 const eth = require("ethers");
@@ -452,7 +454,7 @@ class App extends Component {
     const open = Boolean(anchorEl);
     return (
       <div>
-        <AppBar position="sticky" color="secondary">
+        <AppBar position="sticky" elevation="0" color="secondary">
           <Toolbar>
             <img src={Connext} style={{ width: "60px", height: "60px" }} />
             <Typography variant="h6" style={{ flexGrow: 1 }} />
@@ -464,8 +466,22 @@ class App extends Component {
               variant="contained"
               onClick={this.handleClick}
             >
-              <InfoIcon />
+              <SettingIcon />
             </IconButton>
+            <Typography variant="subtitle1">
+            <CopyToClipboard
+              // style={cardStyle.clipboard}
+              text={(this.props.address)}
+            >
+              <Tooltip
+                disableFocusListener
+                disableTouchListener
+                title="Click to Copy"
+              >
+                <span>{this.props.address}</span>
+              </Tooltip>
+            </CopyToClipboard>
+          </Typography>
             <Popover
               id="simple-popper"
               open={open}
@@ -481,64 +497,6 @@ class App extends Component {
               }}
               style={{ width: "75%" }}
             >
-              <div
-                style={{
-                  padding: "20px 20px 20px 20px",
-                  boxShadow: "1px 1px 1px 1px black"
-                }}
-              >
-                <Typography variant="h3">Connext Demo Wallet</Typography>
-                <Typography variant="h4" style={{ marginTop: "40px" }}>
-                  Step 1: Deposit to channel
-                </Typography>
-                <Typography>
-                  First, you need to send funds to your channel. You can either
-                  manually send them to the address shown in the Channel
-                  Information, or you can use the UX below to fetch ETH or
-                  tokens from your Metamask account. Enter the amount in Wei,
-                  tokens, or both, and then click Get and sign the popup--we'll
-                  do the rest! If you're using an Autosigner, we'll leave a
-                  small amount of ETH in the autosigner wallet to cover gas
-                  fees, but you'll get it all back when you withdraw.{" "}
-                </Typography>
-                <Typography variant="h4" style={{ marginTop: "20px" }}>
-                  Step 2: Swap ETH for Tokens
-                </Typography>
-                <Typography>
-                  This step is OPTIONAL. If you'd like to swap ETH for tokens,
-                  you can do it in-channel. Just enter the amount of ETH you'd
-                  like to swap, using the exchange rate provided.
-                </Typography>
-                <Typography variant="h4" style={{ marginTop: "20px" }}>
-                  Step 3: Pay
-                </Typography>
-                <Typography>
-                  Here, you can pay a counterparty using your offchain funds.
-                  Enter the recipient address and the amount in tokens or ETH,
-                  then click Pay. Everything's offchain, so no gas is necessary
-                  and the payment is instant.{" "}
-                </Typography>
-                <Typography variant="h4" style={{ marginTop: "20px" }}>
-                  Step 4: Withdraw
-                </Typography>
-                <Typography>
-                  When you're done making payments, you'll want to withdraw
-                  funds from your channel. Enter the recipient address (most
-                  likely an address that you control) and the amount, then click
-                  Withdraw.{" "}
-                </Typography>
-                <Typography variant="h5" style={{ marginTop: "40px" }}>
-                  A note about autosigners
-                </Typography>
-                <Typography>
-                  We use autosigners to cut down on the number of MetaMask
-                  popups that show up in the course of conducting an offchain
-                  transaction. An autosigner is an inpage wallet which uses a
-                  custom Web3 implementation to automatically sign all
-                  transactions initiated by the user via the UX. Private keys
-                  are stored securely in browser storage.{" "}
-                </Typography>
-              </div>
             </Popover>
           </Toolbar>
         </AppBar>
@@ -654,7 +612,7 @@ class App extends Component {
               </div>
             </div>
           </Modal>
-          <div className="row">
+          <div className="row" style={{marginBottom: "-7.5%"}}>
             <div
               className="column"
               style={{ justifyContent: "space-between", flexGrow: 1 }}
@@ -664,83 +622,54 @@ class App extends Component {
                 address={this.state.address}
               />
             </div>
-            <div className="column" style={{ flexGrow: 1 }}>
-              <FullWidthTabs
-                connext={this.state.connext}
-                metamask={this.state.metamask}
-                channelManager={this.state.channelManager}
-                hubWallet={this.state.hubWallet}
-                web3={this.state.web3}
-                tokenContract={this.state.tokenContract}
-              />
-              <div>
-                <Button
-                  style={{
-                    width: "235px",
-                    marginRight: "5px",
-                    color: "#FFF",
-                    backgroundColor: "#FCA311"
-                  }}
-                  variant="contained"
-                  onClick={() => this.setState({ modalOpen: true })}
-                >
-                  Reselect Signer
-                </Button>
-                <Button
-                  style={{
-                    width: "235px",
-                    color: "#FFF",
-                    backgroundColor: "#FCA311"
-                  }}
-                  variant="contained"
-                  onClick={() => this.collateralHandler()}
-                >
-                  Request Collateral
-                </Button>
-              </div>
-            </div>
           </div>
           <div className="row">
-            <div className="column">
-              <DepositCard
-                channelManagerAddress={this.state.channelManager.address}
-                Web3={window.web3}
-                balance={this.state.balance}
-                tokenBalance={this.state.tokenBalance}
-                tokenContract={this.state.tokenContract}
-                tokenAbi={tokenAbi}
-                connext={this.state.connext}
-                metamask={this.state.metamask}
-              />
-            </div>
-            <div className="column">
-              <SwapCard 
-                connext={this.state.connext} 
-                exchangeRate={this.state.exchangeRate} 
-                channelState={this.state.channelState}
-              />
-            </div>
-            <div className="column">
-              <PayCard 
-                connext={this.state.connext} 
-                channelState={this.state.channelState}
-                web3={this.state.web3}
-              />
-            </div>
-            <div className="column">
-              <WithdrawCard
-                connext={this.state.connext}
-                exchangeRate={this.state.exchangeRate}
-                metamask={this.state.metamask}
-                channelManager={this.state.channelManager}
-                hubWallet={this.state.hubWallet}
-                channelState={this.state.channelState}
-                web3={this.state.web3}
-              />
+            <div className="column" style={{marginRight: "5%", marginLeft: "80%"}}>
+              <Fab
+                style={{
+                  color: "#FFF",
+                  backgroundColor: "#fca311",
+                  size: "large",
+                }}
+              >
+              <QRIcon/>
+              </Fab>
             </div>
           </div>
-          <div className="row">
-            <div className="column">Made with 💛 by the Connext Team</div>
+          <div className="row" style={{marginTop: "15%", marginBottom: "5%"}}>
+            <div className="column" style={{marginLeft: "5%"}}>
+              <Button
+                style={{
+                  marginRight: "5px",
+                  color: "#FFF",
+                  backgroundColor: "#FCA311"
+                }}
+                variant="contained"
+              >
+                Receive
+              </Button>
+            </div>
+            <div className="column" style={{marginRight:"5%"}}>
+              <Button
+                style={{
+                  marginLeft: "5px",
+                  color: "#FFF",
+                  backgroundColor: "#FCA311"
+                }}
+                variant="contained"
+              >
+                Send
+              </Button>
+            </div>
+          </div>
+          <div className="row" style={{ paddingTop: "5%", justifyContent: "center"}}>
+            <Button
+              color="primary"
+              variant="outlined"
+              style={{width: "235px"}}
+            >
+              Cash Out
+            </Button>
           </div>
         </div>
       </div>
