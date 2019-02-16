@@ -12,10 +12,9 @@ import {
 } from "./walletGen";
 import { createStore } from "redux";
 import axios from "axios";
-import DepositCard from "./components/depositCard";
-import SwapCard from "./components/swapCard";
-import PayCard from "./components/payCard";
-import WithdrawCard from "./components/withdrawCard";
+import ReceiveCard from "./components/receiveCard";
+import SendCard from "./components/sendCard";
+import CashOutCard from "./components/cashOutCard";
 import ChannelCard from "./components/channelCard";
 import Tooltip from "@material-ui/core/Tooltip";
 import AppBar from "@material-ui/core/AppBar";
@@ -31,7 +30,7 @@ import TextField from "@material-ui/core/TextField";
 import Popover from "@material-ui/core/Popover";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import Connext from "./assets/Connext.svg";
-import { Typography, Fab } from "@material-ui/core";
+import { Typography, Fab, Card } from "@material-ui/core";
 import blockies from "ethereum-blockies-png"
 const Web3 = require("web3");
 const Tx = require("ethereumjs-tx");
@@ -78,9 +77,14 @@ class App extends Component {
       web3: null,
       customWeb3: null,
       tokenContract: null,
-      modalOpen: false,
       connext: null,
       delegateSigner: null,
+      modals: {
+        keyGen: false,
+        receive: false,
+        send: false,
+        cashOut: false,
+      },
       metamask: {
         address: null,
         balance: 0,
@@ -124,7 +128,7 @@ class App extends Component {
         text: delegateSigner
       });
     } else {// Else, we wait for user to finish selecting through modal which will refresh page when done
-      this.setState({ modalOpen: true });
+      this.setState({ modals: {keyGen: true} });
     }
   }
 
@@ -145,7 +149,7 @@ class App extends Component {
       await this.pollConnextState();
       await this.poller();
     } else {// Else, we wait for user to finish selecting through modal which will refresh page when done
-      this.setState({ modalOpen: true });
+      this.setState({ modals: {keyGen: true} });
     }
   }
 
@@ -172,13 +176,13 @@ class App extends Component {
     }
     const web3 = new Web3(windowProvider.currentProvider);
     // make sure you are on localhost
-    if (await web3.eth.net.getId() != 4447) {
-      alert(
-        "Uh oh! Doesn't look like you're using a local chain, please make sure your Metamask is connected appropriately to localhost:8545."
-      );
-    } else {
-      console.log("SETTING WEB3 ", web3)
-    }
+    // if (await web3.eth.net.getId() != 4447) {
+    //   alert(
+    //     "Uh oh! Doesn't look like you're using a local chain, please make sure your Metamask is connected appropriately to localhost:8545."
+    //   );
+    // } else {
+    //   console.log("SETTING WEB3 ", web3)
+    // }
     this.setState({web3})
     return;
   }
@@ -389,12 +393,6 @@ class App extends Component {
     });
   };
 
-  handleModalClose = () => {
-    this.setState({
-      modalOpen: false
-    })
-  }
-
   updateApprovalHandler(evt) {
     this.setState({
       approvalWeiUser: evt.target.value
@@ -466,7 +464,7 @@ class App extends Component {
             <IconButton
               color="inherit"
               aria-label="Menu"
-              aria-owns={open ? "simple-popper" : undefined}
+              aria-owns={open ? "settings" : undefined}
               aria-haspopup="true"
               variant="contained"
               onClick={this.handleClick}
@@ -488,7 +486,7 @@ class App extends Component {
             </CopyToClipboard>
           </Typography>
             <Popover
-              id="simple-popper"
+              id="settings"
               open={open}
               anchorEl={anchorEl}
               onClose={this.handleClose}
@@ -500,123 +498,116 @@ class App extends Component {
                 vertical: "top",
                 horizontal: "center"
               }}
-              style={{ width: "75%" }}
+              style={{ width: "100%" }}
             >
-            </Popover>
-          </Toolbar>
-        </AppBar>
-        <div className="app">
-          <Modal
-            className="modal"
-            aria-labelledby="Delegate Signer Options"
-            aria-describedby="simple-modal-description"
-            open={this.state.modalOpen}
-          >
-            <div className="modal_inner">
-              <div className="row">
-                {this.state.delegateSigner? (
-                  <div className="column">
-                    <div>
-                      <h4>
-                        You have a delegate signer set up already! <br />
-                        You can get your current mnemonic, recover an 
-                        old signer from a mnemonic , or
-                        set up an entirely delegate signer.{" "}
-                      </h4>
-                    </div>
-                    <div>
-                      {this.setState.showMnemonic ? (
-                        <div>
-                          <Button
-                            style={{
-                              padding: "15px 15px 15px 15px",
-                              marginRight: "15px"
-                            }}
-                            variant="contained"
-                            color="primary"
-                            onClick={() =>
-                              this.setState({showMnemonic: true})
-                            }
-                          >
-                            See Mnemonic (click to copy)
-                          </Button>
-                        </div>
-                      ) : (
-                        <div>
-                          <TextField
-                            id="outlined-with-placeholder"
-                            label="Mnemonic"
-                            value={this.state.delegateSigner.mnemonic}
-                            onChange={evt =>
-                              this.updateWalletHandler(evt)
-                            }
-                            placeholder="12 word passphrase (e.g. hat avocado green....)"
-                            margin="normal"
-                            variant="outlined"
-                            fullWidth
-                          />
-                          <CopyToClipboard
-                            style={{ cursor: "pointer" }}
-                            text={this.state.delegateSigner.mnemonic}
-                          >
-                            <span>{this.state.delegateSigner.mnemonic}</span>
-                          </CopyToClipboard>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={evt => this.setState({showMnemonic: false})}
-                          >
-                            Hide Mnemonic
-                          </Button>
-                        </div>
-                      )}
-                      <Button
-                        style={{ padding: "15px 15px 15px 15px" }}
-                        variant="contained"
-                        color="primary"
-                        onClick={() => this.generateNewDelegateSigner()}
-                      >
-                        Create New Signer (will refresh page)
-                      </Button>
-                    </div>
-                    <div>
-                      {/* <TextField
-                        id="outlined-with-placeholder"
-                        label="Recover Signer"
-                        value={this.state.delegateSigner.mnemonic}
-                        onS={evt =>
-                          this.updateWalletHandler(evt)
-                        }
-                        placeholder="12 word passphrase (e.g. hat avocado green....)"
-                        margin="normal"
-                        variant="outlined"
-                        fullWidth
-                      /> */}
-                      <Button
+              <div className="modal_inner">
+                <div className="row">
+                  {this.state.delegateSigner? (
+                    <div className="column">
+                      <div>
+                        <h4>
+                          You have a delegate signer set up already! <br />
+                          You can get your current mnemonic, recover an 
+                          old signer from a mnemonic , or
+                          set up an entirely delegate signer.{" "}
+                        </h4>
+                      </div>
+                      <div>
+                        {this.setState.showMnemonic ? (
+                          <div>
+                            <Button
+                              style={{
+                                padding: "15px 15px 15px 15px",
+                                marginRight: "15px"
+                              }}
+                              variant="contained"
+                              color="primary"
+                              onClick={() =>
+                                this.setState({showMnemonic: true})
+                              }
+                            >
+                              See Mnemonic (click to copy)
+                            </Button>
+                          </div>
+                        ) : (
+                          <div>
+                            <TextField
+                              id="outlined-with-placeholder"
+                              label="Mnemonic"
+                              value={this.state.delegateSigner.mnemonic}
+                              onChange={evt =>
+                                this.updateWalletHandler(evt)
+                              }
+                              placeholder="12 word passphrase (e.g. hat avocado green....)"
+                              margin="normal"
+                              variant="outlined"
+                              fullWidth
+                            />
+                            <CopyToClipboard
+                              style={{ cursor: "pointer" }}
+                              text={this.state.delegateSigner.mnemonic}
+                            >
+                              <span>{this.state.delegateSigner.mnemonic}</span>
+                            </CopyToClipboard>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={evt => this.setState({showMnemonic: false})}
+                            >
+                              Hide Mnemonic
+                            </Button>
+                          </div>
+                        )}
+                        <Button
                           style={{ padding: "15px 15px 15px 15px" }}
                           variant="contained"
                           color="primary"
                           onClick={() => this.generateNewDelegateSigner()}
                         >
-                        Recover delegate signer from mnemonic (does nothing for now)
-                      </Button>
+                          Create New Signer (will refresh page)
+                        </Button>
+                      </div>
+                      <div>
+                        {/* <TextField
+                          id="outlined-with-placeholder"
+                          label="Recover Signer"
+                          value={this.state.delegateSigner.mnemonic}
+                          onS={evt =>
+                            this.updateWalletHandler(evt)
+                          }
+                          placeholder="12 word passphrase (e.g. hat avocado green....)"
+                          margin="normal"
+                          variant="outlined"
+                          fullWidth
+                        /> */}
+                        <Button
+                            style={{ padding: "15px 15px 15px 15px" }}
+                            variant="contained"
+                            color="primary"
+                            onClick={() => this.generateNewDelegateSigner()}
+                          >
+                          Recover delegate signer from mnemonic (does nothing for now)
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="column">
-                      <Button
-                        style={{ padding: "15px 15px 15px 15px" }}
-                        variant="contained"
-                        color="primary"
-                        onClick={() => this.generateNewDelegateSigner()}
-                      >
-                        Create New Signer (will refresh page)
-                      </Button>
-                  </div>
-                )}
+                  ) : (
+                    <div className="column">
+                        <Button
+                          style={{ padding: "15px 15px 15px 15px" }}
+                          variant="contained"
+                          color="primary"
+                          onClick={() => this.generateNewDelegateSigner()}
+                        >
+                          Create New Signer (will refresh page)
+                        </Button>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </Modal>
+            </Popover>
+          </Toolbar>
+        </AppBar>
+        <div className="app">
           <div className="row" style={{marginBottom: "-7.5%"}}>
             <div
               className="column"
@@ -651,10 +642,18 @@ class App extends Component {
                 }}
                 variant="contained"
                 size="large"
+                onClick={() => this.setState({modals: {receive: true}})}
               >
                 Receive
               <ReceiveIcon style={{marginLeft: "5px"}}/>
               </Button>
+              <Modal
+               open={this.state.modals.receive} 
+               onClose={() => this.setState({modals: {receive: false}})}
+               style={{display: "flex", justifyContent:"center", alignItems:"center"}}
+              >
+                <ReceiveCard />
+              </Modal>
             </div>
             <div className="column" style={{marginRight:"5%"}}>
               <Button
@@ -665,10 +664,18 @@ class App extends Component {
                 }}
                 size="large"
                 variant="contained"
+                onClick={() => this.setState({modals: {send: true}})}
               >
                 Send
                 <SendIcon style={{marginLeft: "5px"}}/>
               </Button>
+              <Modal
+               open={this.state.modals.send} 
+               onClose={() => this.setState({modals: {send: false}})}
+               style={{display: "flex", justifyContent:"center", alignItems:"center"}}
+              >
+                <SendCard />
+              </Modal>
             </div>
           </div>
           <div className="row" style={{ paddingTop: "5%", justifyContent: "center"}}>
@@ -676,9 +683,17 @@ class App extends Component {
               color="primary"
               variant="outlined"
               size="large"
+              onClick={() => this.setState({modals: {cashOut: true}})}
             >
               Cash Out
             </Button>
+            <Modal
+              open={this.state.modals.cashOut}
+              onClose={() => this.setState({modals: {cashOut: false}})}
+              style={{display: "flex", justifyContent:"center", alignItems:"center"}}
+            >
+              <CashOutCard/>
+            </Modal>
           </div>
         </div>
       </div>
