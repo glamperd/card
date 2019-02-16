@@ -45,6 +45,13 @@ class ChannelCard extends Component {
             <span> 0</span>
           )}
         </Typography>
+        <Typography inline={true} variant="h3" style={cardStyle.row}>
+          {this.props.channelState ? (
+            <span>{this.props.channelState.balanceWeiUser}</span>
+          ) : (
+            <span> .00</span>
+          )}
+        </Typography>   
         </span>
       </Card>
     );

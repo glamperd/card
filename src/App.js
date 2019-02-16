@@ -22,6 +22,8 @@ import AppBar from "@material-ui/core/AppBar";
 import QRIcon from "mdi-material-ui/Qrcode"
 import Toolbar from "@material-ui/core/Toolbar";
 import SettingIcon from "@material-ui/icons/Settings"
+import SendIcon from "@material-ui/icons/Send"
+import ReceiveIcon from "@material-ui/icons/SaveAlt"
 import IconButton from "@material-ui/core/IconButton";
 import Modal from "@material-ui/core/Modal";
 import Button from "@material-ui/core/Button";
@@ -454,7 +456,7 @@ class App extends Component {
     const open = Boolean(anchorEl);
     return (
       <div>
-        <AppBar position="sticky" elevation="0" color="secondary">
+        <AppBar position="sticky" elevation="0" color="secondary" style={{paddingTop: "2%"}}>
           <Toolbar>
             <img src={blockies.createDataURL({seed: this.state.address})} alt={noAddrBlocky} style={{ width: "40px", height: "40px", marginTop: "5px" }} />
             <Typography variant="body2" noWrap style={{ width: "75px", marginLeft: "6px", color: "#c1c6ce"}}>
@@ -639,7 +641,7 @@ class App extends Component {
               </Fab>
             </div>
           </div>
-          <div className="row" style={{marginTop: "15%", marginBottom: "5%"}}>
+          <div className="row" style={{marginTop: "17.5%", marginBottom: "5%"}}>
             <div className="column" style={{marginLeft: "5%"}}>
               <Button
                 style={{
@@ -648,8 +650,10 @@ class App extends Component {
                   backgroundColor: "#FCA311"
                 }}
                 variant="contained"
+                size="large"
               >
                 Receive
+              <ReceiveIcon style={{marginLeft: "5px"}}/>
               </Button>
             </div>
             <div className="column" style={{marginRight:"5%"}}>
@@ -659,9 +663,11 @@ class App extends Component {
                   color: "#FFF",
                   backgroundColor: "#FCA311"
                 }}
+                size="large"
                 variant="contained"
               >
                 Send
+                <SendIcon style={{marginLeft: "5px"}}/>
               </Button>
             </div>
           </div>
@@ -669,7 +675,7 @@ class App extends Component {
             <Button
               color="primary"
               variant="outlined"
-              style={{width: "235px"}}
+              size="large"
             >
               Cash Out
             </Button>
