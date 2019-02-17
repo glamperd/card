@@ -18,7 +18,7 @@ import CashOutCard from "./components/cashOutCard";
 import ChannelCard from "./components/channelCard";
 import Tooltip from "@material-ui/core/Tooltip";
 import AppBar from "@material-ui/core/AppBar";
-import QRIcon from "mdi-material-ui/Qrcode"
+import QRIcon from "mdi-material-ui/QrcodeScan"
 import Toolbar from "@material-ui/core/Toolbar";
 import SettingIcon from "@material-ui/icons/Settings"
 import SendIcon from "@material-ui/icons/Send"

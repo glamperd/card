@@ -3,6 +3,10 @@ import Card from "@material-ui/core/Card";
 import Button from "@material-ui/core/Button";
 import SendIcon from "@material-ui/icons/Send";
 import TextField from "@material-ui/core/TextField";
+import QRIcon from "mdi-material-ui/QrcodeScan";
+import LinkIcon from "@material-ui/icons/Link";
+import InputAdornment from "@material-ui/core/InputAdornment"
+import Tooltip from "@material-ui/core/Tooltip"
 import Switch from "@material-ui/core/Switch";
 import HelpIcon from "@material-ui/icons/Help";
 import IconButton from "@material-ui/core/IconButton";
@@ -10,54 +14,39 @@ import Popover from "@material-ui/core/Popover";
 import Typography from "@material-ui/core/Typography";
 
 class PayCard extends Component {
-  state = {
-    checkedA: true,
-    checkedB: true,
-    anchorEl: null,
-    paymentVal: {
-      meta: {
-        purchaseId: "payment"
+  constructor(props){
+    super(props)
+
+    this.state = {
+      paymentVal: {
+        meta: {
+          purchaseId: "payment"
+        },
+        payments: [
+          {
+            recipient: "0x0",
+            amount: {
+              amountToken: "0"
+            },
+            type: "PT_CHANNEL"
+          }
+        ]
       },
-      payments: [
-        {
-          recipient: "0x0",
-          amount: {
-            amountWei: "0",
-            amountToken: "0"
-          },
-          type: "PT_THREAD"
-        }
-      ]
-    },
-    displayVal: "0",
-    recipientDisplayVal: "0x0...",
-    addressError: null,
-    balanceError: null
-  };
+      addressError: null,
+      balanceError: null
+    };
+  }
 
-  handleClick = event => {
-    console.log("click handled");
-    this.setState({
-      anchorEl: event.currentTarget
-    });
-  };
-
-  handleClose = () => {
-    this.setState({
-      anchorEl: null
-    });
-  };
-
-  handleChange = name => event => {
-    var valWei = this.state.paymentVal.payments[0].amount.amountWei;
-    var valToken = this.state.paymentVal.payments[0].amount.amountToken;
-    this.setState({ [name]: event.target.checked });
-    if (this.state.checkedB) {
-      this.setState({ displayVal: valWei });
-    } else {
-      this.setState({ displayVal: valToken });
-    }
-  };
+  // handleChange = name => event => {
+  //   var valWei = this.state.paymentVal.payments[0].amount.amountWei;
+  //   var valToken = this.state.paymentVal.payments[0].amount.amountToken;
+  //   this.setState({ [name]: event.target.checked });
+  //   if (this.state.checkedB) {
+  //     this.setState({ displayVal: valWei });
+  //   } else {
+  //     this.setState({ displayVal: valToken });
+  //   }
+  // };
 
   async updatePaymentHandler(evt) {
     var value = evt.target.value;
@@ -66,13 +55,11 @@ class PayCard extends Component {
     });
     if (!this.state.checkedB) {
       await this.setState(oldState => {
-        oldState.paymentVal.payments[0].amount.amountWei = value;
         oldState.paymentVal.payments[0].amount.amountToken = "0";
         return oldState;
       });
     } else if (this.state.checkedB) {
       await this.setState(oldState => {
-        oldState.paymentVal.payments[0].amount.amountToken = value;
         oldState.paymentVal.payments[0].amount.amountWei = "0"
         return oldState;
       });
@@ -122,79 +109,74 @@ class PayCard extends Component {
   }
 
   render() {
-    const { anchorEl } = this.state;
-    const open = Boolean(anchorEl);
     const cardStyle = {
       card: {
         display: "flex",
         flexWrap: "wrap",
-        flexBasis: "100%",
         flexDirection: "row",
-        width: "230px",
+        width: "100%",
+        height: "70%",
         justifyContent: "center",
         backgroundColor: "#FFFFFF",
         padding: "4% 4% 4% 4%"
       },
       icon: {
-        width: "50px",
-        height: "50px",
-        paddingTop: "8px",
-        right: "0"
+        width: "40px",
+        height: "40px",
       },
       input: {
         width: "100%"
       },
-      button: {
-        width: "100%",
-        height: "40px",
-        backgroundColor: "#FCA311",
-        color: "#FFF"
-      },
-      col1: {
-        marginLeft: "55px",
-        width: "40%"
-      },
-      col2: {
-        width: "3%",
-        justifyContent: "'flex-end' !important"
-      },
-      popover: {
-        padding: "8px 8px 8px 8px"
-      }
     };
 
     return (
       <Card style={cardStyle.card}>
-        <div style={cardStyle.col1}>
-          <SendIcon style={cardStyle.icon} />
-        </div>
-        <div>
-          ETH
-          <Switch
-            checked={this.state.checkedB}
-            onChange={this.handleChange("checkedB")}
-            value="checkedB"
-            color="primary"
-          />
-          TST
-        </div>
+        <SendIcon style={cardStyle.icon} />
         <TextField
           style={cardStyle.input}
+          id="outlined-number"
+          label="Amount"
+          placeholder="$0.00"
+          value={this.state.amountToken}
+          onChange={evt => this.updatePaymentHandler(evt)}
+          type="number"
+          margin="normal"
+          variant="outlined"
+          helperText={this.state.balanceError}
+          error={this.state.balanceError != null}
+        />
+        <TextField
+          style={{width: "100%"}}
           id="outlined-with-placeholder"
-          label="Address"
-          placeholder="Receiver (0x0...)"
+          label="Recipient"
+          placeholder="0x0... (Optional for Link)"
           value={this.state.recipientDisplayVal}
           onChange={evt => this.updateRecipientHandler(evt)}
           margin="normal"
           variant="outlined"
           helperText={this.state.addressError}
           error={this.state.addressError != null}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <Tooltip disableFocusListener disableTouchListener title="Scan with QR code">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    style={{color: "#FFF"}}
+                  >
+                    <QRIcon />
+                  </Button>
+                </Tooltip>
+              </InputAdornment>
+            )
+          }}
         />
         <TextField
           style={cardStyle.input}
           id="outlined-number"
-          label="Amount (Wei)"
-          placeholder="Amount (Wei)"
+          label="Message"
+          placeholder="Groceries, etc. (Optional)"
           value={this.state.displayVal}
           onChange={evt => this.updatePaymentHandler(evt)}
           type="number"
@@ -203,13 +185,32 @@ class PayCard extends Component {
           helperText={this.state.balanceError}
           error={this.state.balanceError != null}
         />
-        <Button
-          style={cardStyle.button}
-          onClick={() => this.paymentHandler()}
-          variant="contained"
-        >
-          Pay
-        </Button>
+        <div>
+          <Button
+            style={{
+              marginRight: "5px",
+              color: "#FFF",
+              backgroundColor: "#FCA311"
+            }}
+            variant="contained"
+            size="large"
+          >
+            Link
+            <LinkIcon style={{marginLeft: "5px"}}/>
+          </Button>
+          <Button
+            style={{
+              marginRight: "5px",
+              color: "#FFF",
+              backgroundColor: "#FCA311"
+            }}
+            variant="contained"
+            size="large"
+          >
+            Send
+            <SendIcon style={{marginLeft: "5px"}}/>
+          </Button>
+        </div>
       </Card>
     );
   }

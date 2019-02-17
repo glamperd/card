@@ -215,10 +215,9 @@ class ReceiveCard extends Component {
       card: {
         display: "flex",
         flexWrap: "wrap",
-        // flexBasis: "100%",
         flexDirection: "row",
-        width: "80%",
-        height: "75%",
+        width: "100%",
+        height: "70%",
         justifyContent: "center",
         backgroundColor: "#FFFFFF",
         padding: "4% 4% 4% 4%"
@@ -226,23 +225,15 @@ class ReceiveCard extends Component {
       icon: {
         width: "40px",
         height: "40px",
-        paddingTop: "5%"
       },
       input: {
         width: "100%"
-      },
-      col1: {
-        marginLeft: "55px",
-        width: "40%",
-        justifyContent: "'flex-end' !important"
       },
     };
 
     return (
       <Card style={cardStyle.card}>
-        <div style={cardStyle.col1}>
-          <ReceiveIcon style={cardStyle.icon} />
-        </div>
+        <ReceiveIcon style={cardStyle.icon} />
         <TextField
           style={cardStyle.input}
           id="outlined-number"
@@ -255,11 +246,11 @@ class ReceiveCard extends Component {
           error={this.state.error != null}
           helperText={this.state.error}
         />
-        <img src={QRTemp} style={{width: "200px", height: "200px"}} />
+        <img src={QRTemp} style={{width: "300px", height: "300px"}} />
         <Button variant="outlined">
           <CopyIcon style={{marginRight: "5px"}} />
           <CopyToClipboard text={(this.props.address)}>
-            <Typography noWrap variant="h6">
+            <Typography noWrap variant="body1">
               <Tooltip
                 disableFocusListener
                 disableTouchListener
