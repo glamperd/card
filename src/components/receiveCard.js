@@ -12,7 +12,7 @@ import Popover from "@material-ui/core/Popover";
 import Typography from "@material-ui/core/Typography";
 import CopyIcon from "@material-ui/icons/FileCopy"
 import { store } from "../App.js";
-import QRTemp from "../assets/QRTempSample.png"
+import QRGenerate from "./qrGenerate"
 const Web3 = require("web3");
 const eth = require("ethers");
 
@@ -246,7 +246,9 @@ class ReceiveCard extends Component {
           error={this.state.error != null}
           helperText={this.state.error}
         />
-        <img src={QRTemp} style={{width: "300px", height: "300px"}} />
+        <QRGenerate
+          value={this.props.address}
+        />
         <Button variant="outlined">
           <CopyIcon style={{marginRight: "5px"}} />
           <CopyToClipboard text={(this.props.address)}>

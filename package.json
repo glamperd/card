@@ -29,6 +29,7 @@
     "ethers": "^4.0.20",
     "mdi-material-ui": "^5.9.0",
     "mocha": "^5.2.0",
+    "qrcode.react": "^0.9.2",
     "react": "^16.6.3",
     "react-coin-icon": "^0.1.6",
     "react-copy-to-clipboard": "^5.0.1",

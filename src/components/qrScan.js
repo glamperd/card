@@ -24,12 +24,17 @@ class QRScan extends Component {
 
   render() {
     return (
+      <div>
         <QrReader
             delay={this.state.delay}
             onError={(error) => this.setState({error})}
             onScan={this.handleScan}
             style={{ width: "100%" }}
         />
+        <h1 style={{textAlign: "center"}}>
+            {this.state.result}
+        </h1>
+      </div>
     );
   }
 }

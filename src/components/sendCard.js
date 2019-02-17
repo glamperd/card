@@ -36,17 +36,6 @@ class PayCard extends Component {
     };
   }
 
-  // handleChange = name => event => {
-  //   var valWei = this.state.paymentVal.payments[0].amount.amountWei;
-  //   var valToken = this.state.paymentVal.payments[0].amount.amountToken;
-  //   this.setState({ [name]: event.target.checked });
-  //   if (this.state.checkedB) {
-  //     this.setState({ displayVal: valWei });
-  //   } else {
-  //     this.setState({ displayVal: valToken });
-  //   }
-  // };
-
   async updatePaymentHandler(evt) {
     var value = evt.target.value;
     this.setState({
