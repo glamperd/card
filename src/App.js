@@ -6,8 +6,6 @@ import clientProvider from "./utils/web3/clientProvider.ts";
 import { setWallet } from "./utils/actions.js";
 import {
   createWallet,
-  createWalletFromKey,
-  findOrCreateWallet,
   createWalletFromMnemonic
 } from "./walletGen";
 import { createStore } from "redux";
@@ -17,6 +15,7 @@ import SendCard from "./components/sendCard";
 import CashOutCard from "./components/cashOutCard";
 import ChannelCard from "./components/channelCard";
 import QRScan from "./components/qrScan";
+import SettingsCard from "./components/settingsCard";
 import Tooltip from "@material-ui/core/Tooltip";
 import AppBar from "@material-ui/core/AppBar";
 import QRIcon from "mdi-material-ui/QrcodeScan"
@@ -80,6 +79,7 @@ class App extends Component {
       connext: null,
       delegateSigner: null,
       modals: {
+        settings: false,
         keyGen: false,
         receive: false,
         send: false,
@@ -106,7 +106,6 @@ class App extends Component {
       recipient: hubWalletAddress,
       channelState: null,
       exchangeRate: "0.00",
-      anchorEl: null,
       interval: null
     };
   }
@@ -382,18 +381,6 @@ class App extends Component {
     }
   }
 
-  handleClick = event => {
-    this.setState({
-      anchorEl: event.currentTarget
-    });
-  };
-
-  handleClose = () => {
-    this.setState({
-      anchorEl: null
-    });
-  };
-
   updateApprovalHandler(evt) {
     this.setState({
       approvalWeiUser: evt.target.value
@@ -438,23 +425,9 @@ class App extends Component {
     console.log(`Sent tx: ${typeof sentTx} with keys ${Object.keys(sentTx)}`);
   }
 
-  async generateNewDelegateSigner() {
-  // NOTE: DelegateSigner is always recovered from browser storage. 
-  //       It is ONLY set to state from within app on load.
-    await createWallet(this.state.web3);
-    // Then refresh the page
-    window.location.reload();
-  }
-
-  // to get tokens from metamask to browser wallet
-
-  // ** wrapper for ethers getBalance. probably breaks for tokens
-
   render() {
-    const { anchorEl } = this.state;
-    const open = Boolean(anchorEl);
     return (
-      <div>
+      <div className="app">
         <AppBar position="sticky" elevation="0" color="secondary" style={{paddingTop: "2%"}}>
           <Toolbar>
             <img src={blockies.createDataURL({seed: this.state.address})} alt={noAddrBlocky} style={{ width: "40px", height: "40px", marginTop: "5px" }} />
@@ -464,249 +437,132 @@ class App extends Component {
             <Typography variant="h6" style={{ flexGrow: 1 }} />
             <IconButton
               color="inherit"
-              aria-label="Menu"
-              aria-owns={open ? "settings" : undefined}
-              aria-haspopup="true"
               variant="contained"
-              onClick={this.handleClick}
+              onClick={() => this.setState({modals: {settings: true}})}
             >
               <SettingIcon />
             </IconButton>
             <Typography variant="subtitle1">
-            <CopyToClipboard
-              // style={cardStyle.clipboard}
-              text={(this.props.address)}
-            >
-              <Tooltip
-                disableFocusListener
-                disableTouchListener
-                title="Click to Copy"
+              <CopyToClipboard
+                // style={cardStyle.clipboard}
+                text={(this.props.address)}
               >
-                <span>{this.props.address}</span>
-              </Tooltip>
-            </CopyToClipboard>
-          </Typography>
-            <Popover
-              id="settings"
-              open={open}
-              anchorEl={anchorEl}
-              onClose={this.handleClose}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "center"
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "center"
-              }}
-              style={{ width: "100%" }}
-            >
-              <div className="modal_inner">
-                <div className="row">
-                  {this.state.delegateSigner? (
-                    <div className="column">
-                      <div>
-                        <h4>
-                          You have a delegate signer set up already! <br />
-                          You can get your current mnemonic, recover an 
-                          old signer from a mnemonic , or
-                          set up an entirely delegate signer.{" "}
-                        </h4>
-                      </div>
-                      <div>
-                        {this.setState.showMnemonic ? (
-                          <div>
-                            <Button
-                              style={{
-                                padding: "15px 15px 15px 15px",
-                                marginRight: "15px"
-                              }}
-                              variant="contained"
-                              color="primary"
-                              onClick={() =>
-                                this.setState({showMnemonic: true})
-                              }
-                            >
-                              See Mnemonic (click to copy)
-                            </Button>
-                          </div>
-                        ) : (
-                          <div>
-                            <TextField
-                              id="outlined-with-placeholder"
-                              label="Mnemonic"
-                              value={this.state.delegateSigner.mnemonic}
-                              onChange={evt =>
-                                this.updateWalletHandler(evt)
-                              }
-                              placeholder="12 word passphrase (e.g. hat avocado green....)"
-                              margin="normal"
-                              variant="outlined"
-                              fullWidth
-                            />
-                            <CopyToClipboard
-                              style={{ cursor: "pointer" }}
-                              text={this.state.delegateSigner.mnemonic}
-                            >
-                              <span>{this.state.delegateSigner.mnemonic}</span>
-                            </CopyToClipboard>
-                            <Button
-                              variant="contained"
-                              color="primary"
-                              onClick={evt => this.setState({showMnemonic: false})}
-                            >
-                              Hide Mnemonic
-                            </Button>
-                          </div>
-                        )}
-                        <Button
-                          style={{ padding: "15px 15px 15px 15px" }}
-                          variant="contained"
-                          color="primary"
-                          onClick={() => this.generateNewDelegateSigner()}
-                        >
-                          Create New Signer (will refresh page)
-                        </Button>
-                      </div>
-                      <div>
-                        {/* <TextField
-                          id="outlined-with-placeholder"
-                          label="Recover Signer"
-                          value={this.state.delegateSigner.mnemonic}
-                          onS={evt =>
-                            this.updateWalletHandler(evt)
-                          }
-                          placeholder="12 word passphrase (e.g. hat avocado green....)"
-                          margin="normal"
-                          variant="outlined"
-                          fullWidth
-                        /> */}
-                        <Button
-                            style={{ padding: "15px 15px 15px 15px" }}
-                            variant="contained"
-                            color="primary"
-                            onClick={() => this.generateNewDelegateSigner()}
-                          >
-                          Recover delegate signer from mnemonic (does nothing for now)
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="column">
-                        <Button
-                          style={{ padding: "15px 15px 15px 15px" }}
-                          variant="contained"
-                          color="primary"
-                          onClick={() => this.generateNewDelegateSigner()}
-                        >
-                          Create New Signer (will refresh page)
-                        </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Popover>
+                <Tooltip
+                  disableFocusListener
+                  disableTouchListener
+                  title="Click to Copy"
+                >
+                  <span>{this.props.address}</span>
+                </Tooltip>
+              </CopyToClipboard>
+            </Typography>
           </Toolbar>
         </AppBar>
-        <div className="app">
-          <div className="row" style={{marginBottom: "-7.5%"}}>
-            <div
-              className="column"
-              style={{ justifyContent: "space-between", flexGrow: 1 }}
+        <Modal
+            id="settings"
+            open={this.state.modals.settings}
+            onClose={() => this.setState({modals: {settings: false}})}
+            style={{display: "flex", justifyContent:"center", alignItems:"center"}}
+          >
+            <SettingsCard />
+        </Modal>
+        <div className="row" style={{marginBottom: "-7.5%"}}>
+          <div
+            className="column"
+            style={{ justifyContent: "space-between", flexGrow: 1 }}
+          >
+            <ChannelCard
+              channelState={this.state.channelState}
+              address={this.state.address}
+            />
+          </div>
+        </div>
+        <div className="row">
+          <div className="column" style={{marginRight: "5%", marginLeft: "80%"}}>
+            <Fab
+              style={{
+                color: "#FFF",
+                backgroundColor: "#fca311",
+                size: "large",
+              }}
+              onClick={() => this.setState({modals: {scan: true}})}
             >
-              <ChannelCard
-                channelState={this.state.channelState}
-                address={this.state.address}
-              />
-            </div>
-          </div>
-          <div className="row">
-            <div className="column" style={{marginRight: "5%", marginLeft: "80%"}}>
-              <Fab
-                style={{
-                  color: "#FFF",
-                  backgroundColor: "#fca311",
-                  size: "large",
-                }}
-                onClick={() => this.setState({modals: {scan: true}})}
-              >
-              <QRIcon/>
-              </Fab>
-              <Modal
-                id="qrscan"
-                open={this.state.modals.scan}
-                onClose={() => this.setState({modals: {scan: false}})}
-                style={{ width: "full", height: "full" }}
-              >
-                <QRScan />
-              </Modal>
-            </div>
-          </div>
-          <div className="row" style={{marginTop: "17.5%", marginBottom: "5%"}}>
-            <div className="column" style={{marginLeft: "5%"}}>
-              <Button
-                style={{
-                  marginRight: "5px",
-                  color: "#FFF",
-                  backgroundColor: "#FCA311"
-                }}
-                variant="contained"
-                size="large"
-                onClick={() => this.setState({modals: {receive: true}})}
-              >
-                Receive
-              <ReceiveIcon style={{marginLeft: "5px"}}/>
-              </Button>
-              <Modal
-               open={this.state.modals.receive} 
-               onClose={() => this.setState({modals: {receive: false}})}
-               style={{display: "flex", justifyContent:"center", alignItems:"center"}}
-              >
-                <ReceiveCard
-                  address={this.state.address}
-                />
-              </Modal>
-            </div>
-            <div className="column" style={{marginRight:"5%"}}>
-              <Button
-                style={{
-                  marginLeft: "5px",
-                  color: "#FFF",
-                  backgroundColor: "#FCA311"
-                }}
-                size="large"
-                variant="contained"
-                onClick={() => this.setState({modals: {send: true}})}
-              >
-                Send
-                <SendIcon style={{marginLeft: "5px"}}/>
-              </Button>
-              <Modal
-               open={this.state.modals.send} 
-               onClose={() => this.setState({modals: {send: false}})}
-               style={{display: "flex", justifyContent:"center", alignItems:"center"}}
-              >
-                <SendCard />
-              </Modal>
-            </div>
-          </div>
-          <div className="row" style={{ paddingTop: "5%", justifyContent: "center"}}>
-            <Button
-              color="primary"
-              variant="outlined"
-              size="large"
-              onClick={() => this.setState({modals: {cashOut: true}})}
-            >
-              Cash Out
-            </Button>
+            <QRIcon/>
+            </Fab>
             <Modal
-              open={this.state.modals.cashOut}
-              onClose={() => this.setState({modals: {cashOut: false}})}
-              style={{display: "flex", justifyContent:"center", alignItems:"center"}}
+              id="qrscan"
+              open={this.state.modals.scan}
+              onClose={() => this.setState({modals: {scan: false}})}
+              style={{ width: "full", height: "full" }}
             >
-              <CashOutCard/>
+              <QRScan />
             </Modal>
           </div>
+        </div>
+        <div className="row" style={{marginTop: "17.5%", marginBottom: "5%"}}>
+          <div className="column" style={{marginLeft: "5%"}}>
+            <Button
+              style={{
+                marginRight: "5px",
+                color: "#FFF",
+                backgroundColor: "#FCA311"
+              }}
+              variant="contained"
+              size="large"
+              onClick={() => this.setState({modals: {receive: true}})}
+            >
+              Receive
+            <ReceiveIcon style={{marginLeft: "5px"}}/>
+            </Button>
+            <Modal
+              open={this.state.modals.receive} 
+              onClose={() => this.setState({modals: {receive: false}})}
+              style={{display: "flex", justifyContent:"center", alignItems:"center"}}
+            >
+              <ReceiveCard
+                address={this.state.address}
+              />
+            </Modal>
+          </div>
+          <div className="column" style={{marginRight:"5%"}}>
+            <Button
+              style={{
+                marginLeft: "5px",
+                color: "#FFF",
+                backgroundColor: "#FCA311"
+              }}
+              size="large"
+              variant="contained"
+              onClick={() => this.setState({modals: {send: true}})}
+            >
+              Send
+              <SendIcon style={{marginLeft: "5px"}}/>
+            </Button>
+            <Modal
+              open={this.state.modals.send} 
+              onClose={() => this.setState({modals: {send: false}})}
+              style={{display: "flex", justifyContent:"center", alignItems:"center"}}
+            >
+              <SendCard />
+            </Modal>
+          </div>
+        </div>
+        <div className="row" style={{ paddingTop: "5%", justifyContent: "center"}}>
+          <Button
+            color="primary"
+            variant="outlined"
+            size="large"
+            onClick={() => this.setState({modals: {cashOut: true}})}
+          >
+            Cash Out
+          </Button>
+          <Modal
+            open={this.state.modals.cashOut}
+            onClose={() => this.setState({modals: {cashOut: false}})}
+            style={{display: "flex", justifyContent:"center", alignItems:"center"}}
+          >
+            <CashOutCard/>
+          </Modal>
         </div>
       </div>
     );

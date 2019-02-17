@@ -107,9 +107,6 @@ class CashOutCard extends Component {
   }
 
   render() {
-    const { anchorEl } = this.state;
-    const open = Boolean(anchorEl);
-
     const cardStyle = {
       card: {
         display: "flex",

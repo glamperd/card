@@ -42,6 +42,7 @@ export async function createWalletFromMnemonic(mnemonic) {
     return wallet;
   }catch(e){
     console.log(`error in WalletGen`)
+    console.log(e)
   }
 }
 
