@@ -29,7 +29,6 @@ import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Popover from "@material-ui/core/Popover";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import Connext from "./assets/Connext.svg";
 import { Typography, Fab, Card } from "@material-ui/core";
 import blockies from "ethereum-blockies-png"
 const Web3 = require("web3");

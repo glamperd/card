@@ -127,6 +127,13 @@ class PayCard extends Component {
       input: {
         width: "100%"
       },
+      button: {
+        height: "40px",
+        backgroundColor: "#FCA311",
+        color: "#FFF",
+        marginLeft: "5px",
+        marginRight: "5px",
+      },
     };
 
     return (
@@ -137,6 +144,7 @@ class PayCard extends Component {
           id="outlined-number"
           label="Amount"
           placeholder="$0.00"
+          required
           value={this.state.amountToken}
           onChange={evt => this.updatePaymentHandler(evt)}
           type="number"
@@ -187,11 +195,7 @@ class PayCard extends Component {
         />
         <div>
           <Button
-            style={{
-              marginRight: "5px",
-              color: "#FFF",
-              backgroundColor: "#FCA311"
-            }}
+            style={cardStyle.button}
             variant="contained"
             size="large"
           >
@@ -199,11 +203,7 @@ class PayCard extends Component {
             <LinkIcon style={{marginLeft: "5px"}}/>
           </Button>
           <Button
-            style={{
-              marginRight: "5px",
-              color: "#FFF",
-              backgroundColor: "#FCA311"
-            }}
+            style={cardStyle.button}
             variant="contained"
             size="large"
           >
