@@ -652,7 +652,9 @@ class App extends Component {
                onClose={() => this.setState({modals: {receive: false}})}
                style={{display: "flex", justifyContent:"center", alignItems:"center"}}
               >
-                <ReceiveCard />
+                <ReceiveCard
+                  address={this.state.address}
+                />
               </Modal>
             </div>
             <div className="column" style={{marginRight:"5%"}}>

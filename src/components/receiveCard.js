@@ -1,55 +1,32 @@
 import React, { Component } from "react";
 import Card from "@material-ui/core/Card";
 import Button from "@material-ui/core/Button";
-import ArchiveIcon from "@material-ui/icons/Archive";
+import ReceiveIcon from "@material-ui/icons/SaveAlt";
 import TextField from "@material-ui/core/TextField";
+import Tooltip from "@material-ui/core/Tooltip";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 import Switch from "@material-ui/core/Switch";
 import HelpIcon from "@material-ui/icons/Help";
 import IconButton from "@material-ui/core/IconButton";
 import Popover from "@material-ui/core/Popover";
 import Typography from "@material-ui/core/Typography";
+import CopyIcon from "@material-ui/icons/FileCopy"
 import { store } from "../App.js";
+import QRTemp from "../assets/QRTempSample.png"
 const Web3 = require("web3");
 const eth = require("ethers");
 
 const BALANCE_THRESHOLD_WEI = Web3.utils.toBN(Web3.utils.toWei("40", "finney"));
 
-class DepositCard extends Component {
-  state = {
-    checkedA: true,
-    checkedB: false,
-    anchorEl: null,
-    depositVal: {
-      amountWei: "0",
-      amountToken: "0"
-    },
-    displayVal: "0",
-    error: null
-  };
+class ReceiveCard extends Component {
+  constructor(props){
+    super(props)
 
-  handleClick = event => {
-    console.log("click handled");
-    this.setState({
-      anchorEl: event.currentTarget
-    });
-  };
-
-  handleClose = () => {
-    this.setState({
-      anchorEl: null
-    });
-  };
-
-  handleChange = name => event => {
-    var depositValWei = this.state.depositVal.amountWei;
-    var depositValToken = this.state.depositVal.amountToken;
-    this.setState({ [name]: event.target.checked });
-    if (this.state.checkedB) {
-      this.setState({ displayVal: depositValWei });
-    } else {
-      this.setState({ displayVal: depositValToken });
-    }
-  };
+    this.state = {
+      value: 0,
+      error: null
+    };
+  }
 
   async updateDepositHandler(evt) {
     var value = evt.target.value;
@@ -234,67 +211,42 @@ class DepositCard extends Component {
   }
 
   render() {
-    const { anchorEl } = this.state;
-    const open = Boolean(anchorEl);
     const cardStyle = {
       card: {
         display: "flex",
         flexWrap: "wrap",
-        flexBasis: "100%",
+        // flexBasis: "100%",
         flexDirection: "row",
-        width: "230px",
+        width: "80%",
+        height: "75%",
         justifyContent: "center",
         backgroundColor: "#FFFFFF",
         padding: "4% 4% 4% 4%"
       },
       icon: {
-        width: "50px",
-        height: "50px",
-        paddingTop: "8px"
+        width: "40px",
+        height: "40px",
+        paddingTop: "5%"
       },
       input: {
         width: "100%"
-      },
-      button: {
-        width: "100%",
-        height: "40px",
-        backgroundColor: "#FCA311",
-        color: "#FFF"
       },
       col1: {
         marginLeft: "55px",
         width: "40%",
         justifyContent: "'flex-end' !important"
       },
-      col2: {
-        width: "3%",
-        justifyContent: "'flex-end' !important"
-      },
-      popover: {
-        padding: "8px 8px 8px 8px"
-      }
     };
 
     return (
       <Card style={cardStyle.card}>
         <div style={cardStyle.col1}>
-          <ArchiveIcon style={cardStyle.icon} />
-        </div>
-
-        <div>
-          ETH
-          <Switch
-            checked={this.state.checkedB}
-            onChange={this.handleChange("checkedB")}
-            value="checkedB"
-            color="primary"
-          />
-          TST
+          <ReceiveIcon style={cardStyle.icon} />
         </div>
         <TextField
           style={cardStyle.input}
           id="outlined-number"
-          label="Amount (Wei)"
+          label="Amount"
           value={this.state.displayVal}
           type="number"
           margin="normal"
@@ -303,16 +255,24 @@ class DepositCard extends Component {
           error={this.state.error != null}
           helperText={this.state.error}
         />
-        <Button
-          style={cardStyle.button}
-          variant="contained"
-          onClick={evt => this.depositHandler(evt)}
-        >
-          Deposit
+        <img src={QRTemp} style={{width: "200px", height: "200px"}} />
+        <Button variant="outlined">
+          <CopyIcon style={{marginRight: "5px"}} />
+          <CopyToClipboard text={(this.props.address)}>
+            <Typography noWrap variant="h6">
+              <Tooltip
+                disableFocusListener
+                disableTouchListener
+                title="Click to Copy"
+              >
+                <span>{this.props.address}</span>
+              </Tooltip>
+            </Typography>
+          </CopyToClipboard>
         </Button>
       </Card>
     );
   }
 }
 
-export default DepositCard;
+export default ReceiveCard;
