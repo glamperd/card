@@ -16,6 +16,7 @@ import ReceiveCard from "./components/receiveCard";
 import SendCard from "./components/sendCard";
 import CashOutCard from "./components/cashOutCard";
 import ChannelCard from "./components/channelCard";
+import QRScan from "./components/qrScan";
 import Tooltip from "@material-ui/core/Tooltip";
 import AppBar from "@material-ui/core/AppBar";
 import QRIcon from "mdi-material-ui/QrcodeScan"
@@ -83,6 +84,7 @@ class App extends Component {
         receive: false,
         send: false,
         cashOut: false,
+        scan: false,
       },
       metamask: {
         address: null,
@@ -626,9 +628,18 @@ class App extends Component {
                   backgroundColor: "#fca311",
                   size: "large",
                 }}
+                onClick={() => this.setState({modals: {scan: true}})}
               >
               <QRIcon/>
               </Fab>
+              <Modal
+                id="qrscan"
+                open={this.state.modals.scan}
+                onClose={() => this.setState({modals: {scan: false}})}
+                style={{ width: "full", height: "full" }}
+              >
+                <QRScan />
+              </Modal>
             </div>
           </div>
           <div className="row" style={{marginTop: "17.5%", marginBottom: "5%"}}>

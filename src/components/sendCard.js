@@ -5,13 +5,11 @@ import SendIcon from "@material-ui/icons/Send";
 import TextField from "@material-ui/core/TextField";
 import QRIcon from "mdi-material-ui/QrcodeScan";
 import LinkIcon from "@material-ui/icons/Link";
-import InputAdornment from "@material-ui/core/InputAdornment"
-import Tooltip from "@material-ui/core/Tooltip"
-import Switch from "@material-ui/core/Switch";
-import HelpIcon from "@material-ui/icons/Help";
-import IconButton from "@material-ui/core/IconButton";
-import Popover from "@material-ui/core/Popover";
-import Typography from "@material-ui/core/Typography";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import Tooltip from "@material-ui/core/Tooltip";
+import Modal from "@material-ui/core/Modal";
+import QRScan from "./qrScan";
+
 
 class PayCard extends Component {
   constructor(props){
@@ -33,7 +31,8 @@ class PayCard extends Component {
         ]
       },
       addressError: null,
-      balanceError: null
+      balanceError: null,
+      scan: false,
     };
   }
 
@@ -172,6 +171,7 @@ class PayCard extends Component {
                     variant="contained"
                     color="primary"
                     style={{color: "#FFF"}}
+                    onClick={()=> this.setState({scan: true})}
                   >
                     <QRIcon />
                   </Button>
@@ -180,6 +180,14 @@ class PayCard extends Component {
             )
           }}
         />
+        <Modal
+          id="qrscan"
+          open={this.state.scan}
+          onClose={() => this.setState({scan: false})}
+          style={{ width: "full", height: "full" }}
+        >
+          <QRScan />
+        </Modal>
         <TextField
           style={cardStyle.input}
           id="outlined-number"

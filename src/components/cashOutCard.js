@@ -9,8 +9,10 @@ import DaiIcon from "../assets/dai.svg"
 import Tooltip from "@material-ui/core/Tooltip";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import { BigNumber } from "bignumber.js";
+import Modal from "@material-ui/core/Modal";
+import QRScan from "./qrScan";
 
-class WithdrawCard extends Component {
+class CashOutCard extends Component {
   constructor(props){
     super(props)
 
@@ -24,7 +26,8 @@ class WithdrawCard extends Component {
         recipient: "0x0..."
       },
       addressError: null,
-      balanceError: null
+      balanceError: null,
+      scan: false,
     };
   }
 
@@ -171,6 +174,7 @@ class WithdrawCard extends Component {
                     variant="contained"
                     color="primary"
                     style={{color: "#FFF"}}
+                    onClick={() => this.setState({scan: true})}
                   >
                     <QRIcon />
                   </Button>
@@ -179,6 +183,14 @@ class WithdrawCard extends Component {
             )
           }}
         />
+        <Modal
+          id="qrscan"
+          open={this.state.scan}
+          onClose={() => this.setState({scan: false})}
+          style={{ width: "full", height: "full" }}
+        >
+          <QRScan />
+        </Modal>
         <TextField
           id="outlined-with-placeholder"
           label="Exchange Rate"
@@ -191,13 +203,13 @@ class WithdrawCard extends Component {
           <Button
             style={cardStyle.button}
           >
-            Withdraw Eth
+            Cash Out Eth
             <img src={EthIcon} style={{width: "20px", height: "20px", marginLeft: "5px"}} />
           </Button>
           <Button
             style={cardStyle.button}
           >
-            Withdraw Dai
+            Cash Out Dai
             <img src={DaiIcon} style={{width: "20px", height: "20px", marginLeft: "5px"}} />
           </Button>
         </div>
@@ -206,4 +218,4 @@ class WithdrawCard extends Component {
   }
 }
 
-export default WithdrawCard;
+export default CashOutCard;
