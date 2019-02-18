@@ -14,11 +14,7 @@ class QRScan extends Component {
   }
   handleScan(data) {
     if (data) {
-      this.setState({
-        result: data
-      });
-      console.log("TEST===============================")
-      console.log(data)
+      this.props.handleResult(data)
     }
   }
 

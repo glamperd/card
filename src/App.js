@@ -24,6 +24,7 @@ import SettingIcon from "@material-ui/icons/Settings"
 import SendIcon from "@material-ui/icons/Send"
 import ReceiveIcon from "@material-ui/icons/SaveAlt"
 import IconButton from "@material-ui/core/IconButton";
+import CopyIcon from "@material-ui/icons/FileCopy"
 import Modal from "@material-ui/core/Modal";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
@@ -279,7 +280,6 @@ class App extends Component {
           .toString(),
         amountToken: tokenBalance
       };
-      // TODO does this need to be in the state?
       console.log(`Depositing: ${JSON.stringify(actualDeposit, null, 2)}`);
       console.log("********", this.state.connext.opts.tokenAddress);
       let depositRes = await this.state.connext.deposit(actualDeposit);
@@ -329,7 +329,7 @@ class App extends Component {
       );
       const token = authRes.data.token;
       document.cookie = `hub.sid=${token}`;
-      console.log(`cookie set: ${token}`);
+      console.log(`hub authentication cookie set: ${token}`);
       const res = await axios.get(`${hubUrl}/auth/status`, opts);
       if (res.data.success) {
         this.setState({ authorized: true });
@@ -394,7 +394,17 @@ class App extends Component {
           <Toolbar>
             <img src={blockies.createDataURL({seed: this.state.address})} alt={noAddrBlocky} style={{ width: "40px", height: "40px", marginTop: "5px" }} />
             <Typography variant="body2" noWrap style={{ width: "75px", marginLeft: "6px", color: "#c1c6ce"}}>
-              {this.state.address}
+              <CopyToClipboard  
+                text={(this.state.address)}
+              >
+                <Tooltip
+                  disableFocusListener
+                  disableTouchListener
+                  title="Click to Copy"
+                >
+                  <span>{this.state.address}</span>
+                </Tooltip>
+              </CopyToClipboard>
             </Typography>
             <Typography variant="h6" style={{ flexGrow: 1 }} />
             <IconButton
@@ -404,20 +414,6 @@ class App extends Component {
             >
               <SettingIcon />
             </IconButton>
-            <Typography variant="subtitle1">
-              <CopyToClipboard
-                // style={cardStyle.clipboard}
-                text={(this.props.address)}
-              >
-                <Tooltip
-                  disableFocusListener
-                  disableTouchListener
-                  title="Click to Copy"
-                >
-                  <span>{this.props.address}</span>
-                </Tooltip>
-              </CopyToClipboard>
-            </Typography>
           </Toolbar>
         </AppBar>
         <Modal
@@ -457,7 +453,7 @@ class App extends Component {
               onClose={() => this.setState({modals: {scan: false}})}
               style={{ width: "full", height: "full" }}
             >
-              <QRScan />
+              <QRScan/>
             </Modal>
           </div>
         </div>

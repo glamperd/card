@@ -33,6 +33,7 @@ class PayCard extends Component {
       addressError: null,
       balanceError: null,
       scan: false,
+      recipientDisplayVal: "0x0.."
     };
   }
 
@@ -57,15 +58,15 @@ class PayCard extends Component {
     );
   }
 
-  async updateRecipientHandler(evt) {
-    var value = evt.target.value;
+  async updateRecipientHandler(value) {
     this.setState({
-      recipientDisplayVal: evt.target.value
+      recipientDisplayVal: value
     });
     await this.setState(oldState => {
       oldState.paymentVal.payments[0].recipient = value;
-      return oldState;
+      return oldState
     });
+    this.setState({scan: false})
     console.log(
       `Updated recipient: ${JSON.stringify(
         this.state.paymentVal.payments[0].recipient,
@@ -147,7 +148,7 @@ class PayCard extends Component {
           label="Recipient"
           placeholder="0x0... (Optional for Link)"
           value={this.state.recipientDisplayVal}
-          onChange={evt => this.updateRecipientHandler(evt)}
+          onChange={evt => this.updateRecipientHandler(evt.target.value)}
           margin="normal"
           variant="outlined"
           helperText={this.state.addressError}
@@ -175,7 +176,9 @@ class PayCard extends Component {
           onClose={() => this.setState({scan: false})}
           style={{ width: "full", height: "full" }}
         >
-          <QRScan />
+          <QRScan
+            handleResult = {this.updateRecipientHandler.bind(this)} 
+          />
         </Modal>
         <TextField
           style={cardStyle.input}
@@ -183,7 +186,7 @@ class PayCard extends Component {
           label="Message"
           placeholder="Groceries, etc. (Optional)"
           value={this.state.displayVal}
-          onChange={evt => this.updatePaymentHandler(evt)}
+          // onChange={evt => this.updatePaymentHandler(evt)}
           type="number"
           margin="normal"
           variant="outlined"
