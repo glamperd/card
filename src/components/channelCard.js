@@ -8,6 +8,10 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import Tooltip from "@material-ui/core/Tooltip";
 
 class ChannelCard extends Component {
+  constructor(props) {
+    super(props);
+  }
+
   render() {
     const cardStyle = {
       card: {
@@ -40,14 +44,14 @@ class ChannelCard extends Component {
           </Typography>      
           <Typography inline={true} variant="h1" style={cardStyle.row}>
           {this.props.channelState ? (
-            <span>{this.props.channelState.balanceWeiUser}</span>
+            <span>{this.props.channelState.balanceTokenUser}</span>
           ) : (
             <span> 0</span>
           )}
         </Typography>
         <Typography inline={true} variant="h3" style={cardStyle.row}>
           {this.props.channelState ? (
-            <span>{this.props.channelState.balanceWeiUser}</span>
+            <span>{this.props.channelState.balanceTokenUser}</span>
           ) : (
             <span> .00</span>
           )}
