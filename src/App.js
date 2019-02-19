@@ -13,6 +13,7 @@ import axios from "axios";
 import { Grid, Paper, withStyles } from "@material-ui/core";
 import AppBarComponent from "./components/AppBar";
 import SettingsCard from "./components/settingsCard";
+import ReceiveCard from "./components/receiveCard";
 
 export const store = createStore(setWallet, null);
 
@@ -407,6 +408,7 @@ class App extends React.Component {
                 <Route exact path="/" render={() => <Home address={address} channelState={channelState} publicUrl={publicUrl} />} />
                 <Route path="/deposit" render={() => <DepositCard address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} />} />
                 <Route path="/settings" render={() => <SettingsCard />} />
+                <Route path="/receive" render={() => <ReceiveCard address={address} channelState={channelState} publicUrl={publicUrl} />} />
               </Paper>
             </Grid>
           </Grid>
