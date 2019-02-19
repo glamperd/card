@@ -12,6 +12,7 @@ import { createWalletFromMnemonic } from "./walletGen";
 import axios from "axios";
 import { Grid, Paper, withStyles } from "@material-ui/core";
 import AppBarComponent from "./components/AppBar";
+import SettingsCard from "./components/SettingsCard";
 
 export const store = createStore(setWallet, null);
 
@@ -397,6 +398,7 @@ class App extends React.Component {
                 <AppBarComponent address={address} />
                 <Route exact path="/" render={() => <Home address={address} channelState={channelState} publicUrl={publicUrl} />} />
                 <Route path="/deposit" render={() => <DepositCard address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} />} />
+                <Route path="/settings" render={() => <SettingsCard />} />
               </Paper>
             </Grid>
           </Grid>
