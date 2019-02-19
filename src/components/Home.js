@@ -418,7 +418,6 @@ class Home extends React.Component {
   render() {
     const { modals } = this.state;
     const { classes } = this.props;
-    console.log('styles: ', classes);
     return (
       <div className="app">
         <Grid container spacing={24} direction="row" justify="center" alignItems="center">
