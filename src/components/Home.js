@@ -6,18 +6,12 @@ import CashOutCard from "./cashOutCard";
 import ChannelCard from "./channelCard";
 import QRScan from "./qrScan";
 import SettingsCard from "./settingsCard";
-import Tooltip from "@material-ui/core/Tooltip";
 import QRIcon from "mdi-material-ui/QrcodeScan";
-import Toolbar from "@material-ui/core/Toolbar";
 import SendIcon from "@material-ui/icons/Send";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
-import IconButton from "@material-ui/core/IconButton";
 import Modal from "@material-ui/core/Modal";
 import Button from "@material-ui/core/Button";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-import { Typography, Fab, Card, Grid, Paper, withStyles } from "@material-ui/core";
-import DepositCard from "./DepositCard";
-import AppBar from "./AppBar";
+import { Fab, Grid, withStyles } from "@material-ui/core";
 
 const styles = theme => ({
   paper: {
