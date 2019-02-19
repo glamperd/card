@@ -11,7 +11,7 @@ import IconButton from "@material-ui/core/IconButton";
 import Popover from "@material-ui/core/Popover";
 import Typography from "@material-ui/core/Typography";
 import CopyIcon from "@material-ui/icons/FileCopy"
-import { store } from "../App.js";
+import { store } from "../App";
 import QRGenerate from "./qrGenerate"
 const Web3 = require("web3");
 const eth = require("ethers");
