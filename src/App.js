@@ -16,6 +16,7 @@ import CashOutCard from "./components/cashOutCard";
 import ChannelCard from "./components/channelCard";
 import QRScan from "./components/qrScan";
 import SettingsCard from "./components/settingsCard";
+import DepositCard from "./components/depositCard";
 import Tooltip from "@material-ui/core/Tooltip";
 import AppBar from "@material-ui/core/AppBar";
 import QRIcon from "mdi-material-ui/QrcodeScan"
@@ -83,10 +84,11 @@ class App extends Component {
         send: false,
         cashOut: false,
         scan: false,
+        deposit: false,
       },
       hubWalletAddress,
       channelManagerAddress,
-      authorized: "false",
+      authorized: false,
       approvalWeiUser: "10000",
       channelState: null,
       exchangeRate: "0.00",
@@ -424,11 +426,18 @@ class App extends Component {
   }
 
   render() {
+    const { modals } = this.state
     return (
       <div className="app">
         <AppBar position="sticky" elevation="0" color="secondary" style={{paddingTop: "2%"}}>
           <Toolbar>
-            <img src={blockies.createDataURL({seed: this.state.address})} alt={noAddrBlocky} style={{ width: "40px", height: "40px", marginTop: "5px" }} />
+            <IconButton
+              color="inherit"
+              variant="contained"
+              onClick={() => this.setState({ modals: { ...modals, deposit: true} })}
+            >
+              <img src={blockies.createDataURL({seed: this.state.address})} alt={noAddrBlocky} style={{ width: "40px", height: "40px", marginTop: "5px" }} />
+            </IconButton>
             <Typography variant="body2" noWrap style={{ width: "75px", marginLeft: "6px", color: "#c1c6ce"}}>
               <CopyToClipboard  
                 text={(this.state.address)}
@@ -446,16 +455,24 @@ class App extends Component {
             <IconButton
               color="inherit"
               variant="contained"
-              onClick={() => this.setState({modals: {settings: true}})}
+              onClick={() => this.setState({ modals: { ...modals, settings: true} })}
             >
               <SettingIcon />
             </IconButton>
           </Toolbar>
         </AppBar>
         <Modal
+            id="deposit"
+            open={this.state.modals.deposit}
+            onClose={() => this.setState({ modals: { ...modals, deposit: false} })}
+            style={{display: "flex", justifyContent:"center", alignItems:"center"}}
+          >
+            <DepositCard address={this.state.address}/>
+        </Modal>
+        <Modal
             id="settings"
             open={this.state.modals.settings}
-            onClose={() => this.setState({modals: {settings: false}})}
+            onClose={() => this.setState({ modals: { ...modals, settings: false} })}
             style={{display: "flex", justifyContent:"center", alignItems:"center"}}
           >
             <SettingsCard />
@@ -479,14 +496,14 @@ class App extends Component {
                 backgroundColor: "#fca311",
                 size: "large",
               }}
-              onClick={() => this.setState({modals: {scan: true}})}
+              onClick={() => this.setState({ modals: { ...modals, scan: true} })}
             >
             <QRIcon/>
             </Fab>
             <Modal
               id="qrscan"
               open={this.state.modals.scan}
-              onClose={() => this.setState({modals: {scan: false}})}
+              onClose={() => this.setState({ modals: { ...modals, scan: false} })}
               style={{ width: "full", height: "full" }}
             >
               <QRScan
@@ -505,14 +522,14 @@ class App extends Component {
               }}
               variant="contained"
               size="large"
-              onClick={() => this.setState({modals: {receive: true}})}
+              onClick={() => this.setState({ modals: { ...modals, receive: true} })}
             >
               Receive
             <ReceiveIcon style={{marginLeft: "5px"}}/>
             </Button>
             <Modal
               open={this.state.modals.receive} 
-              onClose={() => this.setState({modals: {receive: false}})}
+              onClose={() => this.setState({ modals: { ...modals, receive: false} })}
               style={{display: "flex", justifyContent:"center", alignItems:"center"}}
             >
               <ReceiveCard
@@ -530,14 +547,14 @@ class App extends Component {
               }}
               size="large"
               variant="contained"
-              onClick={() => this.setState({modals: {send: true}})}
+              onClick={() => this.setState({ modals: { ...modals, send: true} })}
             >
               Send
               <SendIcon style={{marginLeft: "5px"}}/>
             </Button>
             <Modal
               open={this.state.modals.send} 
-              onClose={() => this.setState({modals: {send: false}})}
+              onClose={() => this.setState({ modals: { ...modals, send: false} })}
               style={{display: "flex", justifyContent:"center", alignItems:"center"}}
             >
               <SendCard
@@ -551,13 +568,13 @@ class App extends Component {
             color="primary"
             variant="outlined"
             size="large"
-            onClick={() => this.setState({modals: {cashOut: true}})}
+            onClick={() => this.setState({ modals: { ...modals, cashOut: true} })}
           >
             Cash Out
           </Button>
           <Modal
             open={this.state.modals.cashOut}
-            onClose={() => this.setState({modals: {cashOut: false}})}
+            onClose={() => this.setState({ modals: { ...modals, cashOut: false} })}
             style={{display: "flex", justifyContent:"center", alignItems:"center"}}
           >
             <CashOutCard/>
