@@ -497,7 +497,9 @@ class App extends Component {
               alignItems: "center"
             }}
           >
-            <DepositCard address={this.state.address} />
+            <div>
+              <DepositCard address={this.state.address} />
+            </div>
           </Modal>
           <Modal
             id="settings"
