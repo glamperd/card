@@ -10,19 +10,20 @@ import HelpIcon from "@material-ui/icons/Help";
 import IconButton from "@material-ui/core/IconButton";
 import Popover from "@material-ui/core/Popover";
 import Typography from "@material-ui/core/Typography";
-import CopyIcon from "@material-ui/icons/FileCopy"
-import { store } from "../App.js";
-import QRGenerate from "./qrGenerate"
+import CopyIcon from "@material-ui/icons/FileCopy";
+import Grid from "@material-ui/core/Grid";
+import CardContent from "@material-ui/core/Grid";
+import QRGenerate from "./qrGenerate";
 const Web3 = require("web3");
 const eth = require("ethers");
 
 class DepositCard extends Component {
-  constructor(props){
-    super(props)
+  constructor(props) {
+    super(props);
 
     this.state = {
       value: "0",
-      error: null,
+      error: null
     };
   }
 
@@ -40,39 +41,47 @@ class DepositCard extends Component {
       },
       icon: {
         width: "40px",
-        height: "40px",
+        height: "40px"
       },
       input: {
-        width: "100%"
+        width: "100%",
+        padding: "2% 2% 2% 2%"
       },
       row: {
         width: "100%",
-        textAlign: "center"
+        textAlign: "center",
+        padding: "2% 2% 2% 2%"
       }
     };
 
     return (
       <Card style={cardStyle.card}>
-        <div style={cardStyle.row}>
-          <DepositIcon style={cardStyle.icon} />
-        </div>
-        <QRGenerate
-          value={this.props.address}
-        />
-        <Button variant="outlined">
-          <CopyIcon style={{marginRight: "5px"}} />
-          <CopyToClipboard text={(this.props.address)}>
-            <Typography noWrap variant="body1">
-              <Tooltip
-                disableFocusListener
-                disableTouchListener
-                title="Click to Copy"
-              >
-                <span>{this.props.address}</span>
-              </Tooltip>
-            </Typography>
-          </CopyToClipboard>
-        </Button>
+        <CardContent>
+          <Grid container spacing={24} direction="column" alignItems="center">
+            <Grid item xs={12}>
+              <DepositIcon style={cardStyle.icon} />
+            </Grid>
+            <Grid item xs={12}>
+              <QRGenerate value={this.props.address} />
+            </Grid>
+            <Grid item xs={12}>
+              <Button variant="outlined">
+                <CopyIcon style={{ marginRight: "5px" }} />
+                <CopyToClipboard text={this.props.address}>
+                  <Typography noWrap variant="body1">
+                    <Tooltip
+                      disableFocusListener
+                      disableTouchListener
+                      title="Click to Copy"
+                    >
+                      <span>{this.props.address}</span>
+                    </Tooltip>
+                  </Typography>
+                </CopyToClipboard>
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
       </Card>
     );
   }
