@@ -1,15 +1,10 @@
 .app {
   flex-grow: 1;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
   font-family: "proxima-nova", sans-serif;
   /* background-color: #fcfbf3; */
   /* background-color:  //#c8d0de */
   /* background-color: #F4F5F7; */
   background-color: #FFF;
-  height: "100%"
 }
 
 .row {

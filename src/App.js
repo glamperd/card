@@ -53,6 +53,14 @@ const opts = {
 const styles = theme => ({
   paper: {
     paddingBottom: theme.spacing.unit * 2
+  },
+  app: {
+    flexGrow: 1,
+    fontFamily: ["proxima-nova", "sans-serif"],
+    /* background-color: #fcfbf3; */
+    /* background-color:  //#c8d0de */
+    /* background-color: #F4F5F7; */
+    backgroundColor: "#FFF"
   }
 });
 
@@ -391,7 +399,7 @@ class App extends React.Component {
     const { classes } = this.props;
     return (
       <Router>
-        <div className="app">
+        <div className={classes.app}>
           <Grid container spacing={24} direction="row" justify="center" alignItems="center">
             <Grid item xs={6}>
               <Paper className={classes.paper}>

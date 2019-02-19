@@ -33,7 +33,7 @@ class DepositCard extends Component {
     const { classes, address } = this.props;
 
     return (
-      <Grid container spacing={24} direction="column" alignItems="center">
+      <Grid container spacing={24} direction="column" alignItems="center" justify="center">
         <Grid item xs={12}>
           <DepositIcon className={classes.icon} />
         </Grid>

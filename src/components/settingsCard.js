@@ -1,10 +1,30 @@
 import React, { Component } from "react";
-import { Button, Card, Select, MenuItem, Typography, Tooltip, TextField, InputAdornment } from "@material-ui/core";
+import { Button, Grid, Select, MenuItem, Typography, Tooltip, TextField, InputAdornment, withStyles } from "@material-ui/core";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import CopyIcon from "@material-ui/icons/FileCopy";
 import SubmitIcon from "@material-ui/icons/ArrowRight";
 import { createWallet, createWalletFromMnemonic } from "../walletGen";
 import SettingsIcon from "@material-ui/icons/Settings";
+
+const styles = {
+  card: {
+    display: "flex",
+    flexWrap: "wrap",
+    flexDirection: "row",
+    width: "100%",
+    height: "70%",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    padding: "4% 4% 4% 4%"
+  },
+  icon: {
+    width: "40px",
+    height: "40px"
+  },
+  input: {
+    width: "100%"
+  }
+};
 
 class SettingsCard extends Component {
   constructor(props) {
@@ -13,7 +33,7 @@ class SettingsCard extends Component {
     this.state = {
       showRecovery: false,
       inputRecovery: false,
-      rpc: null,
+      rpc: "LOCALHOST",
       mnemonic: null
     };
   }
@@ -41,120 +61,97 @@ class SettingsCard extends Component {
   }
 
   render() {
-    const cardStyle = {
-      card: {
-        display: "flex",
-        flexWrap: "wrap",
-        flexDirection: "row",
-        width: "100%",
-        height: "70%",
-        justifyContent: "center",
-        backgroundColor: "#FFFFFF",
-        padding: "4% 4% 4% 4%"
-      },
-      icon: {
-        width: "40px",
-        height: "40px"
-      },
-      input: {
-        width: "100%"
-      },
-      button: {
-        height: "40px",
-        width: "80%",
-        marginLeft: "5px",
-        marginRight: "5px"
-      }
-    };
-
+    const { classes } = this.props;
+    // TODO: WHY ISNT THE JUSTIFY CENTER WORKING???
     return (
-      <Card style={cardStyle.card}>
-        <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-          <SettingsIcon style={cardStyle.icon} />
-        </div>
-        <Select
-          value={this.state.rpc}
-          onChange={event => this.updateRPC(event)}
-          style={{
-            height: "40px",
-            width: "70%",
-            marginLeft: "5px",
-            marginRight: "5px",
-            border: "1px solid #3CB8F2",
-            textAlign: "center",
-            paddingLeft: "10%",
-            color: "#3CB8F2",
-            borderRadius: "5px"
-          }}
-          disableUnderline
-          IconComponent={() => null}
-        >
-          <MenuItem value={"MAINNET"}>Mainnet</MenuItem>
-          <MenuItem value={"RINKEBY"}>Rinkeby</MenuItem>
-          <MenuItem value={"LOCALHOST"}>Localhost</MenuItem>
-        </Select>
-        {!this.state.showRecovery ? (
-          <Button style={cardStyle.button} variant="outlined" color="primary" size="large" onClick={() => this.setState({ showRecovery: true })}>
-            Show Mnemonic
-          </Button>
-        ) : (
-          <Button style={cardStyle.button} variant="outlined" color="primary" size="large" onClick={() => this.setState({ showRecovery: true })}>
-            <CopyIcon style={{ marginRight: "5px" }} />
-            <CopyToClipboard text={localStorage.getItem("mnemonic")} color="primary">
-              <Typography noWrap variant="body1" color="primary">
-                <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
-                  <span>{localStorage.getItem("mnemonic")}</span>
-                </Tooltip>
-              </Typography>
-            </CopyToClipboard>
-          </Button>
-        )}
-        {!this.state.inputRecovery ? (
-          <Button style={cardStyle.button} color="primary" variant="outlined" size="large" onClick={() => this.setState({ inputRecovery: true })}>
-            Import Wallet
-          </Button>
-        ) : (
-          <TextField
-            style={{ height: "40px", width: "80%" }}
-            color="primary"
-            variant="outlined"
-            size="large"
-            placeholder="Enter mnemonic and submmit"
-            value={this.state.mnemonic}
-            onChange={event => this.setState({ mnemonic: event.target.value })}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    style={{ color: "#FFF", marginRight: "-10%" }}
-                    onClick={() => this.recoverAddressFromMnemonic()}
-                  >
-                    <SubmitIcon />
-                  </Button>
-                </InputAdornment>
-              )
+      <Grid container spacing={24} direction="column" alignItems="stretch" justify="center">
+        <Grid item xs={8}>
+          <SettingsIcon className={classes.icon} />
+        </Grid>
+        <Grid item xs={8}>
+          <Select
+            fullWidth
+            value={this.state.rpc}
+            onChange={event => this.updateRPC(event)}
+            style={{
+              border: "1px solid #3CB8F2",
+              color: "#3CB8F2",
             }}
-          />
-        )}
-        <Button
-          style={{
-            background: "#FFF",
-            border: "1px solid #F22424",
-            color: "#F22424",
-            height: 40,
-            padding: "0 30px",
-            width: "80%"
-          }}
-          size="large"
-          onClick={() => this.generateNewAddress()}
-        >
-          Burn Wallet
-        </Button>
-      </Card>
+            disableUnderline
+            IconComponent={() => null}
+          >
+            <MenuItem value={"MAINNET"}>Mainnet</MenuItem>
+            <MenuItem value={"RINKEBY"}>Rinkeby</MenuItem>
+            <MenuItem value={"LOCALHOST"}>Localhost</MenuItem>
+          </Select>
+        </Grid>
+        <Grid item xs={8}>
+          {!this.state.showRecovery ? (
+            <Button fullWidth className={classes.button} variant="outlined" color="primary" size="large" onClick={() => this.setState({ showRecovery: true })}>
+              Show Mnemonic
+            </Button>
+          ) : (
+            <Button fullWidth className={classes.button} variant="outlined" color="primary" size="large" onClick={() => this.setState({ showRecovery: true })}>
+              <CopyIcon style={{ marginRight: "5px" }} />
+              <CopyToClipboard text={localStorage.getItem("mnemonic")} color="primary">
+                <Typography noWrap variant="body1" color="primary">
+                  <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
+                    <span>{localStorage.getItem("mnemonic")}</span>
+                  </Tooltip>
+                </Typography>
+              </CopyToClipboard>
+            </Button>
+          )}
+        </Grid>
+        <Grid item xs={8}>
+          {!this.state.inputRecovery ? (
+            <Button fullWidth className={classes.button} color="primary" variant="outlined" size="large" onClick={() => this.setState({ inputRecovery: true })}>
+              Import Wallet
+            </Button>
+          ) : (
+            <TextField
+              style={{ height: "40px", width: "80%" }}
+              color="primary"
+              variant="outlined"
+              size="large"
+              placeholder="Enter mnemonic and submmit"
+              value={this.state.mnemonic}
+              onChange={event => this.setState({ mnemonic: event.target.value })}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="primary"
+                      style={{ color: "#FFF", marginRight: "-10%" }}
+                      onClick={() => this.recoverAddressFromMnemonic()}
+                    >
+                      <SubmitIcon />
+                    </Button>
+                  </InputAdornment>
+                )
+              }}
+            />
+          )}
+        </Grid>
+        <Grid item xs={8}>
+          <Button
+            fullWidth
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424"
+            }}
+            size="large"
+            onClick={() => this.generateNewAddress()}
+          >
+            Burn Wallet
+          </Button>
+        </Grid>
+      </Grid>
     );
   }
 }
 
-export default SettingsCard;
+export default withStyles(styles)(SettingsCard);
