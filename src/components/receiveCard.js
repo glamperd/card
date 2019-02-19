@@ -21,31 +21,17 @@ class ReceiveCard extends Component {
     super(props)
 
     this.state = {
-      value: 0,
+      value: "0",
       error: null
     };
   }
 
   async updateDepositHandler(evt) {
-    var value = evt.target.value;
     this.setState({
-      displayVal: evt.target.value
+      value: evt.target.value
     });
-    if (!this.state.checkedB) {
-      await this.setState(oldState => {
-        oldState.depositVal.amountWei = value;
-        oldState.depositVal.amountToken = "0"
-        return oldState;
-      });
-    } else if (this.state.checkedB) {
-      await this.setState(oldState => {
-        oldState.depositVal.amountToken = value;
-        oldState.depositVal.amountWei = "0"
-        return oldState;
-      });
-    }
     console.log(
-      `Updated depositVal: ${JSON.stringify(this.state.depositVal, null, 2)}`
+      `Updated value: ${this.state.value}`
     );
   }
 
