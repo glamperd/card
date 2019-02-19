@@ -50,15 +50,15 @@ class CashOutCard extends Component {
     console.log(`Updated withdrawalVal: ${JSON.stringify(this.state.withdrawalVal, null, 2)}`);
   }
 
-  async updateRecipientHandler(evt) {
-    var value = evt.target.value;
+  async updateRecipientHandler(value) {
     this.setState({
-      recipientDisplayVal: evt.target.value
+      recipientDisplayVal: value
     });
     await this.setState(oldState => {
       oldState.withdrawalVal.recipient = value;
       return oldState;
     });
+    this.setState({scan: false})
     console.log(`Updated recipient: ${JSON.stringify(this.state.withdrawalVal.recipient, null, 2)}`);
   }
 
@@ -157,7 +157,7 @@ class CashOutCard extends Component {
           label="Address"
           placeholder="0x0..."
           value={this.state.recipientDisplayVal}
-          onChange={evt => this.updateRecipientHandler(evt)}
+          onChange={evt => this.updateRecipientHandler(evt.target.value)}
           margin="normal"
           variant="outlined"
           required
@@ -170,7 +170,7 @@ class CashOutCard extends Component {
                   <Button
                     variant="contained"
                     color="primary"
-                    style={{color: "#FFF"}}
+                    style={{color: "primary"}}
                     onClick={() => this.setState({scan: true})}
                   >
                     <QRIcon />
@@ -186,7 +186,9 @@ class CashOutCard extends Component {
           onClose={() => this.setState({scan: false})}
           style={{ width: "full", height: "full" }}
         >
-          <QRScan />
+          <QRScan 
+            handleResult = {this.updateRecipientHandler.bind(this)} 
+          />
         </Modal>
         <TextField
           id="outlined-with-placeholder"
@@ -194,7 +196,7 @@ class CashOutCard extends Component {
           variant="outlined"
           InputProps={{textAlign: "center"}}
           disabled
-          value="$100/Eth"
+          value={this.props.exchangeRate}
         />
         <div>
           <Button
