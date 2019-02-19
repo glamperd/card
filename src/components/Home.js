@@ -489,7 +489,7 @@ export default class Home extends React.Component {
           }}
         >
           <div>
-            <DepositCard address={this.state.address} />
+            <DepositCard address={this.state.address} minDepositWei={DEPOSIT_MINIMUM_WEI.toString()} />
           </div>
         </Modal>
         <Modal
