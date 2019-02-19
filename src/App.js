@@ -49,6 +49,7 @@ const providerUrl = process.env.REACT_APP_ETHPROVIDER_URL.toLowerCase()
 const tokenAddress = process.env.REACT_APP_TOKEN_ADDRESS.toLowerCase();
 const hubWalletAddress = process.env.REACT_APP_HUB_WALLET_ADDRESS.toLowerCase();
 const channelManagerAddress = process.env.REACT_APP_CHANNEL_MANAGER_ADDRESS.toLowerCase();
+const publicUrl = process.env.REACT_APP_PUBLIC_URL.toLowerCase();
 
 console.log(`Using token ${tokenAddress} with abi: ${tokenAbi}`)
 
@@ -91,6 +92,10 @@ class App extends Component {
       exchangeRate: "0.00",
       interval: null,
       connextState: null,
+      sendScanArgs: {
+        amount: null,
+        recipient: null
+      }
     };
   }
 
@@ -260,8 +265,6 @@ class App extends Component {
       // only proceed with deposit request if you can deposit
       if (!connextState || !connextState.runtime.canDeposit) {
         console.log("Cannot deposit")
-        console.log(connextState)
-        console.log(connextState.runtime.canDeposit)
         return
       }
 
@@ -407,6 +410,19 @@ class App extends Component {
     console.log(`Sent tx: ${typeof sentTx} with keys ${Object.keys(sentTx)}`);
   }
 
+  scanQRCode(data) {
+    data = data.split("?")
+    if(data[0] == publicUrl) {
+      let temp = data[1].split("&")
+      let amount = temp[0].split("=")[1]
+      let recipient = temp[1].split("=")[1]
+      this.setState({sendScanArgs: {amount, recipient}})
+      this.setState({modals: {send: true}})
+    } else {
+      console.log("incorrect site")
+    }
+  }
+
   render() {
     return (
       <div className="app">
@@ -473,7 +489,9 @@ class App extends Component {
               onClose={() => this.setState({modals: {scan: false}})}
               style={{ width: "full", height: "full" }}
             >
-              <QRScan/>
+              <QRScan
+                handleResult={this.scanQRCode.bind(this)}
+              />
             </Modal>
           </div>
         </div>
@@ -499,6 +517,7 @@ class App extends Component {
             >
               <ReceiveCard
                 address={this.state.address}
+                publicUrl={publicUrl}
               />
             </Modal>
           </div>
@@ -521,7 +540,9 @@ class App extends Component {
               onClose={() => this.setState({modals: {send: false}})}
               style={{display: "flex", justifyContent:"center", alignItems:"center"}}
             >
-              <SendCard />
+              <SendCard
+                scanArgs={this.state.sendScanArgs}
+              />
             </Modal>
           </div>
         </div>

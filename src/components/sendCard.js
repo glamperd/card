@@ -35,6 +35,26 @@ class PayCard extends Component {
       balanceError: null,
       scan: false,
     };
+
+    if(this.props.scanArgs){
+      this.state = {
+        paymentVal: {
+          meta: {
+            purchaseId: "payment",
+            // memo: "",
+          },
+          payments: [
+            {
+              recipient: this.props.scanArgs.recipient,
+              amount: {
+                amountToken: this.props.scanArgs.amount,
+              },
+              type: "PT_CHANNEL"
+            }
+          ]
+        },
+      }
+    }
   }
 
   async updatePaymentHandler(value) {

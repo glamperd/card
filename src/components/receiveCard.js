@@ -20,11 +20,10 @@ class ReceiveCard extends Component {
   constructor(props){
     super(props)
 
-    const qrUrl = this.generateQrUrl("0")
     this.state = {
       value: "0",
       error: null,
-      qrUrl,
+      qrUrl: this.generateQrUrl("0")
     };
   }
 
@@ -44,8 +43,7 @@ class ReceiveCard extends Component {
     // and convert it to the url with
     // appropriate strings to prefill a send
     // modal state (recipient, amountToken)
-    // TODO: routing from this URL via send card?
-    const url = `${process.env.PUBLIC_URL}?amountToken=${value}&recipient=${this.props.address}`
+    const url = `${this.props.publicUrl}?amountToken=${value}&recipient=${this.props.address}`
     console.log('QR code url:', url)
     return url
   }
@@ -98,7 +96,7 @@ class ReceiveCard extends Component {
                 disableTouchListener
                 title="Click to Copy"
               >
-                <span>{this.props.address}</span>
+                <span>{this.state.qrUrl}</span>
               </Tooltip>
             </Typography>
           </CopyToClipboard>
