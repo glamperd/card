@@ -396,7 +396,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { address, channelState, publicUrl } = this.state;
+    const { address, channelState } = this.state;
     const { classes } = this.props;
     return (
       <Router>
