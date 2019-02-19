@@ -1,7 +1,5 @@
 import React from "react";
 import "../App.css";
-import ReceiveCard from "./receiveCard";
-import SendCard from "./sendCard";
 import CashOutCard from "./cashOutCard";
 import ChannelCard from "./channelCard";
 import QRScan from "./qrScan";
@@ -12,6 +10,7 @@ import ReceiveIcon from "@material-ui/icons/SaveAlt";
 import Modal from "@material-ui/core/Modal";
 import Button from "@material-ui/core/Button";
 import { Fab, Grid, withStyles } from "@material-ui/core";
+import { Link } from 'react-router-dom'
 
 const styles = theme => ({
   paper: {
@@ -99,7 +98,8 @@ class Home extends React.Component {
                   }}
                   variant="contained"
                   size="large"
-                  onClick={() => this.setState({ modals: { ...modals, receive: true } })}
+                  component={Link}
+                  to="/receive"
                 >
                   Receive
                   <ReceiveIcon style={{ marginLeft: "5px" }} />
