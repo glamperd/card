@@ -20,19 +20,34 @@ class ReceiveCard extends Component {
   constructor(props){
     super(props)
 
+    const qrUrl = this.generateQrUrl("0")
     this.state = {
       value: "0",
-      error: null
+      error: null,
+      qrUrl,
     };
   }
 
   async updateDepositHandler(evt) {
+    const qrUrl = this.generateQrUrl(evt.target.value)
     this.setState({
-      value: evt.target.value
+      value: evt.target.value,
+      qrUrl,
     });
     console.log(
       `Updated value: ${this.state.value}`
     );
+  }
+
+  generateQrUrl(value) {
+    // function should take a payment value
+    // and convert it to the url with
+    // appropriate strings to prefill a send
+    // modal state (recipient, amountToken)
+    // TODO: routing from this URL via send card?
+    const url = `${process.env.PUBLIC_URL}?amountToken=${value}&recipient=${this.props.address}`
+    console.log('QR code url:', url)
+    return url
   }
 
   render() {
@@ -72,7 +87,7 @@ class ReceiveCard extends Component {
           helperText={this.state.error}
         />
         <QRGenerate
-          value={this.props.address}
+          value={this.state.qrUrl}
         />
         <Button variant="outlined">
           <CopyIcon style={{marginRight: "5px"}} />
