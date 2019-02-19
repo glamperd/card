@@ -5,7 +5,7 @@ import SendCard from "./sendCard";
 import CashOutCard from "./cashOutCard";
 import ChannelCard from "./channelCard";
 import QRScan from "./qrScan";
-import SettingsCard from "./SettingsCard";
+import SettingsCard from "./settingsCard";
 import QRIcon from "mdi-material-ui/QrcodeScan";
 import SendIcon from "@material-ui/icons/Send";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
