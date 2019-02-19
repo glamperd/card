@@ -62,6 +62,19 @@ class DepositCard extends Component {
               <DepositIcon style={cardStyle.icon} />
             </Grid>
             <Grid item xs={12}>
+              <Typography variant="caption">
+                <Tooltip
+                  disableFocusListener
+                  disableTouchListener
+                  title="Because gas"
+                >
+                  <span>{`Deposit minimum ${
+                    this.props.minDepositWei
+                  } wei to card.`}</span>
+                </Tooltip>
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
               <QRGenerate value={this.props.address} />
             </Grid>
             <Grid item xs={12}>
