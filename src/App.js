@@ -27,6 +27,8 @@ import Button from "@material-ui/core/Button";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Typography, Fab, Card } from "@material-ui/core";
 import blockies from "ethereum-blockies-png";
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+
 const Web3 = require("web3");
 const Tx = require("ethereumjs-tx");
 const eth = require("ethers");
@@ -434,202 +436,60 @@ class App extends Component {
   render() {
     const { modals } = this.state;
     return (
-      <div className="app">
-        <AppBar
-          position="sticky"
-          elevation="0"
-          color="secondary"
-          style={{ paddingTop: "2%" }}
-        >
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              variant="contained"
-              onClick={() =>
-                this.setState({ modals: { ...modals, deposit: true } })
-              }
-            >
-              <img
-                src={blockies.createDataURL({ seed: this.state.address })}
-                alt={noAddrBlocky}
-                style={{ width: "40px", height: "40px", marginTop: "5px" }}
-              />
-            </IconButton>
-            <Typography
-              variant="body2"
-              noWrap
-              style={{ width: "75px", marginLeft: "6px", color: "#c1c6ce" }}
-            >
-              <CopyToClipboard text={this.state.address}>
-                <Tooltip
-                  disableFocusListener
-                  disableTouchListener
-                  title="Click to Copy"
-                >
-                  <span>{this.state.address}</span>
-                </Tooltip>
-              </CopyToClipboard>
-            </Typography>
-            <Typography variant="h6" style={{ flexGrow: 1 }} />
-            <IconButton
-              color="inherit"
-              variant="contained"
-              onClick={() =>
-                this.setState({ modals: { ...modals, settings: true } })
-              }
-            >
-              <SettingIcon />
-            </IconButton>
-          </Toolbar>
-        </AppBar>
-        <Modal
-          id="deposit"
-          open={this.state.modals.deposit}
-          onClose={() =>
-            this.setState({ modals: { ...modals, deposit: false } })
-          }
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <DepositCard address={this.state.address} />
-        </Modal>
-        <Modal
-          id="settings"
-          open={this.state.modals.settings}
-          onClose={() =>
-            this.setState({ modals: { ...modals, settings: false } })
-          }
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <SettingsCard />
-        </Modal>
-        <div className="row" style={{ marginBottom: "-7.5%" }}>
-          <div
-            className="column"
-            style={{ justifyContent: "space-between", flexGrow: 1 }}
+      <Router>
+        <div className="app">
+          <AppBar
+            position="sticky"
+            elevation="0"
+            color="secondary"
+            style={{ paddingTop: "2%" }}
           >
-            <ChannelCard
-              channelState={this.state.channelState}
-              address={this.state.address}
-            />
-          </div>
-        </div>
-        <div className="row">
-          <div
-            className="column"
-            style={{ marginRight: "5%", marginLeft: "80%" }}
-          >
-            <Fab
-              style={{
-                color: "#FFF",
-                backgroundColor: "#fca311",
-                size: "large"
-              }}
-              onClick={() =>
-                this.setState({ modals: { ...modals, scan: true } })
-              }
-            >
-              <QRIcon />
-            </Fab>
-            <Modal
-              id="qrscan"
-              open={this.state.modals.scan}
-              onClose={() =>
-                this.setState({ modals: { ...modals, scan: false } })
-              }
-              style={{ width: "full", height: "full" }}
-            >
-              <QRScan handleResult={this.scanQRCode.bind(this)} />
-            </Modal>
-          </div>
-        </div>
-        <div className="row" style={{ marginTop: "17.5%", marginBottom: "5%" }}>
-          <div className="column" style={{ marginLeft: "5%" }}>
-            <Button
-              style={{
-                marginRight: "5px",
-                color: "#FFF",
-                backgroundColor: "#FCA311"
-              }}
-              variant="contained"
-              size="large"
-              onClick={() =>
-                this.setState({ modals: { ...modals, receive: true } })
-              }
-            >
-              Receive
-              <ReceiveIcon style={{ marginLeft: "5px" }} />
-            </Button>
-            <Modal
-              open={this.state.modals.receive}
-              onClose={() =>
-                this.setState({ modals: { ...modals, receive: false } })
-              }
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-              <ReceiveCard address={this.state.address} publicUrl={publicUrl} />
-            </Modal>
-          </div>
-          <div className="column" style={{ marginRight: "5%" }}>
-            <Button
-              style={{
-                marginLeft: "5px",
-                color: "#FFF",
-                backgroundColor: "#FCA311"
-              }}
-              size="large"
-              variant="contained"
-              onClick={() =>
-                this.setState({ modals: { ...modals, send: true } })
-              }
-            >
-              Send
-              <SendIcon style={{ marginLeft: "5px" }} />
-            </Button>
-            <Modal
-              open={this.state.modals.send}
-              onClose={() =>
-                this.setState({ modals: { ...modals, send: false } })
-              }
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-              <SendCard scanArgs={this.state.sendScanArgs} />
-            </Modal>
-          </div>
-        </div>
-        <div
-          className="row"
-          style={{ paddingTop: "5%", justifyContent: "center" }}
-        >
-          <Button
-            color="primary"
-            variant="outlined"
-            size="large"
-            onClick={() =>
-              this.setState({ modals: { ...modals, cashOut: true } })
-            }
-          >
-            Cash Out
-          </Button>
+            <Toolbar>
+              <IconButton
+                color="inherit"
+                variant="contained"
+                onClick={() =>
+                  this.setState({ modals: { ...modals, deposit: true } })
+                }
+              >
+                <img
+                  src={blockies.createDataURL({ seed: this.state.address })}
+                  alt={noAddrBlocky}
+                  style={{ width: "40px", height: "40px", marginTop: "5px" }}
+                />
+              </IconButton>
+              <Typography
+                variant="body2"
+                noWrap
+                style={{ width: "75px", marginLeft: "6px", color: "#c1c6ce" }}
+              >
+                <CopyToClipboard text={this.state.address}>
+                  <Tooltip
+                    disableFocusListener
+                    disableTouchListener
+                    title="Click to Copy"
+                  >
+                    <span>{this.state.address}</span>
+                  </Tooltip>
+                </CopyToClipboard>
+              </Typography>
+              <Typography variant="h6" style={{ flexGrow: 1 }} />
+              <IconButton
+                color="inherit"
+                variant="contained"
+                onClick={() =>
+                  this.setState({ modals: { ...modals, settings: true } })
+                }
+              >
+                <SettingIcon />
+              </IconButton>
+            </Toolbar>
+          </AppBar>
           <Modal
-            open={this.state.modals.cashOut}
+            id="deposit"
+            open={this.state.modals.deposit}
             onClose={() =>
-              this.setState({ modals: { ...modals, cashOut: false } })
+              this.setState({ modals: { ...modals, deposit: false } })
             }
             style={{
               display: "flex",
@@ -637,10 +497,160 @@ class App extends Component {
               alignItems: "center"
             }}
           >
-            <CashOutCard />
+            <DepositCard address={this.state.address} />
           </Modal>
+          <Modal
+            id="settings"
+            open={this.state.modals.settings}
+            onClose={() =>
+              this.setState({ modals: { ...modals, settings: false } })
+            }
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            <SettingsCard />
+          </Modal>
+          <div className="row" style={{ marginBottom: "-7.5%" }}>
+            <div
+              className="column"
+              style={{ justifyContent: "space-between", flexGrow: 1 }}
+            >
+              <ChannelCard
+                channelState={this.state.channelState}
+                address={this.state.address}
+              />
+            </div>
+          </div>
+          <div className="row">
+            <div
+              className="column"
+              style={{ marginRight: "5%", marginLeft: "80%" }}
+            >
+              <Fab
+                style={{
+                  color: "#FFF",
+                  backgroundColor: "#fca311",
+                  size: "large"
+                }}
+                onClick={() =>
+                  this.setState({ modals: { ...modals, scan: true } })
+                }
+              >
+                <QRIcon />
+              </Fab>
+              <Modal
+                id="qrscan"
+                open={this.state.modals.scan}
+                onClose={() =>
+                  this.setState({ modals: { ...modals, scan: false } })
+                }
+                style={{ width: "full", height: "full" }}
+              >
+                <QRScan handleResult={this.scanQRCode.bind(this)} />
+              </Modal>
+            </div>
+          </div>
+          <div
+            className="row"
+            style={{ marginTop: "17.5%", marginBottom: "5%" }}
+          >
+            <div className="column" style={{ marginLeft: "5%" }}>
+              <Button
+                style={{
+                  marginRight: "5px",
+                  color: "#FFF",
+                  backgroundColor: "#FCA311"
+                }}
+                variant="contained"
+                size="large"
+                onClick={() =>
+                  this.setState({ modals: { ...modals, receive: true } })
+                }
+              >
+                Receive
+                <ReceiveIcon style={{ marginLeft: "5px" }} />
+              </Button>
+              <Modal
+                open={this.state.modals.receive}
+                onClose={() =>
+                  this.setState({ modals: { ...modals, receive: false } })
+                }
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center"
+                }}
+              >
+                <ReceiveCard
+                  address={this.state.address}
+                  publicUrl={publicUrl}
+                />
+              </Modal>
+            </div>
+            <div className="column" style={{ marginRight: "5%" }}>
+              <Button
+                style={{
+                  marginLeft: "5px",
+                  color: "#FFF",
+                  backgroundColor: "#FCA311"
+                }}
+                size="large"
+                variant="contained"
+                onClick={() =>
+                  this.setState({ modals: { ...modals, send: true } })
+                }
+              >
+                Send
+                <SendIcon style={{ marginLeft: "5px" }} />
+              </Button>
+              <Modal
+                open={this.state.modals.send}
+                onClose={() =>
+                  this.setState({ modals: { ...modals, send: false } })
+                }
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center"
+                }}
+              >
+                <SendCard scanArgs={this.state.sendScanArgs} />
+              </Modal>
+            </div>
+          </div>
+          <div
+            className="row"
+            style={{ paddingTop: "5%", justifyContent: "center" }}
+          >
+            <Button
+              color="primary"
+              variant="outlined"
+              size="large"
+              onClick={() =>
+                this.setState({ modals: { ...modals, cashOut: true } })
+              }
+            >
+              Cash Out
+            </Button>
+            <Modal
+              open={this.state.modals.cashOut}
+              onClose={() =>
+                this.setState({ modals: { ...modals, cashOut: false } })
+              }
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center"
+              }}
+            >
+              <CashOutCard />
+            </Modal>
+          </div>
         </div>
-      </div>
+      </Router>
     );
   }
 }
