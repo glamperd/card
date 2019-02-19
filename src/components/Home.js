@@ -494,76 +494,77 @@ class Home extends React.Component {
                   </Modal>
                 </div>
               </div>
-              <div className="row" style={{ marginTop: "17.5%", marginBottom: "5%" }}>
-                <div className="column" style={{ marginLeft: "5%" }}>
-                  <Button
-                    style={{
-                      marginRight: "5px",
-                      color: "#FFF",
-                      backgroundColor: "#FCA311"
-                    }}
-                    variant="contained"
-                    size="large"
-                    onClick={() => this.setState({ modals: { ...modals, receive: true } })}
-                  >
-                    Receive
-                    <ReceiveIcon style={{ marginLeft: "5px" }} />
+              <Grid container spacing={16} direction="column" alignItems="center" justify="center">
+                <Grid item xs={12}>
+                  <Grid container spacing={16} direction="row" alignItems="center" justify="center">
+                    <Button
+                      style={{
+                        marginRight: "5px",
+                        color: "#FFF",
+                        backgroundColor: "#FCA311"
+                      }}
+                      variant="contained"
+                      size="large"
+                      onClick={() => this.setState({ modals: { ...modals, receive: true } })}
+                    >
+                      Receive
+                      <ReceiveIcon style={{ marginLeft: "5px" }} />
+                    </Button>
+                    <Modal
+                      open={this.state.modals.receive}
+                      onClose={() => this.setState({ modals: { ...modals, receive: false } })}
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center"
+                      }}
+                    >
+                      <ReceiveCard address={this.state.address} publicUrl={publicUrl} />
+                    </Modal>
+
+                    <Button
+                      style={{
+                        marginLeft: "5px",
+                        color: "#FFF",
+                        backgroundColor: "#FCA311"
+                      }}
+                      size="large"
+                      variant="contained"
+                      onClick={() => this.setState({ modals: { ...modals, send: true } })}
+                    >
+                      Send
+                      <SendIcon style={{ marginLeft: "5px" }} />
+                    </Button>
+                    <Modal
+                      open={this.state.modals.send}
+                      onClose={() => this.setState({ modals: { ...modals, send: false } })}
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center"
+                      }}
+                    >
+                      <SendCard scanArgs={this.state.sendScanArgs} />
+                    </Modal>
+                  </Grid>
+                </Grid>
+                <Grid item xs={12}>
+                  <Button color="primary" variant="outlined" size="large" onClick={() => this.setState({ modals: { ...modals, cashOut: true } })}>
+                    Cash Out
                   </Button>
                   <Modal
-                    open={this.state.modals.receive}
-                    onClose={() => this.setState({ modals: { ...modals, receive: false } })}
+                    open={this.state.modals.cashOut}
+                    onClose={() => this.setState({ modals: { ...modals, cashOut: false } })}
                     style={{
                       display: "flex",
                       justifyContent: "center",
                       alignItems: "center"
                     }}
                   >
-                    <ReceiveCard address={this.state.address} publicUrl={publicUrl} />
+                    <CashOutCard />
                   </Modal>
-                </div>
-                <div className="column" style={{ marginRight: "5%" }}>
-                  <Button
-                    style={{
-                      marginLeft: "5px",
-                      color: "#FFF",
-                      backgroundColor: "#FCA311"
-                    }}
-                    size="large"
-                    variant="contained"
-                    onClick={() => this.setState({ modals: { ...modals, send: true } })}
-                  >
-                    Send
-                    <SendIcon style={{ marginLeft: "5px" }} />
-                  </Button>
-                  <Modal
-                    open={this.state.modals.send}
-                    onClose={() => this.setState({ modals: { ...modals, send: false } })}
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center"
-                    }}
-                  >
-                    <SendCard scanArgs={this.state.sendScanArgs} />
-                  </Modal>
-                </div>
-              </div>
-              <div className="row" style={{ paddingTop: "5%", justifyContent: "center" }}>
-                <Button color="primary" variant="outlined" size="large" onClick={() => this.setState({ modals: { ...modals, cashOut: true } })}>
-                  Cash Out
-                </Button>
-                <Modal
-                  open={this.state.modals.cashOut}
-                  onClose={() => this.setState({ modals: { ...modals, cashOut: false } })}
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center"
-                  }}
-                >
-                  <CashOutCard />
-                </Modal>
-              </div>
+                </Grid>
+              </Grid>
             </Paper>
           </Grid>
         </Grid>
