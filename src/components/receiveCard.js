@@ -5,13 +5,8 @@ import ReceiveIcon from "@material-ui/icons/SaveAlt";
 import TextField from "@material-ui/core/TextField";
 import Tooltip from "@material-ui/core/Tooltip";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import Switch from "@material-ui/core/Switch";
-import HelpIcon from "@material-ui/icons/Help";
-import IconButton from "@material-ui/core/IconButton";
-import Popover from "@material-ui/core/Popover";
 import Typography from "@material-ui/core/Typography";
 import CopyIcon from "@material-ui/icons/FileCopy"
-import { store } from "../App.js";
 import QRGenerate from "./qrGenerate"
 const Web3 = require("web3");
 const eth = require("ethers");
@@ -27,7 +22,7 @@ class ReceiveCard extends Component {
     };
   }
 
-  async updateDepositHandler(evt) {
+  async updatePaymentHandler(evt) {
     const qrUrl = this.generateQrUrl(evt.target.value)
     this.setState({
       value: evt.target.value,
@@ -80,7 +75,7 @@ class ReceiveCard extends Component {
           type="number"
           margin="normal"
           variant="outlined"
-          onChange={evt => this.updateDepositHandler(evt)}
+          onChange={evt => this.updatePaymentHandler(evt)}
           error={this.state.error != null}
           helperText={this.state.error}
         />
