@@ -96,7 +96,7 @@ class ReceiveCard extends Component {
                 disableTouchListener
                 title="Click to Copy"
               >
-                <span>{this.props.address}</span>
+                <span>{this.state.qrUrl}</span>
               </Tooltip>
             </Typography>
           </CopyToClipboard>
