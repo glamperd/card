@@ -194,7 +194,7 @@ class CashOutCard extends Component {
           id="outlined-with-placeholder"
           label="Exchange Rate"
           variant="outlined"
-          InputProps={{textAlign: "center"}}
+          InputProps={{"text-align": "center"}}
           disabled
           value={this.props.exchangeRate}
         />

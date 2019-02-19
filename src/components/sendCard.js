@@ -9,6 +9,7 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
+import { emptyAddress } from "connext/dist/Utils";
 
 
 class PayCard extends Component {
@@ -23,9 +24,9 @@ class PayCard extends Component {
         },
         payments: [
           {
-            recipient: "0x0",
+            recipient: emptyAddress.substr(0, 4) + '...',
             amount: {
-              amountToken: "0"
+              amountToken: "0",
             },
             type: "PT_CHANNEL"
           }
@@ -36,7 +37,7 @@ class PayCard extends Component {
       scan: false,
     };
 
-    if(this.props.scanArgs){
+    if (this.props.scanArgs.recipient && this.props.scanArgs.amount) {
       this.state = {
         paymentVal: {
           meta: {
