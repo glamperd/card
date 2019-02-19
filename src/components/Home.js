@@ -115,7 +115,8 @@ class Home extends React.Component {
                   }}
                   size="large"
                   variant="contained"
-                  onClick={() => this.setState({ modals: { ...modals, send: true } })}
+                  component={Link}
+                  to="/send"
                 >
                   Send
                   <SendIcon style={{ marginLeft: "5px" }} />
