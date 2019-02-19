@@ -18,7 +18,8 @@ class PayCard extends Component {
     this.state = {
       paymentVal: {
         meta: {
-          purchaseId: "payment"
+          purchaseId: "payment",
+          // memo: "",
         },
         payments: [
           {
@@ -33,35 +34,20 @@ class PayCard extends Component {
       addressError: null,
       balanceError: null,
       scan: false,
-      recipientDisplayVal: "0x0.."
     };
   }
 
-  async updatePaymentHandler(evt) {
-    var value = evt.target.value;
-    this.setState({
-      displayVal: evt.target.value
+  async updatePaymentHandler(value) {
+    await this.setState(oldState => {
+      oldState.paymentVal.payments[0].amount.amountToken = value;
+      return oldState;
     });
-    if (!this.state.checkedB) {
-      await this.setState(oldState => {
-        oldState.paymentVal.payments[0].amount.amountToken = "0";
-        return oldState;
-      });
-    } else if (this.state.checkedB) {
-      await this.setState(oldState => {
-        oldState.paymentVal.payments[0].amount.amountWei = "0"
-        return oldState;
-      });
-    }
     console.log(
       `Updated paymentVal: ${JSON.stringify(this.state.paymentVal, null, 2)}`
     );
   }
 
   async updateRecipientHandler(value) {
-    this.setState({
-      recipientDisplayVal: value
-    });
     await this.setState(oldState => {
       oldState.paymentVal.payments[0].recipient = value;
       return oldState
@@ -134,8 +120,8 @@ class PayCard extends Component {
           label="Amount"
           placeholder="$0.00"
           required
-          value={this.state.amountToken}
-          onChange={evt => this.updatePaymentHandler(evt)}
+          value={this.state.paymentVal.payments[0].amount.amountToken}
+          onChange={evt => this.updatePaymentHandler(evt.target.value)}
           type="number"
           margin="normal"
           variant="outlined"
@@ -147,7 +133,7 @@ class PayCard extends Component {
           id="outlined-with-placeholder"
           label="Recipient"
           placeholder="0x0... (Optional for Link)"
-          value={this.state.recipientDisplayVal}
+          value={this.state.paymentVal.payments[0].recipient}
           onChange={evt => this.updateRecipientHandler(evt.target.value)}
           margin="normal"
           variant="outlined"
@@ -180,24 +166,26 @@ class PayCard extends Component {
             handleResult = {this.updateRecipientHandler.bind(this)} 
           />
         </Modal>
-        <TextField
+        {/* <TextField
           style={cardStyle.input}
           id="outlined-number"
           label="Message"
           placeholder="Groceries, etc. (Optional)"
-          value={this.state.displayVal}
-          // onChange={evt => this.updatePaymentHandler(evt)}
-          type="number"
+          value={this.state.paymentVal.meta.memo}
+          onChange={evt => this.setState({paymentVal: {meta: {memo: evt.target.value }}})}
+          type="string"
           margin="normal"
           variant="outlined"
           helperText={this.state.balanceError}
           error={this.state.balanceError != null}
-        />
+        /> */}
         <div>
           <Button
             style={cardStyle.button}
             variant="contained"
             size="large"
+            disabled
+            //TODO ENABLE THIS WHEN WE ADD FUNCTIONALITY
           >
             Link
             <LinkIcon style={{marginLeft: "5px"}}/>
@@ -206,6 +194,7 @@ class PayCard extends Component {
             style={cardStyle.button}
             variant="contained"
             size="large"
+            onClick={() => this.paymentHandler()}
           >
             Send
             <SendIcon style={{marginLeft: "5px"}}/>

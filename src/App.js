@@ -24,11 +24,8 @@ import SettingIcon from "@material-ui/icons/Settings"
 import SendIcon from "@material-ui/icons/Send"
 import ReceiveIcon from "@material-ui/icons/SaveAlt"
 import IconButton from "@material-ui/core/IconButton";
-import CopyIcon from "@material-ui/icons/FileCopy"
 import Modal from "@material-ui/core/Modal";
 import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
-import Popover from "@material-ui/core/Popover";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Typography, Fab, Card } from "@material-ui/core";
 import blockies from "ethereum-blockies-png"
@@ -263,6 +260,8 @@ class App extends Component {
       // only proceed with deposit request if you can deposit
       if (!connextState || !connextState.runtime.canDeposit) {
         console.log("Cannot deposit")
+        console.log(connextState)
+        console.log(connextState.runtime.canDeposit)
         return
       }
 
