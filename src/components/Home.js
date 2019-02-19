@@ -24,7 +24,7 @@ import IconButton from "@material-ui/core/IconButton";
 import Modal from "@material-ui/core/Modal";
 import Button from "@material-ui/core/Button";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import { Typography, Fab, Card } from "@material-ui/core";
+import { Typography, Fab, Card, Grid, Paper, withStyles } from "@material-ui/core";
 import blockies from "ethereum-blockies-png";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import { store } from "../App";
@@ -65,7 +65,13 @@ const opts = {
   withCredentials: true
 };
 
-export default class Home extends React.Component {
+const styles = theme => ({
+  paper: {
+    paddingBottom: theme.spacing.unit * 2
+  }
+});
+
+class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -165,9 +171,7 @@ export default class Home extends React.Component {
       const web3 = new Web3(windowProvider.currentProvider);
       // make sure you are on localhost
       if ((await web3.eth.net.getId()) != 4447) {
-        alert(
-          "Uh oh! Doesn't look like you're using a local chain, please make sure your Metamask is connected appropriately to localhost:8545."
-        );
+        alert("Uh oh! Doesn't look like you're using a local chain, please make sure your Metamask is connected appropriately to localhost:8545.");
       } else console.log("SETTING WEB3 ", web3);
       this.setState({ web3 });
       console.log("Set metamask as provider");
@@ -191,12 +195,7 @@ export default class Home extends React.Component {
   }
 
   async setConnext() {
-    const {
-      hubWalletAddress,
-      channelManagerAddress,
-      tokenContract,
-      address
-    } = this.state;
+    const { hubWalletAddress, channelManagerAddress, tokenContract, address } = this.state;
 
     const providerOpts = new ProviderOptions(store).approving();
     const provider = clientProvider(providerOpts);
@@ -249,9 +248,7 @@ export default class Home extends React.Component {
   }
 
   async getRate() {
-    const response = await fetch(
-      "https://api.coinbase.com/v2/exchange-rates?currency=ETH"
-    );
+    const response = await fetch("https://api.coinbase.com/v2/exchange-rates?currency=ETH");
     const json = await response.json();
     this.setState({
       exchangeRate: json.data.rates.USD
@@ -296,7 +293,7 @@ export default class Home extends React.Component {
         amountToken: tokenBalance
       };
 
-      if (actualDeposit.amountWei == "0" && actualDeposit.amountToken == "0") {
+      if (actualDeposit.amountWei === "0" && actualDeposit.amountToken === "0") {
         console.log(`Actual deposit is 0, not depositing.`);
         return;
       }
@@ -315,11 +312,7 @@ export default class Home extends React.Component {
     }
     const weiBalance = eth.utils.bigNumberify(channelState.balanceWeiUser);
     const tokenBalance = eth.utils.bigNumberify(channelState.balanceTokenUser);
-    if (
-      channelState &&
-      weiBalance.gt(eth.utils.bigNumberify("0")) &&
-      tokenBalance.lte(HUB_EXCHANGE_CEILING)
-    ) {
+    if (channelState && weiBalance.gt(eth.utils.bigNumberify("0")) && tokenBalance.lte(HUB_EXCHANGE_CEILING)) {
       console.log(`Exchanging ${channelState.balanceWeiUser} wei`);
       await this.state.connext.exchange(channelState.balanceWeiUser, "wei");
     }
@@ -333,11 +326,7 @@ export default class Home extends React.Component {
     const web3 = this.state.customWeb3;
     const challengeRes = await axios.post(`${hubUrl}/auth/challenge`, {}, opts);
 
-    const hash = web3.utils.sha3(
-      `${HASH_PREAMBLE} ${web3.utils.sha3(
-        challengeRes.data.nonce
-      )} ${web3.utils.sha3("localhost")}`
-    );
+    const hash = web3.utils.sha3(`${HASH_PREAMBLE} ${web3.utils.sha3(challengeRes.data.nonce)} ${web3.utils.sha3("localhost")}`);
 
     const signature = await web3.eth.personal.sign(hash, this.state.address);
 
@@ -387,9 +376,7 @@ export default class Home extends React.Component {
     const toApprove = this.state.approvalWeiUser;
     const toApproveBn = eth.utils.bigNumberify(toApprove);
     const nonce = await web3.eth.getTransactionCount(address);
-    const depositResGas = await tokenContract.methods
-      .approve(approveFor, toApproveBn)
-      .estimateGas();
+    const depositResGas = await tokenContract.methods.approve(approveFor, toApproveBn).estimateGas();
     let tx = new Tx({
       to: tokenAddress,
       nonce: nonce,
@@ -397,12 +384,7 @@ export default class Home extends React.Component {
       gasLimit: depositResGas * 2,
       data: tokenContract.methods.approve(approveFor, toApproveBn).encodeABI()
     });
-    tx.sign(
-      Buffer.from(
-        this.state.delegateSigner.getPrivateKeyString().substring(2),
-        "hex"
-      )
-    );
+    tx.sign(Buffer.from(this.state.delegateSigner.getPrivateKeyString().substring(2), "hex"));
     let signedTx = "0x" + tx.serialize().toString("hex");
     let sentTx = web3.eth.sendSignedTransaction(signedTx, err => {
       if (err) console.error(err);
@@ -435,208 +417,160 @@ export default class Home extends React.Component {
 
   render() {
     const { modals } = this.state;
+    const { classes } = this.props;
+    console.log('styles: ', classes);
     return (
       <div className="app">
-        <AppBar
-          position="sticky"
-          elevation="0"
-          color="secondary"
-          style={{ paddingTop: "2%" }}
-        >
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              variant="contained"
-              onClick={() =>
-                this.setState({ modals: { ...modals, deposit: true } })
-              }
-            >
-              <img
-                src={blockies.createDataURL({ seed: this.state.address })}
-                alt={noAddrBlocky}
-                style={{ width: "40px", height: "40px", marginTop: "5px" }}
-              />
-              <Typography
-                variant="body2"
-                noWrap
-                style={{ width: "75px", marginLeft: "6px", color: "#c1c6ce" }}
+        <Grid container spacing={24} direction="row" justify="center" alignItems="center">
+          <Grid item xs={4}>
+            <Paper className={classes.paper}>
+              <AppBar position="sticky" elevation="0" color="secondary" style={{ paddingTop: "2%" }}>
+                <Toolbar>
+                  <IconButton color="inherit" variant="contained" onClick={() => this.setState({ modals: { ...modals, deposit: true } })}>
+                    <img
+                      src={blockies.createDataURL({ seed: this.state.address })}
+                      alt={noAddrBlocky}
+                      style={{ width: "40px", height: "40px", marginTop: "5px" }}
+                    />
+                    <Typography variant="body2" noWrap style={{ width: "75px", marginLeft: "6px", color: "#c1c6ce" }}>
+                      <span>{this.state.address}</span>
+                    </Typography>
+                  </IconButton>
+                  <Typography variant="h6" style={{ flexGrow: 1 }} />
+                  <IconButton color="inherit" variant="contained" onClick={() => this.setState({ modals: { ...modals, settings: true } })}>
+                    <SettingIcon />
+                  </IconButton>
+                </Toolbar>
+              </AppBar>
+              <Modal
+                id="deposit"
+                open={this.state.modals.deposit}
+                onClose={() => this.setState({ modals: { ...modals, deposit: false } })}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center"
+                }}
               >
-                <span>{this.state.address}</span>
-              </Typography>
-            </IconButton>
-            <Typography variant="h6" style={{ flexGrow: 1 }} />
-            <IconButton
-              color="inherit"
-              variant="contained"
-              onClick={() =>
-                this.setState({ modals: { ...modals, settings: true } })
-              }
-            >
-              <SettingIcon />
-            </IconButton>
-          </Toolbar>
-        </AppBar>
-        <Modal
-          id="deposit"
-          open={this.state.modals.deposit}
-          onClose={() =>
-            this.setState({ modals: { ...modals, deposit: false } })
-          }
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <div>
-            <DepositCard address={this.state.address} />
-          </div>
-        </Modal>
-        <Modal
-          id="settings"
-          open={this.state.modals.settings}
-          onClose={() =>
-            this.setState({ modals: { ...modals, settings: false } })
-          }
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <SettingsCard />
-        </Modal>
-        <div className="row" style={{ marginBottom: "-7.5%" }}>
-          <div
-            className="column"
-            style={{ justifyContent: "space-between", flexGrow: 1 }}
-          >
-            <ChannelCard
-              channelState={this.state.channelState}
-              address={this.state.address}
-            />
-          </div>
-        </div>
-        <div className="row">
-          <div
-            className="column"
-            style={{ marginRight: "5%", marginLeft: "80%" }}
-          >
-            <Fab
-              style={{
-                color: "#FFF",
-                backgroundColor: "#fca311",
-                size: "large"
-              }}
-              onClick={() =>
-                this.setState({ modals: { ...modals, scan: true } })
-              }
-            >
-              <QRIcon />
-            </Fab>
-            <Modal
-              id="qrscan"
-              open={this.state.modals.scan}
-              onClose={() =>
-                this.setState({ modals: { ...modals, scan: false } })
-              }
-              style={{ width: "full", height: "full" }}
-            >
-              <QRScan handleResult={this.scanQRCode.bind(this)} />
-            </Modal>
-          </div>
-        </div>
-        <div className="row" style={{ marginTop: "17.5%", marginBottom: "5%" }}>
-          <div className="column" style={{ marginLeft: "5%" }}>
-            <Button
-              style={{
-                marginRight: "5px",
-                color: "#FFF",
-                backgroundColor: "#FCA311"
-              }}
-              variant="contained"
-              size="large"
-              onClick={() =>
-                this.setState({ modals: { ...modals, receive: true } })
-              }
-            >
-              Receive
-              <ReceiveIcon style={{ marginLeft: "5px" }} />
-            </Button>
-            <Modal
-              open={this.state.modals.receive}
-              onClose={() =>
-                this.setState({ modals: { ...modals, receive: false } })
-              }
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-              <ReceiveCard address={this.state.address} publicUrl={publicUrl} />
-            </Modal>
-          </div>
-          <div className="column" style={{ marginRight: "5%" }}>
-            <Button
-              style={{
-                marginLeft: "5px",
-                color: "#FFF",
-                backgroundColor: "#FCA311"
-              }}
-              size="large"
-              variant="contained"
-              onClick={() =>
-                this.setState({ modals: { ...modals, send: true } })
-              }
-            >
-              Send
-              <SendIcon style={{ marginLeft: "5px" }} />
-            </Button>
-            <Modal
-              open={this.state.modals.send}
-              onClose={() =>
-                this.setState({ modals: { ...modals, send: false } })
-              }
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-              <SendCard scanArgs={this.state.sendScanArgs} />
-            </Modal>
-          </div>
-        </div>
-        <div
-          className="row"
-          style={{ paddingTop: "5%", justifyContent: "center" }}
-        >
-          <Button
-            color="primary"
-            variant="outlined"
-            size="large"
-            onClick={() =>
-              this.setState({ modals: { ...modals, cashOut: true } })
-            }
-          >
-            Cash Out
-          </Button>
-          <Modal
-            open={this.state.modals.cashOut}
-            onClose={() =>
-              this.setState({ modals: { ...modals, cashOut: false } })
-            }
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-          >
-            <CashOutCard />
-          </Modal>
-        </div>
+                <div>
+                  <DepositCard address={this.state.address} />
+                </div>
+              </Modal>
+              <Modal
+                id="settings"
+                open={this.state.modals.settings}
+                onClose={() => this.setState({ modals: { ...modals, settings: false } })}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center"
+                }}
+              >
+                <SettingsCard />
+              </Modal>
+              <div className="row" style={{ marginBottom: "-7.5%" }}>
+                <div className="column" style={{ justifyContent: "space-between", flexGrow: 1 }}>
+                  <ChannelCard channelState={this.state.channelState} address={this.state.address} />
+                </div>
+              </div>
+              <div className="row">
+                <div className="column" style={{ marginRight: "5%", marginLeft: "80%" }}>
+                  <Fab
+                    style={{
+                      color: "#FFF",
+                      backgroundColor: "#fca311",
+                      size: "large"
+                    }}
+                    onClick={() => this.setState({ modals: { ...modals, scan: true } })}
+                  >
+                    <QRIcon />
+                  </Fab>
+                  <Modal
+                    id="qrscan"
+                    open={this.state.modals.scan}
+                    onClose={() => this.setState({ modals: { ...modals, scan: false } })}
+                    style={{ width: "full", height: "full" }}
+                  >
+                    <QRScan handleResult={this.scanQRCode.bind(this)} />
+                  </Modal>
+                </div>
+              </div>
+              <div className="row" style={{ marginTop: "17.5%", marginBottom: "5%" }}>
+                <div className="column" style={{ marginLeft: "5%" }}>
+                  <Button
+                    style={{
+                      marginRight: "5px",
+                      color: "#FFF",
+                      backgroundColor: "#FCA311"
+                    }}
+                    variant="contained"
+                    size="large"
+                    onClick={() => this.setState({ modals: { ...modals, receive: true } })}
+                  >
+                    Receive
+                    <ReceiveIcon style={{ marginLeft: "5px" }} />
+                  </Button>
+                  <Modal
+                    open={this.state.modals.receive}
+                    onClose={() => this.setState({ modals: { ...modals, receive: false } })}
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center"
+                    }}
+                  >
+                    <ReceiveCard address={this.state.address} publicUrl={publicUrl} />
+                  </Modal>
+                </div>
+                <div className="column" style={{ marginRight: "5%" }}>
+                  <Button
+                    style={{
+                      marginLeft: "5px",
+                      color: "#FFF",
+                      backgroundColor: "#FCA311"
+                    }}
+                    size="large"
+                    variant="contained"
+                    onClick={() => this.setState({ modals: { ...modals, send: true } })}
+                  >
+                    Send
+                    <SendIcon style={{ marginLeft: "5px" }} />
+                  </Button>
+                  <Modal
+                    open={this.state.modals.send}
+                    onClose={() => this.setState({ modals: { ...modals, send: false } })}
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center"
+                    }}
+                  >
+                    <SendCard scanArgs={this.state.sendScanArgs} />
+                  </Modal>
+                </div>
+              </div>
+              <div className="row" style={{ paddingTop: "5%", justifyContent: "center" }}>
+                <Button color="primary" variant="outlined" size="large" onClick={() => this.setState({ modals: { ...modals, cashOut: true } })}>
+                  Cash Out
+                </Button>
+                <Modal
+                  open={this.state.modals.cashOut}
+                  onClose={() => this.setState({ modals: { ...modals, cashOut: false } })}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center"
+                  }}
+                >
+                  <CashOutCard />
+                </Modal>
+              </div>
+            </Paper>
+          </Grid>
+        </Grid>
       </div>
     );
   }
 }
+
+export default withStyles(styles)(Home);
