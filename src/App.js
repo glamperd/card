@@ -56,7 +56,8 @@ const channelManagerAddress = process.env.REACT_APP_CHANNEL_MANAGER_ADDRESS.toLo
 console.log(`Using token ${tokenAddress} with abi: ${tokenAbi}`)
 
 const HASH_PREAMBLE = "SpankWallet authentication message:";
-const DEPOSIT_MINIMUM_WEI = eth.utils.parseEther("0.04"); // 40FIN
+const DEPOSIT_MINIMUM_WEI = eth.utils.parseEther("0.03"); // 30 FIN
+const HUB_EXCHANGE_CEILING = eth.utils.parseEther("69"); // 69 TST
 
 const opts = {
   headers: {
@@ -91,7 +92,8 @@ class App extends Component {
       approvalWeiUser: "10000",
       channelState: null,
       exchangeRate: "0.00",
-      interval: null
+      interval: null,
+      connextState: null,
     };
   }
 
@@ -213,14 +215,16 @@ class App extends Component {
 
   async pollConnextState() {
     let connext = this.state.connext
-    await connext.start(); // start polling
-    //console.log('Pollers started! Good morning :)')
+    // register listeners
     connext.on("onStateChange", state => {
       console.log("Connext state changed:", state);
       this.setState({
-        channelState: state.persistent.channel
+        channelState: state.persistent.channel,
+        connextState: state,
       });
     });
+    // start polling
+    await connext.start();
   }
 
   async poller() {
@@ -246,18 +250,22 @@ class App extends Component {
   }
 
   async autoDeposit() {
-    let address = this.state.address;
-    const tokenContract = this.state.tokenContract;
-    const balance = await this.state.web3.eth.getBalance(address);
+    const { address, tokenContract, web3, connextState } = this.state
+    const balance = await web3.eth.getBalance(address);
     const tokenBalance = await tokenContract.methods
       .balanceOf(address)
       .call();
-    console.log("Balance ", balance)
     if (balance !== "0" || tokenBalance !== "0") {
       if (eth.utils.bigNumberify(balance).lte(DEPOSIT_MINIMUM_WEI)) {
         // don't autodeposit anything under the threshold
         return;
       }
+      // only proceed with deposit request if you can deposit
+      if (!connextState || !connextState.runtime.canDeposit) {
+        console.log("Cannot deposit")
+        return
+      }
+
       // const sendArgs = {
       //   from: this.state.channelState.user
       // }
@@ -280,23 +288,36 @@ class App extends Component {
           .toString(),
         amountToken: tokenBalance
       };
+
+      if (actualDeposit.amountWei == "0" && actualDeposit.amountToken == "0") {
+        console.log(`Actual deposit is 0, not depositing.`)
+        return
+      }
+
       console.log(`Depositing: ${JSON.stringify(actualDeposit, null, 2)}`);
-      console.log("********", this.state.connext.opts.tokenAddress);
       let depositRes = await this.state.connext.deposit(actualDeposit);
       console.log(`Deposit Result: ${JSON.stringify(depositRes, null, 2)}`);
     }
   }
 
   async autoSwap() {
-    const channelState = this.state.channelState
-    if(channelState){
-      if(channelState.balanceWeiUser > 0) {
-        let exchangeRes = await this.state.connext.exchange(
-          channelState.balanceWeiUser,
-          "wei"
-        );
-        console.log("exchangeRes: ", exchangeRes)
-      }
+    const { channelState, connextState } = this.state 
+    if (!connextState || !connextState.runtime.canExchange) {
+      console.log('Cannot exchange')
+      return
+    }
+    const weiBalance = eth.utils.bigNumberify(channelState.balanceWeiUser)
+    const tokenBalance = eth.utils.bigNumberify(channelState.balanceTokenUser)
+    if (
+      channelState && 
+      weiBalance.gt(eth.utils.bigNumberify("0")) &&
+      tokenBalance.lte(HUB_EXCHANGE_CEILING)
+      ) {
+      console.log(`Exchanging ${channelState.balanceWeiUser} wei`)
+      await this.state.connext.exchange(
+        channelState.balanceWeiUser,
+        "wei"
+      );
     }
   }
 
