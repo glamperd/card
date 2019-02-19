@@ -4,7 +4,7 @@ import { setWallet } from "./utils/actions.js";
 import { createStore } from "redux";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 import Home from "./components/Home";
-import DepositCard from "./components/depositCard";
+import DepositCard from "./components/DepositCard";
 import { getConnextClient } from "connext/dist/Connext.js";
 import ProviderOptions from "./utils/ProviderOptions.ts";
 import clientProvider from "./utils/web3/clientProvider.ts";

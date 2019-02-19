@@ -16,7 +16,7 @@ import Modal from "@material-ui/core/Modal";
 import Button from "@material-ui/core/Button";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Typography, Fab, Card, Grid, Paper, withStyles } from "@material-ui/core";
-import DepositCard from "./depositCard";
+import DepositCard from "./DepositCard";
 import AppBar from "./AppBar";
 
 const styles = theme => ({

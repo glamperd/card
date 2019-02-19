@@ -28,7 +28,3 @@ const AppBarComponent = props => (
 );
 
 export default AppBarComponent
-
-//<IconButton color="inherit" variant="contained" onClick={() => this.setState({ modals: { ...modals, deposit: true } })}>
-
-//<IconButton color="inherit" variant="contained" onClick={() => this.setState({ modals: { ...modals, settings: true } })}></IconButton>
