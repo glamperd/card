@@ -119,7 +119,8 @@ class App extends Component {
         text: delegateSigner
       });
     } else {// Else, we wait for user to finish selecting through modal which will refresh page when done
-      this.setState({ modals: {keyGen: true} });
+      const { modals } = this.state
+      this.setState({ modals: { ...modals, keyGen: true } });
     }
   }
 
@@ -137,7 +138,8 @@ class App extends Component {
       await this.pollConnextState();
       await this.poller();
     } else {// Else, we wait for user to finish selecting through modal which will refresh page when done
-      this.setState({ modals: {keyGen: true} });
+      const { modals } = this.state
+      this.setState({ modals: { ...modals, keyGen: true } });
     }
   }
 
@@ -413,13 +415,14 @@ class App extends Component {
   }
 
   scanQRCode(data) {
+    const { modals, sendScanArgs } = this.state
     data = data.split("?")
     if(data[0] == publicUrl) {
       let temp = data[1].split("&")
       let amount = temp[0].split("=")[1]
       let recipient = temp[1].split("=")[1]
-      this.setState({sendScanArgs: {amount, recipient}})
-      this.setState({modals: {send: true}})
+      this.setState({sendScanArgs: {...sendScanArgs, amount, recipient}})
+      this.setState({modals: {...modals, send: true}})
     } else {
       console.log("incorrect site")
     }
