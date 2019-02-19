@@ -149,15 +149,15 @@ class App extends React.Component {
       }
     }
 
-    if (process.env.NODE_ENV != "production") {
+    if (process.env.NODE_ENV !== "production") {
       const windowProvider = window.web3;
       if (!windowProvider) {
         alert("Metamask is not detected.");
       }
       const web3 = new Web3(windowProvider.currentProvider);
       // make sure you are on localhost
-      if ((await web3.eth.net.getId()) != 4447) {
-        alert("Uh oh! Doesn't look like you're using a local chain, please make sure your Metamask is connected appropriately to localhost:8545.");
+      if ((await web3.eth.net.getId()) !== 4447) {
+        alert("Uh oh! Doesn't look like you're using a local chain, please make sure your Metamask is connected appropriately to localhost:8545. Network ID must be 4447");
       } else console.log("SETTING WEB3 ", web3);
       this.setState({ web3 });
       console.log("Set metamask as provider");
