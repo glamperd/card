@@ -28,6 +28,7 @@ import { Typography, Fab, Card } from "@material-ui/core";
 import blockies from "ethereum-blockies-png";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import { store } from "../App";
+import DepositCard from "./depositCard";
 
 const Web3 = require("web3");
 const Tx = require("ethereumjs-tx");
@@ -79,7 +80,8 @@ export default class Home extends React.Component {
         receive: false,
         send: false,
         cashOut: false,
-        scan: false
+        scan: false,
+        deposit: false,
       },
       hubWalletAddress,
       channelManagerAddress,
@@ -114,7 +116,8 @@ export default class Home extends React.Component {
       });
     } else {
       // Else, we wait for user to finish selecting through modal which will refresh page when done
-      this.setState({ modals: { keyGen: true } });
+      const { modals } = this.state
+      this.setState({ modals: { ...modals, keyGen: true } });
     }
   }
 
@@ -133,7 +136,8 @@ export default class Home extends React.Component {
       await this.poller();
     } else {
       // Else, we wait for user to finish selecting through modal which will refresh page when done
-      this.setState({ modals: { keyGen: true } });
+      const { modals } = this.state
+      this.setState({ modals: { ...modals, keyGen: true } });
     }
   }
 
@@ -395,39 +399,51 @@ export default class Home extends React.Component {
       let temp = data[1].split("&");
       let amount = temp[0].split("=")[1];
       let recipient = temp[1].split("=")[1];
-      this.setState({ sendScanArgs: { amount, recipient }, modals: { send: true } });
+      const { sendScanArgs, modals } = this.state
+      this.setState({ sendScanArgs: { ...sendScanArgs, amount, recipient }, modals: { ...modals, send: true } });
     } else {
       console.log("incorrect site");
     }
   }
 
   render() {
+    const { modals } = this.state 
     return (
       <div className="app">
         <AppBar position="sticky" elevation="0" color="secondary" style={{ paddingTop: "2%" }}>
           <Toolbar>
+            <IconButton color="inherit" variant="contained" onClick={() => this.setState({ modals: { ...modals, deposit: true } })}>
             <img
               src={blockies.createDataURL({ seed: this.state.address })}
               alt={noAddrBlocky}
               style={{ width: "40px", height: "40px", marginTop: "5px" }}
             />
             <Typography variant="body2" noWrap style={{ width: "75px", marginLeft: "6px", color: "#c1c6ce" }}>
-              <CopyToClipboard text={this.state.address}>
-                <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
                   <span>{this.state.address}</span>
-                </Tooltip>
-              </CopyToClipboard>
+
+
             </Typography>
+            </IconButton>
             <Typography variant="h6" style={{ flexGrow: 1 }} />
-            <IconButton color="inherit" variant="contained" onClick={() => this.setState({ modals: { settings: true } })}>
+            <IconButton color="inherit" variant="contained" onClick={() => this.setState({ modals: { ...modals, settings: true } })}>
               <SettingIcon />
             </IconButton>
           </Toolbar>
         </AppBar>
         <Modal
+          id="deposit"
+          open={this.state.modals.deposit}
+          onClose={() => this.setState({ modals: { ...modals, deposit: false } })}
+          style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+        >
+        <div>
+          <DepositCard address={this.state.address}/>
+          </div>
+        </Modal>
+        <Modal
           id="settings"
           open={this.state.modals.settings}
-          onClose={() => this.setState({ modals: { settings: false } })}
+          onClose={() => this.setState({ modals: { ...modals, settings: false } })}
           style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
         >
           <SettingsCard />
@@ -445,14 +461,14 @@ export default class Home extends React.Component {
                 backgroundColor: "#fca311",
                 size: "large"
               }}
-              onClick={() => this.setState({ modals: { scan: true } })}
+              onClick={() => this.setState({ modals: { ...modals, scan: true } })}
             >
               <QRIcon />
             </Fab>
             <Modal
               id="qrscan"
               open={this.state.modals.scan}
-              onClose={() => this.setState({ modals: { scan: false } })}
+              onClose={() => this.setState({ modals: { ...modals, scan: false } })}
               style={{ width: "full", height: "full" }}
             >
               <QRScan handleResult={this.scanQRCode.bind(this)} />
@@ -469,14 +485,14 @@ export default class Home extends React.Component {
               }}
               variant="contained"
               size="large"
-              onClick={() => this.setState({ modals: { receive: true } })}
+              onClick={() => this.setState({ modals: { ...modals, receive: true } })}
             >
               Receive
               <ReceiveIcon style={{ marginLeft: "5px" }} />
             </Button>
             <Modal
               open={this.state.modals.receive}
-              onClose={() => this.setState({ modals: { receive: false } })}
+              onClose={() => this.setState({ modals: { ...modals, receive: false } })}
               style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
             >
               <ReceiveCard address={this.state.address} publicUrl={publicUrl} />
@@ -491,14 +507,14 @@ export default class Home extends React.Component {
               }}
               size="large"
               variant="contained"
-              onClick={() => this.setState({ modals: { send: true } })}
+              onClick={() => this.setState({ modals: { ...modals, send: true } })}
             >
               Send
               <SendIcon style={{ marginLeft: "5px" }} />
             </Button>
             <Modal
               open={this.state.modals.send}
-              onClose={() => this.setState({ modals: { send: false } })}
+              onClose={() => this.setState({ modals: { ...modals, send: false } })}
               style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
             >
               <SendCard scanArgs={this.state.sendScanArgs} />
@@ -506,12 +522,12 @@ export default class Home extends React.Component {
           </div>
         </div>
         <div className="row" style={{ paddingTop: "5%", justifyContent: "center" }}>
-          <Button color="primary" variant="outlined" size="large" onClick={() => this.setState({ modals: { cashOut: true } })}>
+          <Button color="primary" variant="outlined" size="large" onClick={() => this.setState({ modals: { ...modals, cashOut: true } })}>
             Cash Out
           </Button>
           <Modal
             open={this.state.modals.cashOut}
-            onClose={() => this.setState({ modals: { cashOut: false } })}
+            onClose={() => this.setState({ modals: { ...modals, cashOut: false } })}
             style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
           >
             <CashOutCard />
