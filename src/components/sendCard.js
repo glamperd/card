@@ -10,6 +10,34 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
 import { emptyAddress } from "connext/dist/Utils";
+import { withStyles, Grid } from "@material-ui/core";
+
+const styles = {
+  card: {
+    display: "flex",
+    flexWrap: "wrap",
+    flexDirection: "row",
+    width: "100%",
+    height: "70%",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    padding: "4% 4% 4% 4%"
+  },
+  icon: {
+    width: "40px",
+    height: "40px"
+  },
+  input: {
+    width: "100%"
+  },
+  button: {
+    height: "40px",
+    backgroundColor: "#FCA311",
+    color: "#FFF",
+    marginLeft: "5px",
+    marginRight: "5px"
+  }
+};
 
 class PayCard extends Component {
   constructor(props) {
@@ -94,78 +122,58 @@ class PayCard extends Component {
   }
 
   render() {
-    const cardStyle = {
-      card: {
-        display: "flex",
-        flexWrap: "wrap",
-        flexDirection: "row",
-        width: "100%",
-        height: "70%",
-        justifyContent: "center",
-        backgroundColor: "#FFFFFF",
-        padding: "4% 4% 4% 4%"
-      },
-      icon: {
-        width: "40px",
-        height: "40px"
-      },
-      input: {
-        width: "100%"
-      },
-      button: {
-        height: "40px",
-        backgroundColor: "#FCA311",
-        color: "#FFF",
-        marginLeft: "5px",
-        marginRight: "5px"
-      }
-    };
-
+    const { classes } = this.props;
     return (
-      <Card style={cardStyle.card}>
-        <SendIcon style={cardStyle.icon} />
-        <TextField
-          style={cardStyle.input}
-          id="outlined-number"
-          label="Amount"
-          placeholder="$0.00"
-          required
-          value={this.state.paymentVal.payments[0].amount.amountToken}
-          onChange={evt => this.updatePaymentHandler(evt.target.value)}
-          type="number"
-          margin="normal"
-          variant="outlined"
-          helperText={this.state.balanceError}
-          error={this.state.balanceError != null}
-        />
-        <TextField
-          style={{ width: "100%" }}
-          id="outlined-with-placeholder"
-          label="Recipient"
-          placeholder="0x0... (Optional for Link)"
-          value={this.state.paymentVal.payments[0].recipient}
-          onChange={evt => this.updateRecipientHandler(evt.target.value)}
-          margin="normal"
-          variant="outlined"
-          helperText={this.state.addressError}
-          error={this.state.addressError != null}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <Tooltip disableFocusListener disableTouchListener title="Scan with QR code">
-                  <Button variant="contained" color="primary" style={{ color: "#FFF" }} onClick={() => this.setState({ scan: true })}>
-                    <QRIcon />
-                  </Button>
-                </Tooltip>
-              </InputAdornment>
-            )
-          }}
-        />
+      <Grid container spacing={16} direction="column" alignItems="center" justify="center">
+        <Grid item xs={12}>
+          <SendIcon className={classes.icon} />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            className={classes.input}
+            id="outlined-number"
+            label="Amount"
+            placeholder="$0.00"
+            required
+            value={this.state.paymentVal.payments[0].amount.amountToken}
+            onChange={evt => this.updatePaymentHandler(evt.target.value)}
+            type="number"
+            margin="normal"
+            variant="outlined"
+            helperText={this.state.balanceError}
+            error={this.state.balanceError != null}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            style={{ width: "100%" }}
+            id="outlined-with-placeholder"
+            label="Recipient"
+            placeholder="0x0... (Optional for Link)"
+            value={this.state.paymentVal.payments[0].recipient}
+            onChange={evt => this.updateRecipientHandler(evt.target.value)}
+            margin="normal"
+            variant="outlined"
+            helperText={this.state.addressError}
+            error={this.state.addressError != null}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Tooltip disableFocusListener disableTouchListener title="Scan with QR code">
+                    <Button variant="contained" color="primary" style={{ color: "#FFF" }} onClick={() => this.setState({ scan: true })}>
+                      <QRIcon />
+                    </Button>
+                  </Tooltip>
+                </InputAdornment>
+              )
+            }}
+          />
+        </Grid>
         <Modal id="qrscan" open={this.state.scan} onClose={() => this.setState({ scan: false })} style={{ width: "full", height: "full" }}>
           <QRScan handleResult={this.updateRecipientHandler.bind(this)} />
         </Modal>
         {/* <TextField
-          style={cardStyle.input}
+          className={classes.input}
           id="outlined-number"
           label="Message"
           placeholder="Groceries, etc. (Optional)"
@@ -177,25 +185,31 @@ class PayCard extends Component {
           helperText={this.state.balanceError}
           error={this.state.balanceError != null}
         /> */}
-        <div>
-          <Button
-            style={cardStyle.button}
-            variant="contained"
-            size="large"
-            disabled
-            //TODO ENABLE THIS WHEN WE ADD FUNCTIONALITY
-          >
-            Link
-            <LinkIcon style={{ marginLeft: "5px" }} />
-          </Button>
-          <Button style={cardStyle.button} variant="contained" size="large" onClick={() => this.paymentHandler()}>
-            Send
-            <SendIcon style={{ marginLeft: "5px" }} />
-          </Button>
-        </div>
-      </Card>
+        <Grid item xs={12}>
+          <Grid container direction="row" alignItems="center" justify="center">
+            <Grid item xs={6}>
+              <Button
+                className={classes.button}
+                variant="contained"
+                size="large"
+                disabled
+                //TODO ENABLE THIS WHEN WE ADD FUNCTIONALITY
+              >
+                Link
+                <LinkIcon style={{ marginLeft: "5px" }} />
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button className={classes.button} variant="contained" size="large" onClick={() => this.paymentHandler()}>
+                Send
+                <SendIcon style={{ marginLeft: "5px" }} />
+              </Button>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
     );
   }
 }
 
-export default PayCard;
+export default withStyles(styles)(PayCard);
