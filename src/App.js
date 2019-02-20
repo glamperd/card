@@ -33,17 +33,24 @@ if (env === "production") {
 }
 console.log(`starting app in env: ${JSON.stringify(process.env, null, 1)}`);
 const hubUrl = process.env.REACT_APP_HUB_URL.toLowerCase();
-// Provider urls
+// Provider info
+// local
 const localProvider = process.env.REACT_APP_LOCAL_RPC_URL.toLowerCase();
+const tokenAddressLocal = process.env.REACT_APP_LOCAL_TOKEN_ADDRESS.toLowerCase();
+const hubWalletAddressLocal = process.env.REACT_APP_LOCAL_HUB_WALLET_ADDRESS.toLowerCase();
+const channelManagerAddressLocal = process.env.REACT_APP_LOCAL_CHANNEL_MANAGER_ADDRESS.toLowerCase();
+// rinkeby
 const rinkebyProvider = process.env.REACT_APP_RINKEBY_RPC_URL.toLowerCase();
+const tokenAddressRinkeby = process.env.REACT_APP_RINKEBY_TOKEN_ADDRESS.toLowerCase();
+const hubWalletAddressRinkeby = process.env.REACT_APP_RINKEBY_HUB_WALLET_ADDRESS.toLowerCase();
+const channelManagerAddressRinkeby = process.env.REACT_APP_RINKEBY_CHANNEL_MANAGER_ADDRESS.toLowerCase();
+// mainnet
 const mainnetProvider = process.env.REACT_APP_MAINNET_RPC_URL.toLowerCase();
+const tokenAddressMainnet = process.env.REACT_APP_MAINNET_TOKEN_ADDRESS.toLowerCase();
+const hubWalletAddressMainnet = process.env.REACT_APP_MAINNET_HUB_WALLET_ADDRESS.toLowerCase();
+const channelManagerAddressMainnet = process.env.REACT_APP_MAINNET_CHANNEL_MANAGER_ADDRESS.toLowerCase();
 
-const tokenAddress = process.env.REACT_APP_TOKEN_ADDRESS.toLowerCase();
-const hubWalletAddress = process.env.REACT_APP_HUB_WALLET_ADDRESS.toLowerCase();
-const channelManagerAddress = process.env.REACT_APP_CHANNEL_MANAGER_ADDRESS.toLowerCase();
 const publicUrl = process.env.REACT_APP_PUBLIC_URL.toLowerCase();
-
-console.log(`Using token ${tokenAddress} with abi: ${tokenAbi}`);
 
 const HASH_PREAMBLE = "SpankWallet authentication message:";
 const DEPOSIT_MINIMUM_WEI = eth.utils.parseEther("0.03"); // 30 FIN
@@ -76,6 +83,10 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      rpcUrl: null,
+      tokenAddress: null,
+      channelManagerAddress: null,
+      hubWalletAddress: null,
       web3: null,
       customWeb3: null,
       tokenContract: null,
@@ -90,8 +101,6 @@ class App extends React.Component {
         scan: false,
         deposit: false
       },
-      hubWalletAddress,
-      channelManagerAddress,
       authorized: "false",
       approvalWeiUser: "10000",
       channelState: null,
@@ -117,6 +126,7 @@ class App extends React.Component {
     const mnemonic = localStorage.getItem("mnemonic");
     let rpc = localStorage.getItem("rpc");
     // TODO: better way to set default provider
+    // if it doesnt exist in storage
     if (!rpc) {
       rpc = env === "development" ? "LOCALHOST" : "RINKEBY";
       localStorage.setItem("rpc", rpc);
@@ -166,16 +176,25 @@ class App extends React.Component {
 
   // either LOCALHOST MAINNET or RINKEBY
   async setWeb3(rpc) {
-    let rpcUrl;
+    let rpcUrl, hubWalletAddress, channelManagerAddress, tokenAddress;
     switch (rpc) {
       case "LOCALHOST":
         rpcUrl = localProvider;
+        hubWalletAddress = hubWalletAddressLocal
+        channelManagerAddress = channelManagerAddressLocal
+        tokenAddress = tokenAddressLocal
         break;
       case "RINKEBY":
         rpcUrl = rinkebyProvider;
+        hubWalletAddress = hubWalletAddressRinkeby
+        channelManagerAddress = channelManagerAddressRinkeby
+        tokenAddress = tokenAddressRinkeby
         break;
       case "MAINNET":
         rpcUrl = mainnetProvider;
+        hubWalletAddress = hubWalletAddressMainnet
+        channelManagerAddress = channelManagerAddressMainnet
+        tokenAddress = tokenAddressMainnet
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
@@ -193,7 +212,7 @@ class App extends React.Component {
     const provider = clientProvider(providerOpts);
     const customWeb3 = new Web3(provider);
     const customId = await customWeb3.eth.net.getId();
-    this.setState({ customWeb3 });
+    this.setState({ customWeb3, hubWalletAddress, channelManagerAddress, tokenAddress });
     if (windowId && windowId !== customId) {
       alert("Make sure your metamask and card are using the same network");
     }
@@ -202,8 +221,8 @@ class App extends React.Component {
 
   async setTokenContract() {
     try {
-      let { customWeb3, tokenContract } = this.state;
-      tokenContract = new customWeb3.eth.Contract(tokenAbi, tokenAddress);
+      let { customWeb3, tokenAddress } = this.state;
+      const tokenContract = new customWeb3.eth.Contract(tokenAbi, tokenAddress);
       this.setState({ tokenContract });
       console.log("Set up token contract details");
     } catch (e) {
@@ -213,7 +232,7 @@ class App extends React.Component {
   }
 
   async setConnext() {
-    const { hubWalletAddress, channelManagerAddress, address, customWeb3 } = this.state;
+    const { hubWalletAddress, channelManagerAddress, address, customWeb3, tokenAddress } = this.state;
 
     const opts = {
       web3: customWeb3,
@@ -261,7 +280,7 @@ class App extends React.Component {
   }
 
   async autoDeposit() {
-    const { address, tokenContract, customWeb3, connextState } = this.state;
+    const { address, tokenContract, customWeb3, connextState, tokenAddress } = this.state;
     const balance = await customWeb3.eth.getBalance(address);
     let tokenBalance = "0";
     try {
