@@ -3,7 +3,7 @@
 set -e
 
 hostname="$1"
-user="dev"
+user="ubuntu"
 
 # Sanity checks
 if [[ -z "$1" || -n "$2" ]]
@@ -62,10 +62,6 @@ ssh $user@$hostname "sudo -S bash -s" <<EOF
 $password
 set -e
 
-# add the circle ci key to guest list
-cat ~/.ssh/another_authorized_key >> ~/.ssh/authorized_keys
-rm -f ~/.ssh/another_authorized_key
-
 # Remove stale apt cache & lock files
 sudo rm -rf /var/lib/apt/lists/*
 
@@ -95,20 +91,6 @@ systemctl enable docker
 
 privateip=\`ifconfig eth1 | grep 'inet ' | awk '{print \$2;exit}' | sed 's/addr://'\`
 docker swarm init "--advertise-addr=\$privateip" 2> /dev/null || true
-
-# Setup docker secret
-if [[ -n "\`docker secret ls | grep "$key_name"\`" ]]
-then echo "A secret called $key_name already exists, aborting key load"
-else
-  id="\`echo $key | tr -d ' \n\r' | docker secret create $key_name -\`"
-  if [[ "$?" == "0" ]]
-  then
-    echo "Successfully loaded private key into secret store"
-    echo "name=$key_name id=\$id"
-    echo
-  else echo "Something went wrong creating secret called $key_name"
-  fi
-fi
 
 # Double-check upgrades
 DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade

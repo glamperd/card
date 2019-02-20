@@ -3,6 +3,10 @@ build
 
 # Temporary
 *.swp
+connext-client
+
+# Useless
+.DS_Store
 
 # Logs
 logs
