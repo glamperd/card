@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import Card from "@material-ui/core/Card";
 import Button from "@material-ui/core/Button";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
 import TextField from "@material-ui/core/TextField";
@@ -43,13 +42,13 @@ class ReceiveCard extends Component {
     // and convert it to the url with
     // appropriate strings to prefill a send
     // modal state (recipient, amountToken)
-    const url = `${publicUrl}?amountToken=${value}&recipient=${address}`;
+    const url = `${publicUrl}/send?amountToken=${value}&recipient=${address}`;
     console.log("QR code url:", url);
     return url;
   }
 
   render() {
-    const { classes, address } = this.props;
+    const { classes } = this.props;
     const { qrUrl, error, displayVal } = this.state
     return (
       <Grid container spacing={16} direction="column" style={{ paddingLeft: 12, paddingRight: 12, textAlign: "center" }}>
@@ -76,7 +75,7 @@ class ReceiveCard extends Component {
         <Grid item xs={12}>
           <Button variant="outlined" fullWidth>
             <CopyIcon style={{ marginRight: "5px" }} />
-            <CopyToClipboard text={address}>
+            <CopyToClipboard text={qrUrl}>
               <Typography noWrap variant="body1">
                 <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
                   <span>{qrUrl}</span>

@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import Card from "@material-ui/core/Card";
 import Button from "@material-ui/core/Button";
 import UnarchiveIcon from "@material-ui/icons/Unarchive";
 import TextField from "@material-ui/core/TextField";
@@ -8,7 +7,6 @@ import EthIcon from "../assets/Eth.svg";
 import DaiIcon from "../assets/dai.svg";
 import Tooltip from "@material-ui/core/Tooltip";
 import InputAdornment from "@material-ui/core/InputAdornment";
-import { BigNumber } from "bignumber.js";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
@@ -184,13 +182,13 @@ class CashOutCard extends Component {
             <Grid item xs={6}>
               <Button className={classes.button} fullWidth onClick={() => this.withdrawalHandler(true)} disabled={!connextState || !connextState.runtime.canWithdraw}>
                 Cash Out Eth
-                <img src={EthIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} />
+                <img src={EthIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} alt=""/>
               </Button>
             </Grid>
             <Grid item xs={6}>
               <Button className={classes.button} fullWidth onClick={() => this.withdrawalHandler(false)} disabled={!connextState || !connextState.runtime.canWithdraw}>
                 Cash Out Dai
-                <img src={DaiIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} />
+                <img src={DaiIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} alt=""/>
               </Button>
             </Grid>
           </Grid>

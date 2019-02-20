@@ -1,19 +1,6 @@
-import React, { Component } from "react";
+import React from "react";
 import QrCode from "qrcode.react";
- 
-class QRGenerate extends Component {
-  constructor(props) {
-    super(props);
-  }
 
-  render() {
-    return (
-        <QrCode
-            value={this.props.value}
-            size={256}
-        />
-    );
-  }
-}
+const QRGenerate = props => <QrCode value={props.value} size={256} />;
 
 export default QRGenerate;
