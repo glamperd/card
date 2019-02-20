@@ -30,7 +30,7 @@ const styles = {
 class ChannelCard extends Component {
   render() {
     const { classes, channelState } = this.props
-    const substr = getDollarSubstring(channelState.balanceTokenUser)
+    const substr = channelState ? getDollarSubstring(channelState.balanceTokenUser) : ["0","00"]
     return (
       <Card className={classes.card}>
         <span>
