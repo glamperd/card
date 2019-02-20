@@ -25,7 +25,7 @@ const eth = require("ethers");
 const humanTokenAbi = require("./abi/humanToken.json");
 const wethAbi = require("./abi/weth.json");
 
-const env = process.env.NODE_ENV
+const env = process.env.NODE_ENV;
 let tokenAbi;
 if (env === "production") {
   tokenAbi = wethAbi;
@@ -95,7 +95,9 @@ class App extends React.Component {
       channelManagerAddress,
       authorized: "false",
       approvalWeiUser: "10000",
-      channelState: null,
+      channelState: {
+        balanceTokenUser: "0"
+      },
       exchangeRate: "0.00",
       interval: null,
       connextState: null,
@@ -106,7 +108,7 @@ class App extends React.Component {
       address: ""
     };
 
-    this.networkHandler = this.networkHandler.bind(this)
+    this.networkHandler = this.networkHandler.bind(this);
   }
 
   // ************************************************* //
@@ -116,11 +118,11 @@ class App extends React.Component {
   async componentDidMount() {
     // Set up state
     const mnemonic = localStorage.getItem("mnemonic");
-    let rpc = localStorage.getItem("rpc")
+    let rpc = localStorage.getItem("rpc");
     // TODO: better way to set default provider
     if (!rpc) {
-      rpc = env == "development" ? "LOCALHOST" : "RINKEBY"
-      localStorage.setItem('rpc', rpc)
+      rpc = env == "development" ? "LOCALHOST" : "RINKEBY";
+      localStorage.setItem("rpc", rpc);
     }
     // If a browser address exists, create wallet
     if (mnemonic) {
@@ -133,10 +135,10 @@ class App extends React.Component {
         text: delegateSigner
       });
 
-    // // If a browser address exists, instantiate connext
-    // console.log('this.state.delegateSigner', this.state.delegateSigner)
-    // if (this.state.delegateSigner) {
-      await this.setWeb3(rpc)
+      // // If a browser address exists, instantiate connext
+      // console.log('this.state.delegateSigner', this.state.delegateSigner)
+      // if (this.state.delegateSigner) {
+      await this.setWeb3(rpc);
       await this.setConnext();
       await this.setTokenContract();
       await this.authorizeHandler();
@@ -158,45 +160,45 @@ class App extends React.Component {
   async networkHandler(rpc) {
     // called from settingsCard when a new RPC URL is connected
     // will create a new custom web3 and reinstantiate connext
-    localStorage.setItem('rpc', rpc)
-    await this.setWeb3(rpc)
+    localStorage.setItem("rpc", rpc);
+    await this.setWeb3(rpc);
     await this.setConnext();
     await this.setTokenContract();
-    return
+    return;
   }
 
   // either LOCALHOST MAINNET or RINKEBY
   async setWeb3(rpc) {
-    let rpcUrl
+    let rpcUrl;
     switch (rpc) {
       case "LOCALHOST":
-        rpcUrl = localProvider
-        break
+        rpcUrl = localProvider;
+        break;
       case "RINKEBY":
-        rpcUrl = rinkebyProvider
-        break
+        rpcUrl = rinkebyProvider;
+        break;
       case "MAINNET":
-        rpcUrl = mainnetProvider
-        break
+        rpcUrl = mainnetProvider;
+        break;
       default:
-        throw new Error(`Unrecognized rpc: ${rpc}`)
+        throw new Error(`Unrecognized rpc: ${rpc}`);
     }
-    console.log('Custom provider with rpc:', rpcUrl)
-    
+    console.log("Custom provider with rpc:", rpcUrl);
+
     // Ask permission to view accounts
-    let windowId
+    let windowId;
     if (window.ethereum) {
       window.web3 = new Web3(window.ethereum);
-      windowId = await window.web3.eth.net.getId()
+      windowId = await window.web3.eth.net.getId();
     }
 
     const providerOpts = new ProviderOptions(store, rpcUrl).approving();
     const provider = clientProvider(providerOpts);
     const customWeb3 = new Web3(provider);
-    const customId = await customWeb3.eth.net.getId()
-    this.setState({ customWeb3 })
+    const customId = await customWeb3.eth.net.getId();
+    this.setState({ customWeb3 });
     if (windowId && windowId != customId) {
-      alert("Make sure your metamask and card are using the same network")
+      alert("Make sure your metamask and card are using the same network");
     }
     return;
   }
@@ -222,7 +224,7 @@ class App extends React.Component {
       hubUrl: hubUrl, //http://localhost:8080,
       contractAddress: channelManagerAddress, //"0xa8c50098f6e144bf5bae32bdd1ed722e977a0a42",
       user: address,
-      tokenAddress: tokenAddress,
+      tokenAddress: tokenAddress
     };
     console.log("Setting up connext with opts:", opts);
 
@@ -273,11 +275,15 @@ class App extends React.Component {
   async autoDeposit() {
     const { address, tokenContract, customWeb3, connextState } = this.state;
     const balance = await customWeb3.eth.getBalance(address);
-    let tokenBalance = "0"
+    let tokenBalance = "0";
     try {
-      tokenBalance = await tokenContract.methods.balanceOf(address).call()
+      tokenBalance = await tokenContract.methods.balanceOf(address).call();
     } catch (e) {
-      console.warn(`Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${(await customWeb3.eth.net.getId())}))? Error: ${e.message}`)
+      console.warn(
+        `Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${await customWeb3.eth.net.getId()}))? Error: ${
+          e.message
+        }`
+      );
     }
 
     if (balance !== "0" || tokenBalance !== "0") {
@@ -375,7 +381,6 @@ class App extends React.Component {
     console.log(`Collateral result: ${JSON.stringify(collateralRes, null, 2)}`);
   }
 
-
   render() {
     const { address, channelState, sendScanArgs, exchangeRate, customWeb3 } = this.state;
     const { classes } = this.props;
@@ -388,10 +393,16 @@ class App extends React.Component {
                 <AppBarComponent address={address} />
                 <Route exact path="/" render={() => <Home address={address} channelState={channelState} publicUrl={publicUrl} />} />
                 <Route path="/deposit" render={() => <DepositCard address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} />} />
-                <Route path="/settings" render={() => <SettingsCard networkHandler={this.networkHandler}/>} />
+                <Route path="/settings" render={() => <SettingsCard networkHandler={this.networkHandler} />} />
                 <Route path="/receive" render={() => <ReceiveCard address={address} channelState={channelState} publicUrl={publicUrl} />} />
-                <Route path="/send" render={() => <SendCard address={address} channelState={channelState} publicUrl={publicUrl} scanArgs={sendScanArgs} />} />
-                <Route path="/cashout" render={() => <CashOutCard address={address} channelState={channelState} publicUrl={publicUrl} exchangeRate={exchangeRate} />} />
+                <Route
+                  path="/send"
+                  render={() => <SendCard address={address} channelState={channelState} publicUrl={publicUrl} scanArgs={sendScanArgs} />}
+                />
+                <Route
+                  path="/cashout"
+                  render={() => <CashOutCard address={address} channelState={channelState} publicUrl={publicUrl} exchangeRate={exchangeRate} />}
+                />
               </Paper>
             </Grid>
           </Grid>

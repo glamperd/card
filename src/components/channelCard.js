@@ -27,17 +27,9 @@ const styles = {
 };
 
 class ChannelCard extends Component {
-  state = {
-    balance: "0"
-  };
-
-  componentWillReceiveProps() {
-    this.setState({ balace: this.props.balanceTokenUser });
-  }
-
   getSubstring(string) {
     let temp = parseFloat(string);
-    if (temp === 0) {
+    if (!temp || temp === 0) {
       return ["0", "00"]
     }
     temp = temp * Math.pow(10, -18);
@@ -46,9 +38,7 @@ class ChannelCard extends Component {
   }
 
   render() {
-    const { balance } = this.state
-    console.log('balance: ', balance);
-    const { classes } = this.props
+    const { classes, channelState } = this.props
     return (
       <Card className={classes.card}>
         <span>
@@ -56,10 +46,10 @@ class ChannelCard extends Component {
             {"$" + " "}
           </Typography>
           <Typography inline={true} variant="h1" className={classes.row}>
-            <span>{this.getSubstring(balance)[0]}</span>
+            <span>{this.getSubstring(channelState.balanceTokenUser)[0]}</span>
           </Typography>
           <Typography inline={true} variant="h3" className={classes.row}>
-            <span>{"." + this.getSubstring(balance)[1].substring(0, 2)}</span>
+            <span>{"." + this.getSubstring(channelState.balanceTokenUser)[1].substring(0, 2)}</span>
           </Typography>
         </span>
       </Card>
