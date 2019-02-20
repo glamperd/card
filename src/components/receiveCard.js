@@ -51,7 +51,7 @@ class ReceiveCard extends Component {
     const { classes } = this.props;
     const { qrUrl, error, displayVal } = this.state
     return (
-      <Grid container spacing={16} direction="column" style={{ paddingLeft: 12, paddingRight: 12, textAlign: "center" }}>
+      <Grid container spacing={16} direction="column" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: "10%", paddingBottom: "10%", textAlign: "center" }}>
         <Grid item xs={12}>
           <ReceiveIcon className={classes.icon} />
         </Grid>

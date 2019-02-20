@@ -61,7 +61,7 @@ class SettingsCard extends Component {
     const { classes } = this.props;
     // TODO: WHY ISNT THE JUSTIFY CENTER WORKING???
     return (
-      <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, textAlign: "center" }}>
+      <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: "10%", paddingBottom: "10%", textAlign: "center" }}>
         <Grid item xs={12}>
           <SettingsIcon className={classes.icon} />
         </Grid>

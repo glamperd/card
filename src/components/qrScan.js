@@ -27,9 +27,9 @@ class QRScan extends Component {
             onScan={this.handleScan}
             style={{ width: "100%" }}
         />
-        <h1 style={{textAlign: "center"}}>
+        {/* <h1 style={{textAlign: "center"}}>
             {this.state.result}
-        </h1>
+        </h1> */}
       </div>
     );
   }

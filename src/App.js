@@ -155,6 +155,7 @@ class App extends React.Component {
       await this.poller();
     } else {
       // Else, we wait for user to finish selecting through modal which will refresh page when done
+      // TODO
       const { modals } = this.state;
       this.setState({ modals: { ...modals, keyGen: true } });
     }
