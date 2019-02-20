@@ -7,19 +7,21 @@ import store from '../App';
 require('dotenv').config()
 
 const DEFAULT_NETWORK = 'ropsten'
-export const RPC_URL = process.env.REACT_APP_ETHPROVIDER_URL || 'http://localhost:8545'
+export const DEFAULT_RPC_URL = process.env.REACT_APP_ETHPROVIDER_URL || 'http://localhost:8545'
 
-if (!RPC_URL)
-  throw new Error('Missing ethereum provider url')
+if (!DEFAULT_RPC_URL)
+  throw new Error('Missing default ethereum provider url')
 
 export type ApproveTransactionCallback = (error: string | null, isApproved?: boolean) => void
 export type ApproveSignCallback = (error: string | null, rawMsgSig?: string) => void
 
 export default class ProviderOptions {
   store: any
+  rpcUrl: string
 
-  constructor(store: any) {
+  constructor(store: any, rpcUrl?: string) {
     this.store = store
+    this.rpcUrl = rpcUrl || DEFAULT_RPC_URL
   }
 
   getAccounts = (callback: (err: string | null, accounts?: string[]) => void) => {
@@ -74,7 +76,7 @@ export default class ProviderOptions {
         eth_syncing: false,
         web3_clientVersion: `LiteratePayments/v${1.0}`
       },
-      rpcUrl: RPC_URL,
+      rpcUrl: this.rpcUrl,
       getAccounts: this.getAccounts,
       approveTransaction: this.approveTransactionAlways,
       signTransaction: this.signTransaction,
