@@ -20,7 +20,9 @@ const styles = theme => ({
 
 class Home extends React.Component {
   state = {
-    modals: {}
+    modals: {
+      scan: false
+    }
   };
 
   scanQRCode(data) {
@@ -46,18 +48,6 @@ class Home extends React.Component {
     const { classes, address, channelState, publicUrl } = this.props;
     return (
       <>
-        <Modal
-          id="settings"
-          open={this.state.modals.settings}
-          onClose={() => this.setState({ modals: { ...modals, settings: false } })}
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <SettingsCard />
-        </Modal>
         <div className="row" style={{ marginBottom: "-7.5%" }}>
           <div className="column" style={{ justifyContent: "space-between", flexGrow: 1 }}>
             <ChannelCard channelState={channelState} address={address} />
