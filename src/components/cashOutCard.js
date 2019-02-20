@@ -121,7 +121,7 @@ class CashOutCard extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12 }}>
+      <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, textAlign: "center" }}>
         <Grid item xs={12}>
           <UnarchiveIcon className={classes.icon} />
         </Grid>
