@@ -1,5 +1,5 @@
 import React from "react";
-import { AppBar, Toolbar, IconButton, Typography, Button, Grid } from "@material-ui/core";
+import { AppBar, Toolbar, IconButton, Typography, Grid } from "@material-ui/core";
 import blockies from "ethereum-blockies-png";
 import SettingIcon from "@material-ui/icons/Settings";
 import { Link } from "react-router-dom";
