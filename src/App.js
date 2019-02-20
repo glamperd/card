@@ -16,6 +16,7 @@ import SettingsCard from "./components/settingsCard";
 import ReceiveCard from "./components/receiveCard";
 import SendCard from "./components/sendCard";
 import CashOutCard from "./components/cashOutCard";
+import { createWallet } from "./walletGen";
 
 export const store = createStore(setWallet, null);
 
