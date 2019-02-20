@@ -78,9 +78,9 @@ class SettingsCard extends Component {
             disableUnderline
             IconComponent={() => null}
           >
-            <MenuItem value={"MAINNET"}>Mainnet</MenuItem>
+            <MenuItem disabled={true} value={"MAINNET"}>Mainnet</MenuItem>
             <MenuItem value={"RINKEBY"}>Rinkeby</MenuItem>
-            <MenuItem value={"LOCALHOST"}>Localhost</MenuItem>
+            <MenuItem disabled={process.env.NODE_ENV === "production"} value={"LOCALHOST"}>Localhost</MenuItem>
           </Select>
         </Grid>
         <Grid item xs={12}>
