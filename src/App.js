@@ -37,7 +37,7 @@ const hubUrl = process.env.REACT_APP_HUB_URL.toLowerCase();
 // Provider urls
 const localProvider = process.env.REACT_APP_LOCAL_RPC_URL.toLowerCase();
 const rinkebyProvider = process.env.REACT_APP_RINKEBY_RPC_URL.toLowerCase();
-const mainnetProvider = process.env.REACT_APP__MAINNET_RPC_URL.toLowerCase();
+const mainnetProvider = process.env.REACT_APP_MAINNET_RPC_URL.toLowerCase();
 
 const tokenAddress = process.env.REACT_APP_TOKEN_ADDRESS.toLowerCase();
 const hubWalletAddress = process.env.REACT_APP_HUB_WALLET_ADDRESS.toLowerCase();
