@@ -387,16 +387,16 @@ class App extends React.Component {
       <Router>
         <div className={classes.app}>
           <Grid container spacing={24} direction="row" justify="center" alignItems="center">
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={5}>
               <Paper className={classes.paper}>
                 <AppBarComponent address={address} />
-                <Route exact path="/" render={() => <Home address={address} channelState={channelState} publicUrl={publicUrl} />} />
-                <Route path="/deposit" render={() => <DepositCard address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} />} />
-                <Route path="/settings" render={() => <SettingsCard networkHandler={this.networkHandler} />} />
-                <Route path="/receive" render={() => <ReceiveCard address={address} channelState={channelState} publicUrl={publicUrl} />} />
+                <Route exact path="/" render={props => <Home {...props} address={address} channelState={channelState} publicUrl={publicUrl} />} />
+                <Route path="/deposit" render={props => <DepositCard {...props} address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} />} />
+                <Route path="/settings" render={props => <SettingsCard {...props} networkHandler={this.networkHandler} />} />
+                <Route path="/receive" render={props => <ReceiveCard {...props} address={address} channelState={channelState} publicUrl={publicUrl} />} />
                 <Route
                   path="/send"
-                  render={() => <SendCard address={address} channelState={channelState} publicUrl={publicUrl} scanArgs={sendScanArgs} />}
+                  render={props => <SendCard {...props} address={address} channelState={channelState} publicUrl={publicUrl} scanArgs={sendScanArgs} />}
                 />
                 <Route
                   path="/cashout"
