@@ -34,6 +34,10 @@ class ChannelCard extends Component {
     }
     temp = temp * Math.pow(10, -18);
     let substring = temp.toString().split(".");
+    if (substring.length == 1) {
+      // temp is an integer
+      substring.push("00")
+    }
     return substring;
   }
 
