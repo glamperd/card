@@ -40,7 +40,8 @@ class DepositCard extends Component {
         <Grid item xs={12}>
           <Typography variant="caption">
             <Tooltip disableFocusListener disableTouchListener title="Because gas">
-              <span>{`Deposit minimum ${this.props.minDepositWei} wei to card.`}</span>
+              <span>{`Deposit minimum ${this.props.minDepositWei / Math.pow(10, 18)} Eth 
+                      or ${this.props.minDepositWei / Math.pow(10,18) * this.props.exchangeRate} Dai to card.`}</span>
             </Tooltip>
           </Typography>
         </Grid>

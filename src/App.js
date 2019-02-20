@@ -400,7 +400,7 @@ class App extends React.Component {
               <Paper className={classes.paper}>
                 <AppBarComponent address={address} />
                 <Route exact path="/" render={props => <Home {...props} address={address} channelState={channelState} publicUrl={publicUrl} />} />
-                <Route path="/deposit" render={props => <DepositCard {...props} address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} />} />
+                <Route path="/deposit" render={props => <DepositCard {...props} address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} exchangeRate={exchangeRate} />} />
                 <Route path="/settings" render={props => <SettingsCard {...props} networkHandler={this.networkHandler} />} />
                 <Route path="/receive" render={props => <ReceiveCard {...props} address={address} channelState={channelState} publicUrl={publicUrl} />} />
                 <Route
