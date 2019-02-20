@@ -156,8 +156,11 @@ class App extends React.Component {
     } else {
       // Else, we wait for user to finish selecting through modal which will refresh page when done
       // TODO
-      const { modals } = this.state;
-      this.setState({ modals: { ...modals, keyGen: true } });
+      // const { modals } = this.state;
+      // this.setState({ modals: { ...modals, keyGen: true } });
+      await createWallet(this.state.web3);
+      // Then refresh the page
+      window.location.reload();
     }
   }
 
