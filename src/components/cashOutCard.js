@@ -3,18 +3,40 @@ import Card from "@material-ui/core/Card";
 import Button from "@material-ui/core/Button";
 import UnarchiveIcon from "@material-ui/icons/Unarchive";
 import TextField from "@material-ui/core/TextField";
-import QRIcon from "mdi-material-ui/QrcodeScan"
-import EthIcon from "../assets/Eth.svg"
-import DaiIcon from "../assets/dai.svg"
+import QRIcon from "mdi-material-ui/QrcodeScan";
+import EthIcon from "../assets/Eth.svg";
+import DaiIcon from "../assets/dai.svg";
 import Tooltip from "@material-ui/core/Tooltip";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import { BigNumber } from "bignumber.js";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
+import { withStyles, Grid } from "@material-ui/core";
+
+const styles = {
+  card: {
+    display: "flex",
+    flexWrap: "wrap",
+    flexDirection: "row",
+    width: "100%",
+    height: "70%",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    padding: "4% 4% 4% 4%"
+  },
+  icon: {
+    width: "40px",
+    height: "40px"
+  },
+  button: {
+    backgroundColor: "#FCA311",
+    color: "#FFF",
+  }
+};
 
 class CashOutCard extends Component {
-  constructor(props){
-    super(props)
+  constructor(props) {
+    super(props);
 
     this.state = {
       withdrawalVal: {
@@ -27,7 +49,7 @@ class CashOutCard extends Component {
       },
       addressError: null,
       balanceError: null,
-      scan: false,
+      scan: false
     };
   }
 
@@ -58,7 +80,7 @@ class CashOutCard extends Component {
       oldState.withdrawalVal.recipient = value;
       return oldState;
     });
-    this.setState({scan: false})
+    this.setState({ scan: false });
     console.log(`Updated recipient: ${JSON.stringify(this.state.withdrawalVal.recipient, null, 2)}`);
   }
 
@@ -89,132 +111,104 @@ class CashOutCard extends Component {
       exchangeRate: this.props.exchangeRate
     };
     console.log(`Withdrawing: ${JSON.stringify(this.state.withdrawalVal, null, 2)}`);
-    this.setState({addressError: null, balanceError: null})
+    this.setState({ addressError: null, balanceError: null });
     const { channelState, connext, web3 } = this.props;
     // if (
     //   Big(this.state.withdrawalVal.withdrawalWeiUser).isLessThanOrEqualTo(channelState.balanceWeiUser) &&
     //   Big(this.state.withdrawalVal.tokensToSell).isLessThanOrEqualTo(channelState.balanceTokenUser)
     // ) {
-      if (web3.utils.isAddress(this.state.withdrawalVal.recipient)){
-        let withdrawalRes = await connext.withdraw(withdrawalVal);
-        console.log(`Withdrawal result: ${JSON.stringify(withdrawalRes, null, 2)}`);
-      } else {
-        this.setState({addressError: "Please enter a valid address"})
-      }
+    if (web3.utils.isAddress(this.state.withdrawalVal.recipient)) {
+      let withdrawalRes = await connext.withdraw(withdrawalVal);
+      console.log(`Withdrawal result: ${JSON.stringify(withdrawalRes, null, 2)}`);
+    } else {
+      this.setState({ addressError: "Please enter a valid address" });
+    }
     // } else {
     //   this.setState({balanceError: "Insufficient balance in channel"})
     // }
   }
 
   render() {
-    const cardStyle = {
-      card: {
-        display: "flex",
-        flexWrap: "wrap",
-        flexDirection: "row",
-        width: "100%",
-        height: "70%",
-        justifyContent: "center",
-        backgroundColor: "#FFFFFF",
-        padding: "4% 4% 4% 4%"
-      },
-      icon: {
-        width: "40px",
-        height: "40px",
-      },
-      input: {
-        width: "100%"
-      },
-      button: {
-        height: "40px",
-        backgroundColor: "#FCA311",
-        color: "#FFF",
-        marginLeft: "5px",
-        marginRight: "5px",
-      },
-    };
-
+    const { classes } = this.props;
     return (
-      <Card style={cardStyle.card}>
-        <UnarchiveIcon style={cardStyle.icon} />
-        <TextField
-          style={cardStyle.input}
-          id="outlined-number"
-          label="Amount"
-          placeholder="$0.00"
-          required
-          value={this.state.amountToken}
-          onChange={evt => this.updatePaymentHandler(evt)}
-          type="number"
-          margin="normal"
-          variant="outlined"
-          helperText={this.state.balanceError}
-          error={this.state.balanceError != null}
-        />
-        <TextField
-          style={{width: "100%"}}
-          id="outlined-with-placeholder"
-          label="Address"
-          placeholder="0x0..."
-          value={this.state.recipientDisplayVal}
-          onChange={evt => this.updateRecipientHandler(evt.target.value)}
-          margin="normal"
-          variant="outlined"
-          required
-          helperText={this.state.addressError}
-          error={this.state.addressError != null}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <Tooltip disableFocusListener disableTouchListener title="Scan with QR code">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    style={{color: "primary"}}
-                    onClick={() => this.setState({scan: true})}
-                  >
-                    <QRIcon />
-                  </Button>
-                </Tooltip>
-              </InputAdornment>
-            )
-          }}
-        />
-        <Modal
-          id="qrscan"
-          open={this.state.scan}
-          onClose={() => this.setState({scan: false})}
-          style={{ width: "full", height: "full" }}
-        >
-          <QRScan 
-            handleResult = {this.updateRecipientHandler.bind(this)} 
+      <Grid container spacing={24} direction="column" alignItems="center" justify="center">
+        <Grid item xs={12}>
+          <UnarchiveIcon className={classes.icon} />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            className={classes.input}
+            id="outlined-number"
+            label="Amount"
+            placeholder="$0.00"
+            required
+            value={this.state.amountToken}
+            onChange={evt => this.updatePaymentHandler(evt)}
+            type="number"
+            margin="normal"
+            variant="outlined"
+            helperText={this.state.balanceError}
+            error={this.state.balanceError != null}
           />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            style={{ width: "100%" }}
+            id="outlined-with-placeholder"
+            label="Address"
+            placeholder="0x0..."
+            value={this.state.recipientDisplayVal}
+            onChange={evt => this.updateRecipientHandler(evt.target.value)}
+            margin="normal"
+            variant="outlined"
+            required
+            helperText={this.state.addressError}
+            error={this.state.addressError != null}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Tooltip disableFocusListener disableTouchListener title="Scan with QR code">
+                    <Button variant="contained" color="primary" style={{ color: "primary" }} onClick={() => this.setState({ scan: true })}>
+                      <QRIcon />
+                    </Button>
+                  </Tooltip>
+                </InputAdornment>
+              )
+            }}
+          />
+        </Grid>
+        <Modal id="qrscan" open={this.state.scan} onClose={() => this.setState({ scan: false })} style={{ width: "full", height: "full" }}>
+          <QRScan handleResult={this.updateRecipientHandler.bind(this)} />
         </Modal>
-        <TextField
-          id="outlined-with-placeholder"
-          label="Exchange Rate"
-          variant="outlined"
-          InputProps={{"text-align": "center"}}
-          disabled
-          value={this.props.exchangeRate}
-        />
-        <div>
-          <Button
-            style={cardStyle.button}
-          >
-            Cash Out Eth
-            <img src={EthIcon} style={{width: "20px", height: "20px", marginLeft: "5px"}} />
-          </Button>
-          <Button
-            style={cardStyle.button}
-          >
-            Cash Out Dai
-            <img src={DaiIcon} style={{width: "20px", height: "20px", marginLeft: "5px"}} />
-          </Button>
-        </div>
-      </Card>
+        <Grid item xs={12}>
+          <TextField
+            id="outlined-with-placeholder"
+            label="Exchange Rate"
+            variant="outlined"
+            InputProps={{ "text-align": "center" }}
+            disabled
+            value={this.props.exchangeRate}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Grid container spacing={8} direction="row" alignItems="center" justify="center">
+            <Grid item xs={6}>
+              <Button className={classes.button}>
+                Cash Out Eth
+                <img src={EthIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} />
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button className={classes.button}>
+                Cash Out Dai
+                <img src={DaiIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} />
+              </Button>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
     );
   }
 }
 
-export default CashOutCard;
+export default withStyles(styles)(CashOutCard);

@@ -110,20 +110,9 @@ class Home extends React.Component {
             </Grid>
           </Grid>
           <Grid item xs={12}>
-            <Button fullWidth color="primary" variant="outlined" size="large" onClick={() => this.setState({ modals: { ...modals, cashOut: true } })}>
+            <Button fullWidth color="primary" variant="outlined" size="large" component={Link} to="/cashout">
               Cash Out
             </Button>
-            <Modal
-              open={this.state.modals.cashOut}
-              onClose={() => this.setState({ modals: { ...modals, cashOut: false } })}
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-              <CashOutCard />
-            </Modal>
           </Grid>
         </Grid>
       </>

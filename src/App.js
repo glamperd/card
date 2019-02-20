@@ -15,6 +15,7 @@ import AppBarComponent from "./components/AppBar";
 import SettingsCard from "./components/settingsCard";
 import ReceiveCard from "./components/receiveCard";
 import SendCard from "./components/sendCard";
+import CashOutCard from "./components/cashOutCard";
 
 export const store = createStore(setWallet, null);
 
@@ -412,6 +413,7 @@ class App extends React.Component {
                 <Route path="/settings" render={() => <SettingsCard />} />
                 <Route path="/receive" render={() => <ReceiveCard address={address} channelState={channelState} publicUrl={publicUrl} />} />
                 <Route path="/send" render={() => <SendCard address={address} channelState={channelState} publicUrl={publicUrl} scanArgs={sendScanArgs} />} />
+                <Route path="/cashout" render={() => <CashOutCard address={address} channelState={channelState} publicUrl={publicUrl} />} />
               </Paper>
             </Grid>
           </Grid>
