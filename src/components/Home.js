@@ -1,28 +1,24 @@
 import React from "react";
 import "../App.css";
-import ReceiveCard from "./receiveCard";
-import SendCard from "./sendCard";
 import CashOutCard from "./cashOutCard";
 import ChannelCard from "./channelCard";
 import QRScan from "./qrScan";
-import SettingsCard from "./settingsCard";
 import QRIcon from "mdi-material-ui/QrcodeScan";
 import SendIcon from "@material-ui/icons/Send";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
 import Modal from "@material-ui/core/Modal";
 import Button from "@material-ui/core/Button";
 import { Fab, Grid, withStyles } from "@material-ui/core";
+import { Link } from 'react-router-dom'
 
-const styles = theme => ({
-  paper: {
-    paddingBottom: theme.spacing.unit * 2
-  }
-});
+const styles = {}
 
 class Home extends React.Component {
   state = {
-    modals: {}
-  }
+    modals: {
+      scan: false
+    }
+  };
 
   scanQRCode(data) {
     const { publicUrl } = this.props;
@@ -41,24 +37,12 @@ class Home extends React.Component {
       console.log("incorrect site");
     }
   }
-  
+
   render() {
     const { modals } = this.state;
-    const { classes, address, channelState, publicUrl } = this.props;
+    const { address, channelState } = this.props;
     return (
       <>
-        <Modal
-          id="settings"
-          open={this.state.modals.settings}
-          onClose={() => this.setState({ modals: { ...modals, settings: false } })}
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <SettingsCard />
-        </Modal>
         <div className="row" style={{ marginBottom: "-7.5%" }}>
           <div className="column" style={{ justifyContent: "space-between", flexGrow: 1 }}>
             <ChannelCard channelState={channelState} address={address} />
@@ -87,74 +71,48 @@ class Home extends React.Component {
           </div>
         </div>
         <Grid container spacing={16} direction="column" alignItems="center" justify="center">
-          <Grid item xs={12}>
+          <Grid item xs={12} style={{paddingTop: 40}}>
             <Grid container spacing={16} direction="row" alignItems="center" justify="center">
-              <Button
-                style={{
-                  marginRight: "5px",
-                  color: "#FFF",
-                  backgroundColor: "#FCA311"
-                }}
-                variant="contained"
-                size="large"
-                onClick={() => this.setState({ modals: { ...modals, receive: true } })}
-              >
-                Receive
-                <ReceiveIcon style={{ marginLeft: "5px" }} />
-              </Button>
-              <Modal
-                open={this.state.modals.receive}
-                onClose={() => this.setState({ modals: { ...modals, receive: false } })}
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center"
-                }}
-              >
-                <ReceiveCard address={address} publicUrl={publicUrl} />
-              </Modal>
-
-              <Button
-                style={{
-                  marginLeft: "5px",
-                  color: "#FFF",
-                  backgroundColor: "#FCA311"
-                }}
-                size="large"
-                variant="contained"
-                onClick={() => this.setState({ modals: { ...modals, send: true } })}
-              >
-                Send
-                <SendIcon style={{ marginLeft: "5px" }} />
-              </Button>
-              <Modal
-                open={this.state.modals.send}
-                onClose={() => this.setState({ modals: { ...modals, send: false } })}
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center"
-                }}
-              >
-                <SendCard scanArgs={this.state.sendScanArgs} />
-              </Modal>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  fullWidth
+                  style={{
+                    marginRight: "5px",
+                    color: "#FFF",
+                    backgroundColor: "#FCA311"
+                  }}
+                  variant="contained"
+                  size="large"
+                  component={Link}
+                  to="/receive"
+                >
+                  Receive
+                  <ReceiveIcon style={{ marginLeft: "5px" }} />
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  fullWidth
+                  style={{
+                    marginLeft: "5px",
+                    color: "#FFF",
+                    backgroundColor: "#FCA311"
+                  }}
+                  size="large"
+                  variant="contained"
+                  component={Link}
+                  to="/send"
+                >
+                  Send
+                  <SendIcon style={{ marginLeft: "5px" }} />
+                </Button>
+              </Grid>
             </Grid>
           </Grid>
           <Grid item xs={12}>
-            <Button color="primary" variant="outlined" size="large" onClick={() => this.setState({ modals: { ...modals, cashOut: true } })}>
+            <Button fullWidth color="primary" variant="outlined" size="large" component={Link} to="/cashout">
               Cash Out
             </Button>
-            <Modal
-              open={this.state.modals.cashOut}
-              onClose={() => this.setState({ modals: { ...modals, cashOut: false } })}
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-              <CashOutCard />
-            </Modal>
           </Grid>
         </Grid>
       </>

@@ -13,6 +13,9 @@ import axios from "axios";
 import { Grid, Paper, withStyles } from "@material-ui/core";
 import AppBarComponent from "./components/AppBar";
 import SettingsCard from "./components/settingsCard";
+import ReceiveCard from "./components/receiveCard";
+import SendCard from "./components/sendCard";
+import CashOutCard from "./components/cashOutCard";
 
 export const store = createStore(setWallet, null);
 
@@ -57,7 +60,8 @@ const opts = {
 
 const styles = theme => ({
   paper: {
-    paddingBottom: theme.spacing.unit * 2
+    paddingBottom: theme.spacing.unit * 2,
+    height: 550
   },
   app: {
     flexGrow: 1,
@@ -373,18 +377,21 @@ class App extends React.Component {
 
 
   render() {
-    const { address, channelState, publicUrl, customWeb3 } = this.state;
+    const { address, channelState, sendScanArgs, customWeb3 } = this.state;
     const { classes } = this.props;
     return (
       <Router>
         <div className={classes.app}>
           <Grid container spacing={24} direction="row" justify="center" alignItems="center">
-            <Grid item xs={6}>
+            <Grid item xs={12} sm={6} md={4}>
               <Paper className={classes.paper}>
                 <AppBarComponent address={address} />
                 <Route exact path="/" render={() => <Home address={address} channelState={channelState} publicUrl={publicUrl} />} />
                 <Route path="/deposit" render={() => <DepositCard address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} />} />
-                <Route path="/settings" render={() => <SettingsCard customWeb3={customWeb3} networkHandler={this.networkHandler} />} />
+                <Route path="/settings" render={() => <SettingsCard networkHandler={this.networkHandler}/>} />
+                <Route path="/receive" render={() => <ReceiveCard address={address} channelState={channelState} publicUrl={publicUrl} />} />
+                <Route path="/send" render={() => <SendCard address={address} channelState={channelState} publicUrl={publicUrl} scanArgs={sendScanArgs} />} />
+                <Route path="/cashout" render={() => <CashOutCard address={address} channelState={channelState} publicUrl={publicUrl} />} />
               </Paper>
             </Grid>
           </Grid>
