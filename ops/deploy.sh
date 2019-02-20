@@ -3,6 +3,14 @@
 DOMAINNAME=$DOMAINNAME; [[ -n "$DOMAINNAME" ]] || DOMAINNAME=localhost
 EMAIL=$EMAIL; [[ -n "$EMAIL" ]] || EMAIL=noreply@gmail.com
 
+if [[ "$1" == "prod" ]]
+then
+  image=docker.io/connextproject/connext_card:latest
+  docker pull $image
+else
+  image=connext_card:latest
+fi
+
 docker container run \
   --name "connext_card" \
   --detach \
