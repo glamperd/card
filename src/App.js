@@ -94,9 +94,7 @@ class App extends React.Component {
       channelManagerAddress,
       authorized: "false",
       approvalWeiUser: "10000",
-      channelState: {
-        balanceTokenUser: "0"
-      },
+      channelState: null,
       exchangeRate: "0.00",
       interval: null,
       connextState: null,
@@ -244,7 +242,8 @@ class App extends React.Component {
       console.log("Connext state changed:", state);
       this.setState({
         channelState: state.persistent.channel,
-        connextState: state
+        connextState: state,
+        exchangeRate: state.runtime.exchangeRate.rates.USD,
       });
     });
     // start polling
@@ -252,23 +251,13 @@ class App extends React.Component {
   }
 
   async poller() {
-    await this.getRate();
     await this.autoDeposit();
     await this.autoSwap();
 
     setInterval(async () => {
-      await this.getRate();
       await this.autoDeposit();
       await this.autoSwap();
     }, 1000);
-  }
-
-  async getRate() {
-    const response = await fetch("https://api.coinbase.com/v2/exchange-rates?currency=ETH");
-    const json = await response.json();
-    this.setState({
-      exchangeRate: json.data.rates.USD
-    });
   }
 
   async autoDeposit() {
@@ -381,7 +370,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { address, channelState, sendScanArgs, exchangeRate, customWeb3 } = this.state;
+    const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState } = this.state;
     const { classes } = this.props;
     return (
       <Router>
@@ -400,7 +389,7 @@ class App extends React.Component {
                 />
                 <Route
                   path="/cashout"
-                  render={() => <CashOutCard address={address} channelState={channelState} publicUrl={publicUrl} exchangeRate={exchangeRate} />}
+                  render={() => <CashOutCard address={address} channelState={channelState} publicUrl={publicUrl} exchangeRate={exchangeRate} web3={customWeb3} connext={connext} connextState={connextState} />}
                 />
               </Paper>
             </Grid>
