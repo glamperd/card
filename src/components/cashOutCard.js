@@ -154,7 +154,7 @@ class CashOutCard extends Component {
             id="outlined-with-placeholder"
             label="Address"
             placeholder="0x0..."
-            value={recipientDisplayVal}
+            value={recipientDisplayVal || ''}
             onChange={evt => this.updateRecipientHandler(evt.target.value)}
             margin="normal"
             variant="outlined"
