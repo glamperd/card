@@ -186,10 +186,11 @@ class CashOutCard extends Component {
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button className={classes.button} fullWidth onClick={() => this.withdrawalHandler(false)} disabled={!connextState || !connextState.runtime.canWithdraw}>
+              <Button className={classes.button} fullWidth onClick={() => this.withdrawalHandler(false)} disabled={true}>
                 Cash Out Dai
                 <img src={DaiIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} alt=""/>
               </Button>
+              
             </Grid>
           </Grid>
         </Grid>
