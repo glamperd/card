@@ -7,7 +7,7 @@ import store from '../App';
 require('dotenv').config()
 
 const DEFAULT_NETWORK = 'ropsten'
-export const DEFAULT_RPC_URL = process.env.REACT_APP_ETHPROVIDER_URL || 'http://localhost:8545'
+export const DEFAULT_RPC_URL = process.env.NODE_ENV === "production" ? process.env.REACT_APP_RINKEBY_RPC_URL : process.env.REACT_APP_LOCAL_RPC_URL
 
 if (!DEFAULT_RPC_URL)
   throw new Error('Missing default ethereum provider url')
@@ -17,7 +17,7 @@ export type ApproveSignCallback = (error: string | null, rawMsgSig?: string) => 
 
 export default class ProviderOptions {
   store: any
-  rpcUrl: string
+  rpcUrl: string | undefined
 
   constructor(store: any, rpcUrl?: string) {
     this.store = store

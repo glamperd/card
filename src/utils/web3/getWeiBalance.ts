@@ -5,9 +5,9 @@ import BN from 'bn.js'
 export default async function getWeiBalance (web3: Web3, address: string): Promise<Currency> {
   return new Promise<Currency>((resolve, reject) =>
     web3.eth.getBalance(address, 'latest',
-      (e: Error, balance: BN) => e
+      (e: Error, balance: string) => e
         ? reject(e)
-        : resolve(Currency.WEI(balance.toString())),
+        : resolve(Currency.WEI(balance)),
     )
   )
 }
