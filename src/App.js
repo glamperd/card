@@ -399,7 +399,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { address, channelState, sendScanArgs } = this.state;
+    const { address, channelState, sendScanArgs, exchangeRate } = this.state;
     const { classes } = this.props;
     return (
       <Router>
@@ -413,7 +413,7 @@ class App extends React.Component {
                 <Route path="/settings" render={() => <SettingsCard />} />
                 <Route path="/receive" render={() => <ReceiveCard address={address} channelState={channelState} publicUrl={publicUrl} />} />
                 <Route path="/send" render={() => <SendCard address={address} channelState={channelState} publicUrl={publicUrl} scanArgs={sendScanArgs} />} />
-                <Route path="/cashout" render={() => <CashOutCard address={address} channelState={channelState} publicUrl={publicUrl} />} />
+                <Route path="/cashout" render={() => <CashOutCard address={address} channelState={channelState} publicUrl={publicUrl} exchangeRate={exchangeRate} />} />
               </Paper>
             </Grid>
           </Grid>

@@ -14,23 +14,13 @@ import QRScan from "./qrScan";
 import { withStyles, Grid } from "@material-ui/core";
 
 const styles = {
-  card: {
-    display: "flex",
-    flexWrap: "wrap",
-    flexDirection: "row",
-    width: "100%",
-    height: "70%",
-    justifyContent: "center",
-    backgroundColor: "#FFFFFF",
-    padding: "4% 4% 4% 4%"
-  },
   icon: {
     width: "40px",
     height: "40px"
   },
   button: {
     backgroundColor: "#FCA311",
-    color: "#FFF",
+    color: "#FFF"
   }
 };
 
@@ -131,13 +121,13 @@ class CashOutCard extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Grid container spacing={24} direction="column" alignItems="center" justify="center">
+      <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12 }}>
         <Grid item xs={12}>
           <UnarchiveIcon className={classes.icon} />
         </Grid>
         <Grid item xs={12}>
           <TextField
-            className={classes.input}
+            fullWidth
             id="outlined-number"
             label="Amount"
             placeholder="$0.00"
@@ -182,6 +172,7 @@ class CashOutCard extends Component {
         </Modal>
         <Grid item xs={12}>
           <TextField
+            fullWidth
             id="outlined-with-placeholder"
             label="Exchange Rate"
             variant="outlined"
@@ -193,13 +184,13 @@ class CashOutCard extends Component {
         <Grid item xs={12}>
           <Grid container spacing={8} direction="row" alignItems="center" justify="center">
             <Grid item xs={6}>
-              <Button className={classes.button}>
+              <Button className={classes.button} fullWidth>
                 Cash Out Eth
                 <img src={EthIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} />
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button className={classes.button}>
+              <Button className={classes.button} fullWidth>
                 Cash Out Dai
                 <img src={DaiIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} />
               </Button>
