@@ -25,15 +25,20 @@ const eth = require("ethers");
 const humanTokenAbi = require("./abi/humanToken.json");
 const wethAbi = require("./abi/weth.json");
 
+const env = process.env.NODE_ENV
 let tokenAbi;
-if (process.env.NODE_ENV === "production") {
+if (env === "production") {
   tokenAbi = wethAbi;
 } else {
   tokenAbi = humanTokenAbi;
 }
 console.log(`starting app in env: ${JSON.stringify(process.env, null, 1)}`);
 const hubUrl = process.env.REACT_APP_HUB_URL.toLowerCase();
-const providerUrl = process.env.REACT_APP_ETHPROVIDER_URL.toLowerCase();
+// Provider urls
+const localProvider = process.env.REACT_APP_LOCAL_RPC_URL.toLowerCase();
+const rinkebyProvider = process.env.REACT_APP_RINKEBY_RPC_URL.toLowerCase();
+const mainnetProvider = process.env.REACT_APP__MAINNET_RPC_URL.toLowerCase();
+
 const tokenAddress = process.env.REACT_APP_TOKEN_ADDRESS.toLowerCase();
 const hubWalletAddress = process.env.REACT_APP_HUB_WALLET_ADDRESS.toLowerCase();
 const channelManagerAddress = process.env.REACT_APP_CHANNEL_MANAGER_ADDRESS.toLowerCase();
@@ -100,15 +105,23 @@ class App extends React.Component {
       },
       address: ""
     };
+
+    this.networkHandler = this.networkHandler.bind(this)
   }
 
   // ************************************************* //
   //                     Hooks                         //
   // ************************************************* //
 
-  async componentWillMount() {
+  async componentDidMount() {
+    // Set up state
     const mnemonic = localStorage.getItem("mnemonic");
-
+    let rpc = localStorage.getItem("rpc")
+    // TODO: better way to set default provider
+    if (!rpc) {
+      rpc = env == "development" ? "LOCALHOST" : "RINKEBY"
+      localStorage.setItem('rpc', rpc)
+    }
     // If a browser address exists, create wallet
     if (mnemonic) {
       const delegateSigner = await createWalletFromMnemonic(mnemonic);
@@ -119,21 +132,13 @@ class App extends React.Component {
         type: "SET_WALLET",
         text: delegateSigner
       });
-    } else {
-      // Else, we wait for user to finish selecting through modal which will refresh page when done
-      const { modals } = this.state;
-      this.setState({ modals: { ...modals, keyGen: true } });
-    }
-  }
 
-  async componentDidMount() {
-    // Set up state
-    await this.setWeb3();
-    await this.setTokenContract();
-
-    // If a browser address exists, instantiate connext
-    if (this.state.delegateSigner) {
+    // // If a browser address exists, instantiate connext
+    // console.log('this.state.delegateSigner', this.state.delegateSigner)
+    // if (this.state.delegateSigner) {
+      await this.setWeb3(rpc)
       await this.setConnext();
+      await this.setTokenContract();
       await this.authorizeHandler();
 
       console.log(this.state.connext);
@@ -150,41 +155,56 @@ class App extends React.Component {
   //                State setters                      //
   // ************************************************* //
 
-  async setWeb3() {
+  async networkHandler(rpc) {
+    // called from settingsCard when a new RPC URL is connected
+    // will create a new custom web3 and reinstantiate connext
+    localStorage.setItem('rpc', rpc)
+    await this.setWeb3(rpc)
+    await this.setConnext();
+    await this.setTokenContract();
+    return
+  }
+
+  // either LOCALHOST MAINNET or RINKEBY
+  async setWeb3(rpc) {
+    let rpcUrl
+    switch (rpc) {
+      case "LOCALHOST":
+        rpcUrl = localProvider
+        break
+      case "RINKEBY":
+        rpcUrl = rinkebyProvider
+        break
+      case "MAINNET":
+        rpcUrl = mainnetProvider
+        break
+      default:
+        throw new Error(`Unrecognized rpc: ${rpc}`)
+    }
+    console.log('Custom provider with rpc:', rpcUrl)
+    
     // Ask permission to view accounts
+    let windowId
     if (window.ethereum) {
       window.web3 = new Web3(window.ethereum);
-      try {
-        // Request account access if needed
-        await window.ethereum.enable();
-      } catch (error) {
-        console.error(error);
-      }
+      windowId = await window.web3.eth.net.getId()
     }
 
-    if (process.env.NODE_ENV !== "production") {
-      const windowProvider = window.web3;
-      if (!windowProvider) {
-        alert("Metamask is not detected.");
-      }
-      const web3 = new Web3(windowProvider.currentProvider);
-      // make sure you are on localhost
-      if ((await web3.eth.net.getId()) !== 4447) {
-        alert("Uh oh! Doesn't look like you're using a local chain, please make sure your Metamask is connected appropriately to localhost:8545. Network ID must be 4447");
-      } else console.log("SETTING WEB3 ", web3);
-      this.setState({ web3 });
-      console.log("Set metamask as provider");
-    } else {
-      const web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
-      this.setState({ web3 });
+    const providerOpts = new ProviderOptions(store, rpcUrl).approving();
+    const provider = clientProvider(providerOpts);
+    const customWeb3 = new Web3(provider);
+    const customId = await customWeb3.eth.net.getId()
+    this.setState({ customWeb3 })
+    if (windowId && windowId != customId) {
+      alert("Make sure your metamask and card are using the same network")
     }
     return;
   }
 
   async setTokenContract() {
     try {
-      let { web3, tokenContract } = this.state;
-      tokenContract = new web3.eth.Contract(tokenAbi, tokenAddress);
+      let { customWeb3, tokenContract } = this.state;
+      tokenContract = new customWeb3.eth.Contract(tokenAbi, tokenAddress);
       this.setState({ tokenContract });
       console.log("Set up token contract details");
     } catch (e) {
@@ -194,26 +214,22 @@ class App extends React.Component {
   }
 
   async setConnext() {
-    const { hubWalletAddress, channelManagerAddress, tokenContract, address } = this.state;
-
-    const providerOpts = new ProviderOptions(store).approving();
-    const provider = clientProvider(providerOpts);
-    const web3 = new Web3(provider);
+    const { hubWalletAddress, channelManagerAddress, address, customWeb3 } = this.state;
 
     const opts = {
-      web3,
+      web3: customWeb3,
       hubAddress: hubWalletAddress, //"0xfb482f8f779fd96a857f1486471524808b97452d" ,
       hubUrl: hubUrl, //http://localhost:8080,
       contractAddress: channelManagerAddress, //"0xa8c50098f6e144bf5bae32bdd1ed722e977a0a42",
       user: address,
-      tokenAddress: tokenContract.options.address
+      tokenAddress: tokenAddress,
     };
     console.log("Setting up connext with opts:", opts);
 
     // *** Instantiate the connext client ***
     const connext = getConnextClient(opts);
     console.log("Successfully set up connext!");
-    this.setState({ connext, address, customWeb3: web3 });
+    this.setState({ connext });
   }
 
   // ************************************************* //
@@ -255,9 +271,15 @@ class App extends React.Component {
   }
 
   async autoDeposit() {
-    const { address, tokenContract, web3, connextState } = this.state;
-    const balance = await web3.eth.getBalance(address);
-    const tokenBalance = await tokenContract.methods.balanceOf(address).call();
+    const { address, tokenContract, customWeb3, connextState } = this.state;
+    const balance = await customWeb3.eth.getBalance(address);
+    let tokenBalance = "0"
+    try {
+      tokenBalance = await tokenContract.methods.balanceOf(address).call()
+    } catch (e) {
+      console.warn(`Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${(await customWeb3.eth.net.getId())}))? Error: ${e.message}`)
+    }
+
     if (balance !== "0" || tokenBalance !== "0") {
       if (eth.utils.bigNumberify(balance).lte(DEPOSIT_MINIMUM_WEI)) {
         // don't autodeposit anything under the threshold
@@ -269,21 +291,6 @@ class App extends React.Component {
         return;
       }
 
-      // const sendArgs = {
-      //   from: this.state.channelState.user
-      // }
-      // const gasEstimate = await approveTx.estimateGas(sendArgs)
-      // if (gasEstimate > this.state.browserWalletDeposit.amountWei){
-      //   throw "Not enough wei for gas"
-      // }
-      // if (gasEstimate < this.state.browserWalletDeposit.amountWei){
-      //   const depositDiff = balance - gasEstimate
-      //   this.setState({
-      //     browserWalletDeposit:{
-      //       amountWei: depositDiff,
-      //       amountToken: tokenBalance
-      //     }})
-      // }
       const actualDeposit = {
         amountWei: eth.utils
           .bigNumberify(balance)
@@ -368,38 +375,9 @@ class App extends React.Component {
     console.log(`Collateral result: ${JSON.stringify(collateralRes, null, 2)}`);
   }
 
-  async approvalHandler() {
-    const { tokenContract, address } = this.state;
-    const web3 = this.state.customWeb3;
-    const approveFor = channelManagerAddress;
-    const toApprove = this.state.approvalWeiUser;
-    const toApproveBn = eth.utils.bigNumberify(toApprove);
-    const nonce = await web3.eth.getTransactionCount(address);
-    const depositResGas = await tokenContract.methods.approve(approveFor, toApproveBn).estimateGas();
-    let tx = new Tx({
-      to: tokenAddress,
-      nonce: nonce,
-      from: address,
-      gasLimit: depositResGas * 2,
-      data: tokenContract.methods.approve(approveFor, toApproveBn).encodeABI()
-    });
-    tx.sign(Buffer.from(this.state.delegateSigner.getPrivateKeyString().substring(2), "hex"));
-    let signedTx = "0x" + tx.serialize().toString("hex");
-    let sentTx = web3.eth.sendSignedTransaction(signedTx, err => {
-      if (err) console.error(err);
-    });
-    sentTx
-      .once("transactionHash", hash => {
-        console.log(`tx broadcasted, hash: ${hash}`);
-      })
-      .once("receipt", receipt => {
-        console.log(`tx mined, receipt: ${JSON.stringify(receipt)}`);
-      });
-    console.log(`Sent tx: ${typeof sentTx} with keys ${Object.keys(sentTx)}`);
-  }
 
   render() {
-    const { address, channelState, sendScanArgs, exchangeRate } = this.state;
+    const { address, channelState, sendScanArgs, exchangeRate, customWeb3 } = this.state;
     const { classes } = this.props;
     return (
       <Router>
@@ -410,7 +388,7 @@ class App extends React.Component {
                 <AppBarComponent address={address} />
                 <Route exact path="/" render={() => <Home address={address} channelState={channelState} publicUrl={publicUrl} />} />
                 <Route path="/deposit" render={() => <DepositCard address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} />} />
-                <Route path="/settings" render={() => <SettingsCard />} />
+                <Route path="/settings" render={() => <SettingsCard networkHandler={this.networkHandler}/>} />
                 <Route path="/receive" render={() => <ReceiveCard address={address} channelState={channelState} publicUrl={publicUrl} />} />
                 <Route path="/send" render={() => <SendCard address={address} channelState={channelState} publicUrl={publicUrl} scanArgs={sendScanArgs} />} />
                 <Route path="/cashout" render={() => <CashOutCard address={address} channelState={channelState} publicUrl={publicUrl} exchangeRate={exchangeRate} />} />

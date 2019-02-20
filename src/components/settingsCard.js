@@ -33,17 +33,13 @@ class SettingsCard extends Component {
     this.state = {
       showRecovery: false,
       inputRecovery: false,
-      rpc: "LOCALHOST",
+      rpc: localStorage.getItem("rpc"),
       mnemonic: null
     };
   }
 
-  componentWillReceiveProps() {
-    //   this.setState({rpc: this.props.web3})
-  }
-
   async generateNewAddress() {
-    // NOTE: DelegateSigner is always recovered from browser storage.
+    // NOTE: DelegateSigner is always recoveredwhic from browser storage.
     //       It is ONLY set to state from within app on load.
     await createWallet(this.state.web3);
     // Then refresh the page
@@ -56,8 +52,9 @@ class SettingsCard extends Component {
   }
 
   async updateRPC(event) {
-    this.setState({ rpc: event.target.value });
-    console.log("RPC UPDATE ", event.target.value);
+    const rpc = event.target.value
+    this.setState({ rpc })
+    await this.props.networkHandler(rpc)
   }
 
   render() {
