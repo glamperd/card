@@ -70,14 +70,13 @@ class Home extends React.Component {
             </Modal>
           </div>
         </div>
-        <Grid container spacing={16} direction="column" alignItems="center" justify="center">
+        <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, textAlign: "center" }}>
           <Grid item xs={12} style={{paddingTop: 40}}>
-            <Grid container spacing={16} direction="row" alignItems="center" justify="center">
+            <Grid container spacing={8} direction="row" alignItems="center" justify="center">
               <Grid item xs={12} sm={6}>
                 <Button
                   fullWidth
                   style={{
-                    marginRight: "5px",
                     color: "#FFF",
                     backgroundColor: "#FCA311"
                   }}
@@ -94,7 +93,6 @@ class Home extends React.Component {
                 <Button
                   fullWidth
                   style={{
-                    marginLeft: "5px",
                     color: "#FFF",
                     backgroundColor: "#FCA311"
                   }}

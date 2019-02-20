@@ -20,7 +20,6 @@ import CashOutCard from "./components/cashOutCard";
 export const store = createStore(setWallet, null);
 
 const Web3 = require("web3");
-const Tx = require("ethereumjs-tx");
 const eth = require("ethers");
 const humanTokenAbi = require("./abi/humanToken.json");
 const wethAbi = require("./abi/weth.json");
@@ -121,7 +120,7 @@ class App extends React.Component {
     let rpc = localStorage.getItem("rpc");
     // TODO: better way to set default provider
     if (!rpc) {
-      rpc = env == "development" ? "LOCALHOST" : "RINKEBY";
+      rpc = env === "development" ? "LOCALHOST" : "RINKEBY";
       localStorage.setItem("rpc", rpc);
     }
     // If a browser address exists, create wallet
@@ -197,7 +196,7 @@ class App extends React.Component {
     const customWeb3 = new Web3(provider);
     const customId = await customWeb3.eth.net.getId();
     this.setState({ customWeb3 });
-    if (windowId && windowId != customId) {
+    if (windowId && windowId !== customId) {
       alert("Make sure your metamask and card are using the same network");
     }
     return;
@@ -388,7 +387,7 @@ class App extends React.Component {
       <Router>
         <div className={classes.app}>
           <Grid container spacing={24} direction="row" justify="center" alignItems="center">
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={4}>
               <Paper className={classes.paper}>
                 <AppBarComponent address={address} />
                 <Route exact path="/" render={() => <Home address={address} channelState={channelState} publicUrl={publicUrl} />} />
