@@ -1,77 +1,70 @@
 import React, { Component } from "react";
 import Card from "@material-ui/core/Card";
 import Typography from "@material-ui/core/Typography";
+import { withStyles } from "@material-ui/core";
+
+const styles = {
+  card: {
+    display: "flex",
+    flexDirection: "row",
+    width: "100%",
+    height: "auto",
+    marginTop: "-2%",
+    justifyContent: "center",
+    backgroundColor: "#282b2e",
+    elevation: "0",
+    square: true,
+    color: "white",
+    paddingTop: "25%",
+    paddingBottom: "25%"
+  },
+  row: {
+    color: "white"
+  },
+  clipboard: {
+    cursor: "pointer"
+  }
+};
 
 class ChannelCard extends Component {
-  constructor(props) {
-    super(props);
+  state = {
+    balance: "0"
+  };
 
-    this.state = {
-      balance: '',
-    }
-  }
-
-  componentWillReceiveProps(){
-    this.setState({balace: this.props.balanceTokenUser})
+  componentWillReceiveProps() {
+    this.setState({ balace: this.props.balanceTokenUser });
   }
 
   getSubstring(string) {
-    let temp = parseFloat(string)
-    temp = temp * Math.pow(10, -18)
-    let substring = temp.toString().split(".")
-    return substring
+    let temp = parseFloat(string);
+    if (temp === 0) {
+      return ["0", "00"]
+    }
+    temp = temp * Math.pow(10, -18);
+    let substring = temp.toString().split(".");
+    return substring;
   }
 
   render() {
-    const cardStyle = {
-      card: {
-        display: "flex",
-        flexDirection: "row",
-        width: "100%",
-        height: "auto",
-        marginTop: "-2%",
-        justifyContent: "center",
-        backgroundColor: "#282b2e",
-        elevation: "0",
-        square: true,
-        color: "white",
-        paddingTop: "25%",
-        paddingBottom: "25%",
-      },
-      row: {
-        color: "white",
-      },
-      clipboard: {
-        cursor: "pointer"
-      },
-    };
-
+    const { balance } = this.state
+    console.log('balance: ', balance);
+    const { classes } = this.props
     return (
-      <Card style={cardStyle.card}>
-        <span>  
-          <Typography inline={true} variant="h5" style={cardStyle.row}>
-          {"$"+" "}
-          </Typography>      
-          <Typography inline={true} variant="h1" style={cardStyle.row}>
-          {this.state.balance != '' ? (
-            <span>{this.getSubstring(this.state.balance)[0]}</span>
-          ) : (
-            <span>0</span>
-          )}
-        </Typography>
-        <Typography inline={true} variant="h3" style={cardStyle.row}>
-          {this.state.balance != '' ? (
-            <span>
-              {"." + this.getSubstring(this.state.balance)[1].substring(0,2)}
-            </span>
-          ) : (
-            <span>.00</span>
-          )}
-        </Typography>   
+      <Card className={classes.card}>
+        <span>
+          <Typography inline={true} variant="h5" className={classes.row}>
+            {"$" + " "}
+          </Typography>
+          <Typography inline={true} variant="h1" className={classes.row}>
+            <span>{this.getSubstring(balance)[0]}</span>
+          </Typography>
+          <Typography inline={true} variant="h3" className={classes.row}>
+            <span>{"." + this.getSubstring(balance)[1].substring(0, 2)}</span>
+          </Typography>
         </span>
       </Card>
     );
   }
 }
 
-export default ChannelCard;
+export default withStyles(styles)(ChannelCard);
