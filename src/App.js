@@ -68,7 +68,7 @@ const opts = {
 const styles = theme => ({
   paper: {
     paddingBottom: theme.spacing.unit * 2,
-    height: 550
+    minHeight: 550
   },
   app: {
     flexGrow: 1,
