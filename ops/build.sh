@@ -11,7 +11,7 @@ id=`if [[ "$kernel" == "Darwin" ]]; then echo 0:0; else echo $my_id; fi`
 
 docker run --name="card_buidler" --tty --rm --volume="`pwd`:/root" card_builder $id "npm install --unsafe-perm --prefer-offline"
 
-rm .env
+rm -f .env
 cp ops/prod.env .env
 
 docker run --name="card_buidler" --tty --rm --volume="`pwd`:/root" card_builder $id "npm run build"
