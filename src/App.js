@@ -23,15 +23,9 @@ export const store = createStore(setWallet, null);
 const Web3 = require("web3");
 const eth = require("ethers");
 const humanTokenAbi = require("./abi/humanToken.json");
-const wethAbi = require("./abi/weth.json");
 
 const env = process.env.NODE_ENV;
-let tokenAbi;
-if (env === "production") {
-  tokenAbi = wethAbi;
-} else {
-  tokenAbi = humanTokenAbi;
-}
+const tokenAbi = humanTokenAbi;
 console.log(`starting app in env: ${JSON.stringify(process.env, null, 1)}`);
 const hubUrl = process.env.REACT_APP_HUB_URL.toLowerCase();
 // Provider info
