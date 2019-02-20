@@ -13,16 +13,6 @@ import { emptyAddress } from "connext/dist/Utils";
 import { withStyles, Grid } from "@material-ui/core";
 
 const styles = {
-  card: {
-    display: "flex",
-    flexWrap: "wrap",
-    flexDirection: "row",
-    width: "100%",
-    height: "70%",
-    justifyContent: "center",
-    backgroundColor: "#FFFFFF",
-    padding: "4% 4% 4% 4%"
-  },
   icon: {
     width: "40px",
     height: "40px"
@@ -31,11 +21,8 @@ const styles = {
     width: "100%"
   },
   button: {
-    height: "40px",
     backgroundColor: "#FCA311",
-    color: "#FFF",
-    marginLeft: "5px",
-    marginRight: "5px"
+    color: "#FFF"
   }
 };
 
@@ -124,12 +111,13 @@ class PayCard extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Grid container spacing={16} direction="column" alignItems="center" justify="center">
+      <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, textAlign: "center" }}>
         <Grid item xs={12}>
           <SendIcon className={classes.icon} />
         </Grid>
         <Grid item xs={12}>
           <TextField
+            fullWidth
             className={classes.input}
             id="outlined-number"
             label="Amount"
@@ -186,9 +174,10 @@ class PayCard extends Component {
           error={this.state.balanceError != null}
         /> */}
         <Grid item xs={12}>
-          <Grid container direction="row" alignItems="center" justify="center">
+          <Grid container direction="row" alignItems="center" justify="center" spacing={16}>
             <Grid item xs={6}>
               <Button
+                fullWidth
                 className={classes.button}
                 variant="contained"
                 size="large"
@@ -200,7 +189,7 @@ class PayCard extends Component {
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button className={classes.button} variant="contained" size="large" onClick={() => this.paymentHandler()}>
+              <Button fullWidth className={classes.button} variant="contained" size="large" onClick={() => this.paymentHandler()}>
                 Send
                 <SendIcon style={{ marginLeft: "5px" }} />
               </Button>

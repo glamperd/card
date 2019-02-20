@@ -33,7 +33,7 @@ class DepositCard extends Component {
     const { classes, address } = this.props;
 
     return (
-      <Grid container spacing={24} direction="column" alignItems="center" justify="center">
+      <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, textAlign: "center" }}>
         <Grid item xs={12}>
           <DepositIcon className={classes.icon} />
         </Grid>
@@ -48,7 +48,7 @@ class DepositCard extends Component {
           <QRGenerate value={address} />
         </Grid>
         <Grid item xs={12}>
-          <Button variant="outlined">
+          <Button variant="outlined" fullWidth>
             <CopyIcon style={{ marginRight: "5px" }} />
             <CopyToClipboard text={address}>
               <Typography noWrap variant="body1">

@@ -9,8 +9,6 @@ import Typography from "@material-ui/core/Typography";
 import CopyIcon from "@material-ui/icons/FileCopy";
 import QRGenerate from "./qrGenerate";
 import { withStyles, Grid } from "@material-ui/core";
-const Web3 = require("web3");
-const eth = require("ethers");
 
 const styles = {
   icon: {
@@ -54,12 +52,13 @@ class ReceiveCard extends Component {
     const { classes, address } = this.props;
     const { qrUrl, error, displayVal } = this.state
     return (
-      <Grid container spacing={24} direction="column" alignItems="center" justify="center">
+      <Grid container spacing={16} direction="column" style={{ paddingLeft: 12, paddingRight: 12, textAlign: "center" }}>
         <Grid item xs={12}>
           <ReceiveIcon className={classes.icon} />
         </Grid>
         <Grid item xs={12}>
           <TextField
+            fullWidth
             id="outlined-number"
             label="Amount"
             value={displayVal}
@@ -75,7 +74,7 @@ class ReceiveCard extends Component {
           <QRGenerate value={qrUrl} />
         </Grid>
         <Grid item xs={12}>
-          <Button variant="outlined">
+          <Button variant="outlined" fullWidth>
             <CopyIcon style={{ marginRight: "5px" }} />
             <CopyToClipboard text={address}>
               <Typography noWrap variant="body1">
