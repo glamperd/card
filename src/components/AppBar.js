@@ -18,7 +18,7 @@ const AppBarComponent = props => (
               alt=""
               style={{ width: "40px", height: "40px" }}
             />
-            <Typography variant="body2" noWrap style={{ width: "75px", color: "#c1c6ce" }}>
+            <Typography variant="body2" noWrap style={{ width: "75px", color: "#c1c6ce", marginLeft: "3px" }}>
               <span>{props.address}</span>
             </Typography>
           </IconButton>
