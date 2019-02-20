@@ -19,4 +19,4 @@ docker container run \
   --publish "80:80" \
   --publish "443:443" \
   --volume card_certs:/etc/letsencrypt \
-  connext_card:latest
+  $image
