@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import Card from "@material-ui/core/Card";
 import Button from "@material-ui/core/Button";
 import UnarchiveIcon from "@material-ui/icons/Unarchive";
 import TextField from "@material-ui/core/TextField";
@@ -8,7 +7,6 @@ import EthIcon from "../assets/Eth.svg";
 import DaiIcon from "../assets/dai.svg";
 import Tooltip from "@material-ui/core/Tooltip";
 import InputAdornment from "@material-ui/core/InputAdornment";
-import { BigNumber } from "bignumber.js";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
 import { withStyles, Grid } from "@material-ui/core";
@@ -80,10 +78,10 @@ class CashOutCard extends Component {
       tokensToSell: this.props.channelState.balanceTokenUser,
       withdrawalWeiUser: this.props.channelState.balanceWeiUser
     };
-    let balance = new BigNumber(this.props.channelState.balanceTokenUser);
-    let tokenBalance = new BigNumber(this.props.channelState.balanceWeiUser);
-    let exchangeRate = new BigNumber(this.props.exchangeRate);
-    const tokenBalanceConverted = tokenBalance.dividedToIntegerBy(exchangeRate);
+    // let balance = new BigNumber(this.props.channelState.balanceTokenUser);
+    // let tokenBalance = new BigNumber(this.props.channelState.balanceWeiUser);
+    // let exchangeRate = new BigNumber(this.props.exchangeRate);
+    // const tokenBalanceConverted = tokenBalance.dividedToIntegerBy(exchangeRate);
     // const aggBalance = String(balance.plus(tokenBalanceConverted));
     // console.log(aggBalance);
 
@@ -102,7 +100,7 @@ class CashOutCard extends Component {
     };
     console.log(`Withdrawing: ${JSON.stringify(this.state.withdrawalVal, null, 2)}`);
     this.setState({ addressError: null, balanceError: null });
-    const { channelState, connext, web3 } = this.props;
+    const { connext, web3 } = this.props;
     // if (
     //   Big(this.state.withdrawalVal.withdrawalWeiUser).isLessThanOrEqualTo(channelState.balanceWeiUser) &&
     //   Big(this.state.withdrawalVal.tokensToSell).isLessThanOrEqualTo(channelState.balanceTokenUser)
@@ -186,13 +184,13 @@ class CashOutCard extends Component {
             <Grid item xs={6}>
               <Button className={classes.button} fullWidth>
                 Cash Out Eth
-                <img src={EthIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} />
+                <img src={EthIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} alt=""/>
               </Button>
             </Grid>
             <Grid item xs={6}>
               <Button className={classes.button} fullWidth>
                 Cash Out Dai
-                <img src={DaiIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} />
+                <img src={DaiIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} alt=""/>
               </Button>
             </Grid>
           </Grid>

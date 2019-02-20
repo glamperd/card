@@ -381,7 +381,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { address, channelState, sendScanArgs, exchangeRate, customWeb3 } = this.state;
+    const { address, channelState, sendScanArgs, exchangeRate } = this.state;
     const { classes } = this.props;
     return (
       <Router>

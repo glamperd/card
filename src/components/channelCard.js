@@ -43,7 +43,7 @@ class ChannelCard extends Component {
       <Card className={classes.card}>
         <span>
           <Typography inline={true} variant="h5" className={classes.row}>
-            {"$" + " "}
+            {"$ "}
           </Typography>
           <Typography inline={true} variant="h1" className={classes.row}>
             <span>{this.getSubstring(channelState.balanceTokenUser)[0]}</span>

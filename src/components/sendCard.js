@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import Card from "@material-ui/core/Card";
 import Button from "@material-ui/core/Button";
 import SendIcon from "@material-ui/icons/Send";
 import TextField from "@material-ui/core/TextField";
@@ -92,7 +91,7 @@ class PayCard extends Component {
   async paymentHandler() {
     console.log(`Submitting payment: ${JSON.stringify(this.state.paymentVal, null, 2)}`);
     this.setState({ addressError: null, balanceError: null });
-    const { channelState, connext, web3 } = this.props;
+    const { connext, web3 } = this.props;
 
     // if( Number(this.state.paymentVal.payments[0].amount.amountToken) <= Number(channelState.balanceTokenUser) &&
     //     Number(this.state.paymentVal.payments[0].amount.amountWei) <= Number(channelState.balanceWeiUser)

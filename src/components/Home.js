@@ -1,6 +1,5 @@
 import React from "react";
 import "../App.css";
-import CashOutCard from "./cashOutCard";
 import ChannelCard from "./channelCard";
 import QRScan from "./qrScan";
 import QRIcon from "mdi-material-ui/QrcodeScan";
