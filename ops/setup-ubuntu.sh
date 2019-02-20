@@ -4,30 +4,39 @@ set -e
 
 hostname="$1"
 user="ubuntu"
+prvkey="$HOME/.ssh/connext-aws"
 
 # Sanity checks
 if [[ -z "$1" || -n "$2" ]]
 then echo "Provide the server's hostname or ip address as the first ($1) & only arg ($2)" && exit
 fi
 
-# Prepare to set or use our user's password
-echo "Set a new sudo password for REMOTE machine.. and again to confirm (no echo)"
-echo -n "> "
-read -s password
-echo
-echo -n "> "
-read -s confirm
-echo
-
-if [[ "$password" != "$confirm" ]]
-then echo "Passwords did not match, aborting" && exit
+if [[ ! -f "$prvkey" ]]
+then echo "Couldn't find the ssh private key: $prvkey" && exit
 fi
 
+if ssh -q -i $prvkey ubuntu@$hostname exit 2> /dev/null
+then
+  echo "Looks like an AWS server, skipping root setup"
+  password=""
+
 # If we can login as root then setup a sudo user & turn off root login
-if ssh -q root@$hostname exit 2> /dev/null
+elif ssh -q -i $prvkey root@$hostname exit 2> /dev/null
 then
 
-  ssh root@$hostname "bash -s" <<-EOF
+  # Prepare to set or use our user's password
+  echo "Set a new sudo password for REMOTE machine.. and again to confirm (no echo)"
+  echo -n "> "
+  read -s password
+  echo
+  echo -n "> "
+  read -s confirm
+  echo
+  if [[ "$password" != "$confirm" ]]
+  then echo "Passwords did not match, aborting" && exit
+  fi
+
+  ssh -i $prvkey root@$hostname "bash -s" <<-EOF
 		set -e
 		function createuser {
 			adduser --gecos "" \$1 <<-EOIF
@@ -58,7 +67,7 @@ else
 	echo "root login disabled, skipping user setup"
 fi
 
-ssh $user@$hostname "sudo -S bash -s" <<EOF
+ssh -i $prvkey $user@$hostname "sudo -S bash -s" <<EOF
 $password
 set -e
 

@@ -7,6 +7,8 @@ connext-client
 
 # Useless
 .DS_Store
+.config
+.node-gyp
 
 # Logs
 logs
