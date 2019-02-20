@@ -1,3 +1,9 @@
+# Generated
+build
+
+# Temporary
+*.swp
+
 # Logs
 logs
 *.log
