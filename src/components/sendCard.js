@@ -11,6 +11,8 @@ import QRScan from "./qrScan";
 import { emptyAddress } from "connext/dist/Utils";
 import { withStyles, Grid } from "@material-ui/core";
 
+const queryString = require("query-string");
+
 const styles = {
   icon: {
     width: "40px",
@@ -37,9 +39,9 @@ class PayCard extends Component {
         },
         payments: [
           {
-            recipient: emptyAddress.substr(0, 4) + "...",
+            recipient: this.props.scanArgs.recipient ? this.props.scanArgs.recipient : emptyAddress.substr(0, 4) + "...",
             amount: {
-              amountToken: "0"
+              amountToken: this.props.scanArgs.amount ? this.props.scanArgs.amount : "0"
             },
             type: "PT_CHANNEL"
           }
@@ -49,25 +51,22 @@ class PayCard extends Component {
       balanceError: null,
       scan: false
     };
+  }
 
-    if (this.props.scanArgs.recipient && this.props.scanArgs.amount) {
-      this.state = {
-        paymentVal: {
-          meta: {
-            purchaseId: "payment"
-            // memo: "",
-          },
-          payments: [
-            {
-              recipient: this.props.scanArgs.recipient,
-              amount: {
-                amountToken: this.props.scanArgs.amount
-              },
-              type: "PT_CHANNEL"
-            }
-          ]
-        }
-      };
+  async componentDidMount() {
+    const { location } = this.props;
+    const query = queryString.parse(location.search);
+    if (query.amountToken) {
+      await this.setState(oldState => {
+        oldState.paymentVal.payments[0].amount.amountToken = query.amountToken;
+        return oldState;
+      });
+    }
+    if (query.recipient) {
+      await this.setState(oldState => {
+        oldState.paymentVal.payments[0].recipient = query.recipient;
+        return oldState;
+      });
     }
   }
 
