@@ -66,7 +66,7 @@ class SettingsCard extends Component {
     return (
       <Grid container spacing={24} direction="column" alignItems="stretch" justify="center">
         <Grid container item spacing={0} justify="center" alignItems="center">
-          <Grid item xs={8}>
+          <Grid item xs={2}>
             <SettingsIcon className={classes.icon} />
           </Grid>
         </Grid>
