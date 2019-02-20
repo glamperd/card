@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Card from "@material-ui/core/Card";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core";
+import { getDollarSubstring } from "../utils/getDollarSubstring";
 
 const styles = {
   card: {
@@ -27,22 +28,9 @@ const styles = {
 };
 
 class ChannelCard extends Component {
-  getSubstring(string) {
-    let temp = parseFloat(string);
-    if (!temp || temp === 0) {
-      return ["0", "00"]
-    }
-    temp = temp * Math.pow(10, -18);
-    let substring = temp.toString().split(".");
-    if (substring.length == 1) {
-      // temp is an integer
-      substring.push("00")
-    }
-    return substring;
-  }
-
   render() {
     const { classes, channelState } = this.props
+    const substr = getDollarSubstring(channelState.balanceTokenUser)
     return (
       <Card className={classes.card}>
         <span>
@@ -50,10 +38,10 @@ class ChannelCard extends Component {
             {"$" + " "}
           </Typography>
           <Typography inline={true} variant="h1" className={classes.row}>
-            <span>{this.getSubstring(channelState.balanceTokenUser)[0]}</span>
+            <span>{substr[0]}</span>
           </Typography>
           <Typography inline={true} variant="h3" className={classes.row}>
-            <span>{"." + this.getSubstring(channelState.balanceTokenUser)[1].substring(0, 2)}</span>
+            <span>{"." + substr[1].substring(0, 2)}</span>
           </Typography>
         </span>
       </Card>
