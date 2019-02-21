@@ -58,9 +58,10 @@ class PayCard extends Component {
   async componentDidMount() {
     const { location } = this.props;
     const query = queryString.parse(location.search);
-    if (query.amountToken) {
+    if (query.amounttoken) {
       await this.setState(oldState => {
-        oldState.paymentVal.payments[0].amount.amountToken = query.amountToken;
+        oldState.paymentVal.payments[0].amount.amountToken = (query.amounttoken*Math.pow(10,18)).toString();
+        oldState.displayVal = query.amounttoken
         return oldState;
       });
     }
