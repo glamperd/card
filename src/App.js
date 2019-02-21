@@ -410,7 +410,7 @@ class App extends React.Component {
                 <Route path="/receive" render={props => <ReceiveCard {...props} address={address} channelState={channelState} publicUrl={publicUrl} />} />
                 <Route
                   path="/send"
-                  render={props => <SendCard {...props} address={address} channelState={channelState} publicUrl={publicUrl} scanArgs={sendScanArgs} />}
+                  render={props => <SendCard {...props} web3={customWeb3} connext={connext} address={address} channelState={channelState} publicUrl={publicUrl} scanArgs={sendScanArgs} />}
                 />
                 <Route
                   path="/cashout"

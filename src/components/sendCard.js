@@ -39,9 +39,10 @@ class PayCard extends Component {
         },
         payments: [
           {
-            recipient: this.props.scanArgs.recipient ? this.props.scanArgs.recipient : emptyAddress.substr(0, 4) + "...",
+            recipient: this.props.scanArgs.recipient ? this.props.scanArgs.recipient : emptyAddress.substr(0, 3) + "...",
             amount: {
-              amountToken: this.props.scanArgs.amount ? this.props.scanArgs.amount : "0"
+              amountToken: this.props.scanArgs.amount ? (this.props.scanArgs.amount * Math.pow(10,18)) : "0",
+              amountWei: "0",
             },
             type: "PT_CHANNEL"
           }
@@ -49,7 +50,8 @@ class PayCard extends Component {
       },
       addressError: null,
       balanceError: null,
-      scan: false
+      scan: false,
+      displayVal: this.props.scanArgs.amount ? this.props.scanArgs.amount : "0"
     };
   }
 
@@ -72,9 +74,10 @@ class PayCard extends Component {
 
   async updatePaymentHandler(value) {
     await this.setState(oldState => {
-      oldState.paymentVal.payments[0].amount.amountToken = value;
+      oldState.paymentVal.payments[0].amount.amountToken = (value*Math.pow(10, 18)).toString();
       return oldState;
     });
+    this.setState({displayVal: value})
     console.log(`Updated paymentVal: ${JSON.stringify(this.state.paymentVal, null, 2)}`);
   }
 
@@ -121,7 +124,7 @@ class PayCard extends Component {
             label="Amount"
             placeholder="$0.00"
             required
-            value={this.state.paymentVal.payments[0].amount.amountToken}
+            value={this.state.displayVal}
             onChange={evt => this.updatePaymentHandler(evt.target.value)}
             type="number"
             margin="normal"
