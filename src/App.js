@@ -388,6 +388,15 @@ class App extends React.Component {
     });
   }
 
+  async scanURL(amount, recipient) {
+    this.setState({
+      sendScanArgs: {
+        amount,
+        recipient
+      }
+    })
+  }
+
   async collateralHandler() {
     console.log(`Requesting Collateral`);
     let collateralRes = await this.state.connext.requestCollateral();
@@ -404,7 +413,7 @@ class App extends React.Component {
             <Grid item xs={12} sm={5}>
               <Paper className={classes.paper}>
                 <AppBarComponent address={address} />
-                <Route exact path="/" render={props => <Home {...props} address={address} channelState={channelState} publicUrl={publicUrl} />} />
+                <Route exact path="/" render={props => <Home {...props} address={address} channelState={channelState} publicUrl={publicUrl} scanURL={this.scanURL.bind(this)} />} />
                 <Route path="/deposit" render={props => <DepositCard {...props} address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} exchangeRate={exchangeRate} />} />
                 <Route path="/settings" render={props => <SettingsCard {...props} networkHandler={this.networkHandler} />} />
                 <Route path="/receive" render={props => <ReceiveCard {...props} address={address} channelState={channelState} publicUrl={publicUrl} />} />

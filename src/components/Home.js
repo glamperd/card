@@ -16,22 +16,26 @@ class Home extends React.Component {
   state = {
     modals: {
       scan: false
-    }
+    },
+    sendScanArgs: null,
   };
 
-  scanQRCode(data) {
+  async scanQRCode(data) {
     const { publicUrl } = this.props;
+    console.log("PUBLIC URL")
+    console.log(publicUrl)
 
-    data = data.split("?");
+    data = data.split("/send?");
+    console.log(data[0])
     if (data[0] === publicUrl) {
       let temp = data[1].split("&");
       let amount = temp[0].split("=")[1];
       let recipient = temp[1].split("=")[1];
-      const { sendScanArgs, modals } = this.state;
       this.setState({
-        sendScanArgs: { ...sendScanArgs, amount, recipient },
-        modals: { ...modals, send: true }
+        modals: { scan: false }
       });
+      await this.props.scanURL(amount, recipient)
+      this.props.history.push("/send")
     } else {
       console.log("incorrect site");
     }
