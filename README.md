@@ -1,5 +1,12 @@
-# burner
-Implementation of Austin Griffith's classic burner wallet but using Indra!
+# Card
+A simple offchain wallet, hosted in the browser, which utilizes Indra payment channels. Inspired by the SpankCard and Austin Griffith's burner wallet.
+
+See it on Rinkeby at: https://card.connext.network
+
+Mainnet implementation: https://daicard.io
+
+## Overview
+
 
 ## Local development
 
