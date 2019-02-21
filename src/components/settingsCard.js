@@ -55,6 +55,7 @@ class SettingsCard extends Component {
     const rpc = event.target.value;
     this.setState({ rpc });
     await this.props.networkHandler(rpc);
+    window.location.reload();
   }
 
   render() {
@@ -80,7 +81,7 @@ class SettingsCard extends Component {
           >
             <MenuItem disabled={true} value={"MAINNET"}>Mainnet</MenuItem>
             <MenuItem value={"RINKEBY"}>Rinkeby</MenuItem>
-            <MenuItem disabled={process.env.NODE_ENV === "production"} value={"LOCALHOST"}>Localhost</MenuItem>
+            <MenuItem value={"LOCALHOST"}>Localhost</MenuItem>
           </Select>
         </Grid>
         <Grid item xs={12}>
