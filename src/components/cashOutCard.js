@@ -140,7 +140,6 @@ class CashOutCard extends Component {
           <Typography variant="h2">
             <span>{aggregateBalance}</span>
           </Typography>
-          <img src={withdrawEth ? EthIcon : DaiIcon} style={{ width: "25px", height: "25px", marginLeft: "5px" }}></img>
           </Grid>
         </Grid>
         <Grid item xs={12}>
@@ -186,7 +185,7 @@ class CashOutCard extends Component {
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button className={classes.button} fullWidth onClick={() => this.withdrawalHandler(false)} disabled={true}>
+              <Button className={classes.button} variant="contained" fullWidth onClick={() => this.withdrawalHandler(false)} disabled>
                 Cash Out Dai
                 <img src={DaiIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} alt=""/>
               </Button>

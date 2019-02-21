@@ -134,7 +134,7 @@ class SettingsCard extends Component {
               color="primary"
               variant="outlined"
               size="large"
-              placeholder="Enter mnemonic and submmit"
+              placeholder="Enter mnemonic and submit"
               value={this.state.mnemonic}
               onChange={event => this.setState({ mnemonic: event.target.value })}
               InputProps={{
