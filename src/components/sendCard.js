@@ -9,7 +9,8 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
 import { emptyAddress } from "connext/dist/Utils";
-import { withStyles, Grid } from "@material-ui/core";
+import { withStyles, Grid, Typography } from "@material-ui/core";
+import { getDollarSubstring } from "../utils/getDollarSubstring"
 
 const queryString = require("query-string");
 
@@ -111,11 +112,19 @@ class PayCard extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, channelState } = this.props;
     return (
       <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: "10%", paddingBottom: "10%", textAlign: "center" }}>
         <Grid item xs={12}>
           <SendIcon className={classes.icon} />
+        </Grid>
+        <Grid item xs={12}>
+          <Grid container direction="row" justify="center" alignItems="center">
+          <Typography variant="h2">
+            <span>{channelState ? ('$' + getDollarSubstring(channelState.balanceTokenUser)[0] + 
+                    '.' + getDollarSubstring(channelState.balanceTokenUser)[1].substr(0, 2)) : ("$0.00")}</span>
+          </Typography>
+          </Grid>
         </Grid>
         <Grid item xs={12}>
           <TextField
