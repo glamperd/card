@@ -169,6 +169,19 @@ class SettingsCard extends Component {
             Burn Wallet
           </Button>
         </Grid>
+        <Grid item xs={12}>
+          <Button
+            fullWidth
+            style={{
+              background: "#FFF",
+              border: "1px solid #08B22D",
+              color: "#08B22D"
+            }}
+            size="large"
+          >
+            <a style={{textDecoration:"none",color:"#08B22D"}} href="https://discord.gg/q2cakRc">Give Feedback</a>
+          </Button>
+        </Grid>
       </Grid>
     );
   }
