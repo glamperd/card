@@ -64,15 +64,31 @@ const opts = {
 const styles = theme => ({
   paper: {
     paddingBottom: theme.spacing.unit * 2,
-    minHeight: 550
+    height: '100%',
+    width: '100%',
+    [theme.breakpoints.up(600)]: {
+      width: 550
+    },
   },
   app: {
+    display:'flex',
+    justifyContent: 'center',
     flexGrow: 1,
     fontFamily: ["proxima-nova", "sans-serif"],
     /* background-color: #fcfbf3; */
     /* background-color:  //#c8d0de */
     /* background-color: #F4F5F7; */
-    backgroundColor: "#FFF"
+    backgroundColor: "#FFF",
+    width:'101%',
+    [theme.breakpoints.up(824)]: {
+      height: 600
+    },
+    [theme.breakpoints.down(824)]: {
+      height: '100vh'
+    },
+  },
+  grid: {
+
   }
 });
 
@@ -408,9 +424,7 @@ class App extends React.Component {
     const { classes } = this.props;
     return (
       <Router>
-        <div className={classes.app}>
-          <Grid container spacing={24} direction="row" justify="center" alignItems="center">
-            <Grid item xs={12} sm={5}>
+        <div className={classes.app} container spacing={24} direction="row" justify="center" alignItems="center">
               <Paper className={classes.paper}>
                 <AppBarComponent address={address} />
                 <Route exact path="/" render={props => <Home {...props} address={address} channelState={channelState} publicUrl={publicUrl} scanURL={this.scanURL.bind(this)} />} />
@@ -426,8 +440,6 @@ class App extends React.Component {
                   render={() => <CashOutCard address={address} channelState={channelState} publicUrl={publicUrl} exchangeRate={exchangeRate} web3={customWeb3} connext={connext} connextState={connextState} />}
                 />
               </Paper>
-            </Grid>
-          </Grid>
         </div>
       </Router>
     );
