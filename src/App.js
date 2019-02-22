@@ -81,7 +81,7 @@ const styles = theme => ({
     backgroundColor: "#FFF",
     width:'103vw',
     [theme.breakpoints.up(824)]: {
-      height: 600
+      height: "100%"
     },
     [theme.breakpoints.down(824)]: {
       height: '102vh'
