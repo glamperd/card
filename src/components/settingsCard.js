@@ -1,5 +1,15 @@
 import React, { Component } from "react";
-import { Button, Grid, Select, MenuItem, Typography, Tooltip, TextField, InputAdornment, withStyles } from "@material-ui/core";
+import {
+  Button,
+  Grid,
+  Select,
+  MenuItem,
+  Typography,
+  Tooltip,
+  TextField,
+  InputAdornment,
+  withStyles
+} from "@material-ui/core";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import CopyIcon from "@material-ui/icons/FileCopy";
 import SubmitIcon from "@material-ui/icons/ArrowRight";
@@ -23,7 +33,11 @@ const styles = {
   },
   input: {
     width: "100%"
+  },
+  button:{
+    marginBottom:"0px"
   }
+
 };
 
 class SettingsCard extends Component {
@@ -62,7 +76,18 @@ class SettingsCard extends Component {
     const { classes } = this.props;
     // TODO: WHY ISNT THE JUSTIFY CENTER WORKING???
     return (
-      <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: "10%", paddingBottom: "10%", textAlign: "center" }}>
+      <Grid
+        container
+        spacing={24}
+        direction="column"
+        style={{
+          paddingLeft: 12,
+          paddingRight: 12,
+          paddingTop: "10%",
+          paddingBottom: "10%",
+          textAlign: "center"
+        }}
+      >
         <Grid item xs={12}>
           <SettingsIcon className={classes.icon} />
         </Grid>
@@ -79,12 +104,34 @@ class SettingsCard extends Component {
             disableUnderline
             IconComponent={() => null}
           >
-            <MenuItem disabled={true} value={"MAINNET"}>Mainnet</MenuItem>
+            <MenuItem disabled={true} value={"MAINNET"}>
+              Mainnet
+            </MenuItem>
             <MenuItem value={"RINKEBY"}>Rinkeby</MenuItem>
             <MenuItem value={"LOCALHOST"}>Localhost</MenuItem>
           </Select>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} className={classes.button}>
+          <Button
+            fullWidth
+            style={{
+              background: "#FFF",
+              border: "1px solid #7289da",
+              color: "#7289da"
+            }}
+            size="large"
+          >
+            <a
+              rel="noopener noreferrer"
+              target="_blank"
+              style={{ textDecoration: "none", color: "#7289da" }}
+              href="https://discord.gg/q2cakRc"
+            >
+              Discord
+            </a>
+          </Button>
+        </Grid>
+        <Grid item xs={12} className={classes.button}>
           {!this.state.showRecovery ? (
             <Button
               fullWidth
@@ -106,9 +153,16 @@ class SettingsCard extends Component {
               onClick={() => this.setState({ showRecovery: true })}
             >
               <CopyIcon style={{ marginRight: "5px" }} />
-              <CopyToClipboard text={localStorage.getItem("mnemonic")} color="primary">
+              <CopyToClipboard
+                text={localStorage.getItem("mnemonic")}
+                color="primary"
+              >
                 <Typography noWrap variant="body1" color="primary">
-                  <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
+                  <Tooltip
+                    disableFocusListener
+                    disableTouchListener
+                    title="Click to Copy"
+                  >
                     <span>{localStorage.getItem("mnemonic")}</span>
                   </Tooltip>
                 </Typography>
@@ -116,7 +170,7 @@ class SettingsCard extends Component {
             </Button>
           )}
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} className={classes.button}>
           {!this.state.inputRecovery ? (
             <Button
               fullWidth
@@ -136,7 +190,9 @@ class SettingsCard extends Component {
               size="large"
               placeholder="Enter mnemonic and submit"
               value={this.state.mnemonic}
-              onChange={event => this.setState({ mnemonic: event.target.value })}
+              onChange={event =>
+                this.setState({ mnemonic: event.target.value })
+              }
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -155,7 +211,7 @@ class SettingsCard extends Component {
             />
           )}
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} className={classes.button}>
           <Button
             fullWidth
             style={{
@@ -167,19 +223,6 @@ class SettingsCard extends Component {
             onClick={() => this.generateNewAddress()}
           >
             Burn Wallet
-          </Button>
-        </Grid>
-        <Grid item xs={12}>
-          <Button
-            fullWidth
-            style={{
-              background: "#FFF",
-              border: "1px solid #08B22D",
-              color: "#08B22D"
-            }}
-            size="large"
-          >
-            <a style={{textDecoration:"none",color:"#08B22D"}} href="https://discord.gg/q2cakRc">Give Feedback</a>
           </Button>
         </Grid>
       </Grid>
