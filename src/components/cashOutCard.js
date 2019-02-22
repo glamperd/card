@@ -11,7 +11,7 @@ import DaiIcon from "../assets/dai.svg";
 import Tooltip from "@material-ui/core/Tooltip";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Modal from "@material-ui/core/Modal";
-import CircularProgress from '@material-ui/core/CircularProgress';
+import CircularProgress from "@material-ui/core/CircularProgress";
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
 import { convertChannelState } from "connext/dist/types";
@@ -21,10 +21,10 @@ import { getDollarSubstring } from "../utils/getDollarSubstring";
 import { ConnextState } from "connext/dist/state/store";
 import { getAggregateChannelBalance } from "../utils/getAggregateChannelBalance";
 
-const styles = theme =>({
+const styles = theme => ({
   icon: {
     [theme.breakpoints.down(600)]: {
-      marginLeft: "168px"
+      marginLeft: "170px"
     },
     [theme.breakpoints.up(600)]: {
       marginLeft: "255px"
@@ -34,7 +34,7 @@ const styles = theme =>({
     float: "right"
   },
   cancelIcon: {
-    marginLeft: "110px",
+    marginLeft: "100px",
     width: "50px",
     height: "50px",
     float: "right",
@@ -43,6 +43,17 @@ const styles = theme =>({
   button: {
     backgroundColor: "#FCA311",
     color: "#FFF"
+  },
+  modal: {
+    position: 'absolute',
+    top:"-400px",
+    left:"150px",
+    width: theme.spacing.unit * 50,
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing.unit * 4,
+    outline: 'none',
+    
   }
 });
 
@@ -164,6 +175,28 @@ class CashOutCard extends Component {
     );
   }
 
+  async checkState() {
+    const { channelState, connext, web3, exchangeRate } = this.props;
+    if (channelState.pendingWithdrawalWeiUser !== "0") {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  //withRouter(async ({ history })
+
+  poller = async () => {
+    var interval = setInterval(async () => {
+      var didWithdraw = this.checkState();
+      if (didWithdraw) {
+        await this.setState({ withdrawing: false });
+        //history.push("/");
+        clearInterval(interval);
+      }
+    }, 1000);
+  };
+
   async withdrawalHandler(withdrawEth) {
     const { channelState, connext, web3, exchangeRate } = this.props;
     const withdrawalVal = await this.updateWithdrawalVals(withdrawEth);
@@ -182,17 +215,14 @@ class CashOutCard extends Component {
     }
     // check the input balance is under channel balance
     // TODO: allow partial withdrawals?
-    console.log(`Withdrawing: ${JSON.stringify(withdrawalVal, null, 2)}`);
-    let withdrawalRes = await connext.withdraw(withdrawalVal);
-    console.log(`Withdrawal result: ${JSON.stringify(withdrawalRes, null, 2)}`);
-    
     //invoke withdraw modal
     this.setState({ withdrawing: true });
 
-    if (withdrawalRes) {
-      this.setState({ withdrawing: false });
-      window.history.push("/");
-    }
+    console.log(`Withdrawing: ${JSON.stringify(withdrawalVal, null, 2)}`);
+    let withdrawalRes = await connext.withdraw(withdrawalVal);
+    console.log(`Withdrawal result: ${JSON.stringify(withdrawalRes, null, 2)}`);
+
+    this.poller();
   }
 
   render() {
@@ -217,13 +247,24 @@ class CashOutCard extends Component {
           textAlign: "center"
         }}
       >
-      {/* <Modal
-          id="withdrawing"
+        <Modal
+          style={{
+            position:"absolute",
+            backgroundColor:"transparent"
+          }}
+          history={this.props.history}
+          hideBackdrop={true}
+          disablePortal={true}
           open={this.state.withdrawing}
-          style={{ width: "inherit", height: "inherit" }}
+          onClose={() => this.props.history.push("/")}
         >
-          <CircularProgress color="primary" variant="indeterminate"/>
-      </Modal> */}
+          <CircularProgress
+            className={classes.modal}
+            style={{ marginTop: "40%", marginLeft: "40%" }}
+            color="primary"
+            variant="indeterminate"
+          />
+        </Modal>
         <Grid
           container
           wrap="nowrap"

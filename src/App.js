@@ -79,12 +79,12 @@ const styles = theme => ({
     /* background-color:  //#c8d0de */
     /* background-color: #F4F5F7; */
     backgroundColor: "#FFF",
-    width:'105%',
+    width:'103vw',
     [theme.breakpoints.up(824)]: {
       height: 600
     },
     [theme.breakpoints.down(824)]: {
-      height: '101vh'
+      height: '102vh'
     },
   },
   grid: {
