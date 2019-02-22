@@ -64,7 +64,7 @@ const opts = {
 const styles = theme => ({
   paper: {
     paddingBottom: theme.spacing.unit * 2,
-    height: '100%',
+    height: '101%',
     width: '100%',
     [theme.breakpoints.up(600)]: {
       width: 550
@@ -79,12 +79,12 @@ const styles = theme => ({
     /* background-color:  //#c8d0de */
     /* background-color: #F4F5F7; */
     backgroundColor: "#FFF",
-    width:'101%',
+    width:'105%',
     [theme.breakpoints.up(824)]: {
       height: 600
     },
     [theme.breakpoints.down(824)]: {
-      height: '100vh'
+      height: '101vh'
     },
   },
   grid: {

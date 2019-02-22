@@ -88,7 +88,7 @@ class Home extends React.Component {
                   component={Link}
                   to="/receive"
                 >
-                  Receive
+                  Request
                   <ReceiveIcon style={{ marginLeft: "5px" }} />
                 </Button>
               </Grid>

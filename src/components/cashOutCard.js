@@ -11,6 +11,7 @@ import DaiIcon from "../assets/dai.svg";
 import Tooltip from "@material-ui/core/Tooltip";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Modal from "@material-ui/core/Modal";
+import CircularProgress from '@material-ui/core/CircularProgress';
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
 import { convertChannelState } from "connext/dist/types";
@@ -23,7 +24,7 @@ import { getAggregateChannelBalance } from "../utils/getAggregateChannelBalance"
 const styles = theme =>({
   icon: {
     [theme.breakpoints.down(600)]: {
-      marginLeft: "190px"
+      marginLeft: "168px"
     },
     [theme.breakpoints.up(600)]: {
       marginLeft: "255px"
@@ -33,7 +34,7 @@ const styles = theme =>({
     float: "right"
   },
   cancelIcon: {
-    marginLeft: "120px",
+    marginLeft: "110px",
     width: "50px",
     height: "50px",
     float: "right",
@@ -72,7 +73,8 @@ class CashOutCard extends Component {
       balanceError: null,
       scan: false,
       withdrawEth: true,
-      aggregateBalance: "0.00"
+      aggregateBalance: "0.00",
+      withdrawing: false
     };
   }
 
@@ -183,8 +185,12 @@ class CashOutCard extends Component {
     console.log(`Withdrawing: ${JSON.stringify(withdrawalVal, null, 2)}`);
     let withdrawalRes = await connext.withdraw(withdrawalVal);
     console.log(`Withdrawal result: ${JSON.stringify(withdrawalRes, null, 2)}`);
+    
+    //invoke withdraw modal
+    this.setState({ withdrawing: true });
 
     if (withdrawalRes) {
+      this.setState({ withdrawing: false });
       window.history.push("/");
     }
   }
@@ -211,13 +217,19 @@ class CashOutCard extends Component {
           textAlign: "center"
         }}
       >
+      {/* <Modal
+          id="withdrawing"
+          open={this.state.withdrawing}
+          style={{ width: "inherit", height: "inherit" }}
+        >
+          <CircularProgress color="primary" variant="indeterminate"/>
+      </Modal> */}
         <Grid
           container
           wrap="nowrap"
           direction="row"
           justify="center"
           alignItems="center"
-          xs={24}
         >
           <Grid item xs={12}>
             <UnarchiveIcon className={classes.icon} />

@@ -20,7 +20,7 @@ const queryString = require("query-string");
 const styles = theme => ({
   icon: {
     [theme.breakpoints.down(600)]: {
-      marginLeft: "190px"
+      marginLeft: "168px"
     },
     [theme.breakpoints.up(600)]: {
       marginLeft: "255px"
@@ -30,7 +30,7 @@ const styles = theme => ({
     float: "right"
   },
   cancelIcon: {
-    marginLeft: "120px",
+    marginLeft: "110px",
     width: "50px",
     height: "50px",
     float: "right",
@@ -179,7 +179,6 @@ class PayCard extends Component {
           direction="row"
           justify="center"
           alignItems="center"
-          xs={24}
         >
           <Grid item xs={12}>
             <SendIcon className={classes.icon} />
