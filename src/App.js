@@ -235,7 +235,7 @@ class App extends React.Component {
     const customId = await customWeb3.eth.net.getId();
     this.setState({ customWeb3, hubWalletAddress, channelManagerAddress, tokenAddress, hubUrl });
     if (windowId && windowId !== customId) {
-      alert("Make sure your metamask and card are using the same network");
+      alert(`Your card is set to ${JSON.stringify(rpc)}. To avoid losing funds, please make sure your metamask and card are using the same network.`);
     }
     return;
   }

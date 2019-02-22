@@ -10,7 +10,7 @@ const styles = {
   card: {
     display: "flex",
     flexDirection: "row",
-    flexBasis:"50%",
+    flexBasis:"100%",
     width: "100%",
     height: "auto",
     marginTop: "-2%",
@@ -26,7 +26,8 @@ const styles = {
     color: "white"
   },
   pending:{
-    marginBottom:"3%"
+    marginBottom:"3%",
+    color:"white"
   },
   clipboard: {
     cursor: "pointer"
