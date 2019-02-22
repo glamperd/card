@@ -7,6 +7,9 @@ import Typography from "@material-ui/core/Typography";
 import CopyIcon from "@material-ui/icons/FileCopy";
 import Grid from "@material-ui/core/Grid";
 import QRGenerate from "./qrGenerate";
+import IconButton from "@material-ui/core/IconButton";
+import HighlightOffIcon from "@material-ui/icons/HighlightOff";
+import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core";
 
 const styles = theme => ({
@@ -14,10 +17,35 @@ const styles = theme => ({
     paddingBottom: theme.spacing.unit * 2
   },
   icon: {
+    [theme.breakpoints.down(600)]: {
+      marginLeft: "190px"
+    },
+    [theme.breakpoints.up(600)]: {
+      marginLeft: "255px"
+    },
     width: "40px",
-    height: "40px"
+    height: "40px",
+    float: "right"
+  },
+  cancelIcon: {
+    marginLeft: "120px",
+    width: "50px",
+    height: "50px",
+    float: "right",
+    cursor: "pointer"
   }
 });
+
+/* CANCEL BUTTON */
+const CancelButton = withRouter(({ history }) => (
+  <IconButton
+    onClick={() => {
+      history.push("/");
+    }}
+  >
+    <HighlightOffIcon />
+  </IconButton>
+));
 
 class DepositCard extends Component {
   constructor(props) {
@@ -34,8 +62,21 @@ class DepositCard extends Component {
 
     return (
       <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: "10%", paddingBottom: "10%", textAlign: "center" }}>
-        <Grid item xs={12}>
-          <DepositIcon className={classes.icon} />
+
+        <Grid
+          container
+          wrap="nowrap"
+          direction="row"
+          justify="center"
+          alignItems="center"
+          xs={24}
+        >
+          <Grid item xs={12}>
+            <DepositIcon className={classes.icon} />
+          </Grid>
+          <Grid item xs={12} className={classes.cancelIcon}>
+            <CancelButton />
+          </Grid>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="caption">

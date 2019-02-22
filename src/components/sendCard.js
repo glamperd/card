@@ -1,23 +1,40 @@
 import React, { Component } from "react";
+import { withRouter } from "react-router-dom";
 import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
 import SendIcon from "@material-ui/icons/Send";
 import TextField from "@material-ui/core/TextField";
 import QRIcon from "mdi-material-ui/QrcodeScan";
 import LinkIcon from "@material-ui/icons/Link";
+import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
 import { emptyAddress } from "connext/dist/Utils";
 import { withStyles, Grid, Typography } from "@material-ui/core";
-import { getDollarSubstring } from "../utils/getDollarSubstring"
+import { getDollarSubstring } from "../utils/getDollarSubstring";
 
 const queryString = require("query-string");
 
-const styles = {
+const styles = theme => ({
   icon: {
+    [theme.breakpoints.down(600)]: {
+      marginLeft: "190px"
+    },
+    [theme.breakpoints.up(600)]: {
+      marginLeft: "255px"
+    },
     width: "40px",
-    height: "40px"
+    height: "40px",
+    float: "right"
+  },
+  cancelIcon: {
+    marginLeft: "120px",
+    width: "50px",
+    height: "50px",
+    float: "right",
+    cursor: "pointer"
   },
   input: {
     width: "100%"
@@ -26,7 +43,18 @@ const styles = {
     backgroundColor: "#FCA311",
     color: "#FFF"
   }
-};
+});
+
+/* CANCEL BUTTON */
+const CancelButton = withRouter(({ history }) => (
+  <IconButton
+    onClick={() => {
+      history.push("/");
+    }}
+  >
+    <HighlightOffIcon />
+  </IconButton>
+));
 
 class PayCard extends Component {
   constructor(props) {
@@ -40,10 +68,14 @@ class PayCard extends Component {
         },
         payments: [
           {
-            recipient: this.props.scanArgs.recipient ? this.props.scanArgs.recipient : emptyAddress.substr(0, 3) + "...",
+            recipient: this.props.scanArgs.recipient
+              ? this.props.scanArgs.recipient
+              : emptyAddress.substr(0, 3) + "...",
             amount: {
-              amountToken: this.props.scanArgs.amount ? (this.props.scanArgs.amount * Math.pow(10,18)).toString() : "0",
-              amountWei: "0",
+              amountToken: this.props.scanArgs.amount
+                ? (this.props.scanArgs.amount * Math.pow(10, 18)).toString()
+                : "0",
+              amountWei: "0"
             },
             type: "PT_CHANNEL"
           }
@@ -61,8 +93,10 @@ class PayCard extends Component {
     const query = queryString.parse(location.search);
     if (query.amounttoken) {
       await this.setState(oldState => {
-        oldState.paymentVal.payments[0].amount.amountToken = (query.amounttoken*Math.pow(10,18)).toString();
-        oldState.displayVal = query.amounttoken
+        oldState.paymentVal.payments[0].amount.amountToken = (
+          query.amounttoken * Math.pow(10, 18)
+        ).toString();
+        oldState.displayVal = query.amounttoken;
         return oldState;
       });
     }
@@ -76,11 +110,15 @@ class PayCard extends Component {
 
   async updatePaymentHandler(value) {
     await this.setState(oldState => {
-      oldState.paymentVal.payments[0].amount.amountToken = (value*Math.pow(10, 18)).toString();
+      oldState.paymentVal.payments[0].amount.amountToken = (
+        value * Math.pow(10, 18)
+      ).toString();
       return oldState;
     });
-    this.setState({displayVal: value})
-    console.log(`Updated paymentVal: ${JSON.stringify(this.state.paymentVal, null, 2)}`);
+    this.setState({ displayVal: value });
+    console.log(
+      `Updated paymentVal: ${JSON.stringify(this.state.paymentVal, null, 2)}`
+    );
   }
 
   async updateRecipientHandler(value) {
@@ -89,11 +127,19 @@ class PayCard extends Component {
       return oldState;
     });
     this.setState({ scan: false });
-    console.log(`Updated recipient: ${JSON.stringify(this.state.paymentVal.payments[0].recipient, null, 2)}`);
+    console.log(
+      `Updated recipient: ${JSON.stringify(
+        this.state.paymentVal.payments[0].recipient,
+        null,
+        2
+      )}`
+    );
   }
 
   async paymentHandler() {
-    console.log(`Submitting payment: ${JSON.stringify(this.state.paymentVal, null, 2)}`);
+    console.log(
+      `Submitting payment: ${JSON.stringify(this.state.paymentVal, null, 2)}`
+    );
     this.setState({ addressError: null, balanceError: null });
     const { connext, web3 } = this.props;
 
@@ -114,16 +160,49 @@ class PayCard extends Component {
   render() {
     const { classes, channelState } = this.props;
     return (
-      <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: "10%", paddingBottom: "10%", textAlign: "center" }}>
-        <Grid item xs={12}>
-          <SendIcon className={classes.icon} />
+      <Grid
+        container
+        spacing={24}
+        direction="column"
+        style={{
+          display: "flex",
+          paddingLeft: 12,
+          paddingRight: 12,
+          paddingTop: "10%",
+          paddingBottom: "10%",
+          textAlign: "center"
+        }}
+      >
+        <Grid
+          container
+          wrap="nowrap"
+          direction="row"
+          justify="center"
+          alignItems="center"
+          xs={24}
+        >
+          <Grid item xs={12}>
+            <SendIcon className={classes.icon} />
+          </Grid>
+          <Grid item xs={12} className={classes.cancelIcon}>
+            <CancelButton />
+          </Grid>
         </Grid>
         <Grid item xs={12}>
           <Grid container direction="row" justify="center" alignItems="center">
-          <Typography variant="h2">
-            <span>{channelState ? ('$' + getDollarSubstring(channelState.balanceTokenUser)[0] + 
-                    '.' + getDollarSubstring(channelState.balanceTokenUser)[1].substr(0, 2)) : ("$0.00")}</span>
-          </Typography>
+            <Typography variant="h2">
+              <span>
+                {channelState
+                  ? "$" +
+                    getDollarSubstring(channelState.balanceTokenUser)[0] +
+                    "." +
+                    getDollarSubstring(channelState.balanceTokenUser)[1].substr(
+                      0,
+                      2
+                    )
+                  : "$0.00"}
+              </span>
+            </Typography>
           </Grid>
         </Grid>
         <Grid item xs={12}>
@@ -158,8 +237,17 @@ class PayCard extends Component {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <Tooltip disableFocusListener disableTouchListener title="Scan with QR code">
-                    <Button variant="contained" color="primary" style={{ color: "#FFF" }} onClick={() => this.setState({ scan: true })}>
+                  <Tooltip
+                    disableFocusListener
+                    disableTouchListener
+                    title="Scan with QR code"
+                  >
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      style={{ color: "#FFF" }}
+                      onClick={() => this.setState({ scan: true })}
+                    >
                       <QRIcon />
                     </Button>
                   </Tooltip>
@@ -168,7 +256,12 @@ class PayCard extends Component {
             }}
           />
         </Grid>
-        <Modal id="qrscan" open={this.state.scan} onClose={() => this.setState({ scan: false })} style={{ width: "full", height: "full" }}>
+        <Modal
+          id="qrscan"
+          open={this.state.scan}
+          onClose={() => this.setState({ scan: false })}
+          style={{ width: "full", height: "full" }}
+        >
           <QRScan handleResult={this.updateRecipientHandler.bind(this)} />
         </Modal>
         {/* <TextField
@@ -185,7 +278,13 @@ class PayCard extends Component {
           error={this.state.balanceError != null}
         /> */}
         <Grid item xs={12}>
-          <Grid container direction="row" alignItems="center" justify="center" spacing={16}>
+          <Grid
+            container
+            direction="row"
+            alignItems="center"
+            justify="center"
+            spacing={16}
+          >
             <Grid item xs={6}>
               <Button
                 fullWidth
@@ -200,7 +299,13 @@ class PayCard extends Component {
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button fullWidth className={classes.button} variant="contained" size="large" onClick={() => this.paymentHandler()}>
+              <Button
+                fullWidth
+                className={classes.button}
+                variant="contained"
+                size="large"
+                onClick={() => this.paymentHandler()}
+              >
                 Send
                 <SendIcon style={{ marginLeft: "5px" }} />
               </Button>

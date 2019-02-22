@@ -3,9 +3,19 @@ import { AppBar, Toolbar, IconButton, Typography, Grid } from "@material-ui/core
 import blockies from "ethereum-blockies-png";
 import SettingIcon from "@material-ui/icons/Settings";
 import { Link } from "react-router-dom";
+import SvgIcon from '@material-ui/core/SvgIcon';
+
 
 const noAddrBlocky = require("../assets/noAddress.png");
 const connext = require("../assets/Connext.svg");
+
+function HomeIcon(props) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+    </SvgIcon>
+  );
+}
 
 const AppBarComponent = props => (
   <AppBar position="sticky" elevation="0" color="secondary" style={{ paddingTop: "2%" }}>
@@ -25,7 +35,7 @@ const AppBarComponent = props => (
         </Grid>
         <Grid item xs={3}>
           <IconButton color="inherit" variant="contained" component={Link} to="/">
-            <img src={connext} alt="" style={{ width: "40px", height: "40px" }} />
+            <HomeIcon color="white" alt="" style={{ width: "30px", height: "30px", cursor:"pointer" }} />
           </IconButton>
         </Grid>
         <Grid item xs={3}>
