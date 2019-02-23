@@ -20,7 +20,7 @@ const queryString = require("query-string");
 const styles = theme => ({
   icon: {
     [theme.breakpoints.down(600)]: {
-      marginLeft: "170px"
+      marginLeft: "190px"
     },
     [theme.breakpoints.up(600)]: {
       marginLeft: "255px"

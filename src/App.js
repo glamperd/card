@@ -68,7 +68,8 @@ const styles = theme => ({
     width: "100%",
     [theme.breakpoints.up(600)]: {
       width: 550
-    }
+    },
+    zIndex: 1000
   },
   app: {
     display: "flex",
@@ -87,6 +88,7 @@ const styles = theme => ({
       height: "102vh"
     }
   },
+  zIndex: 1000,
   grid: {}
 });
 
