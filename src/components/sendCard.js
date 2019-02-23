@@ -20,7 +20,7 @@ const queryString = require("query-string");
 const styles = theme => ({
   icon: {
     [theme.breakpoints.down(600)]: {
-      marginLeft: "170px"
+      marginLeft: "190px"
     },
     [theme.breakpoints.up(600)]: {
       marginLeft: "255px"
@@ -70,7 +70,7 @@ class PayCard extends Component {
           {
             recipient: this.props.scanArgs.recipient
               ? this.props.scanArgs.recipient
-              : emptyAddress.substr(0, 3) + "...",
+              : null,
             amount: {
               amountToken: this.props.scanArgs.amount
                 ? (this.props.scanArgs.amount * Math.pow(10, 18)).toString()
@@ -206,27 +206,24 @@ class PayCard extends Component {
         </Grid>
         <Grid item xs={12}>
           <TextField
-            fullWidth
-            className={classes.input}
-            id="outlined-number"
-            label="Amount"
-            placeholder="$0.00"
-            required
-            value={this.state.displayVal}
-            onChange={evt => this.updatePaymentHandler(evt.target.value)}
-            type="number"
-            margin="normal"
-            variant="outlined"
-            helperText={this.state.balanceError}
-            error={this.state.balanceError != null}
-          />
+              fullWidth
+              id="outlined-number"
+              label="Amount"
+              value={this.state.displayVal}
+              type="number"
+              margin="normal"
+              variant="outlined"
+              onChange={evt => this.updatePaymentHandler(evt.target.value)}
+              error={this.state.balanceError != null}
+              helperText={this.state.balanceError}
+            />
         </Grid>
         <Grid item xs={12}>
           <TextField
             style={{ width: "100%" }}
-            id="outlined-with-placeholder"
-            label="Recipient"
-            placeholder="0x0... (Optional for Link)"
+            id="outlined"
+            label="Recipient Address"
+            required
             value={this.state.paymentVal.payments[0].recipient}
             onChange={evt => this.updateRecipientHandler(evt.target.value)}
             margin="normal"

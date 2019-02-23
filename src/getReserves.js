@@ -1,4 +1,4 @@
-const ChannelManagerAbi = require('./abi/ChannelManager.json')
+import ChannelManagerAbi from './abi/ChannelManager.json';
 const Web3 = require('web3')
 
 // This function returns the hubs token and wei balance
