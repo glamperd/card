@@ -20,7 +20,7 @@ const queryString = require("query-string");
 const styles = theme => ({
   icon: {
     [theme.breakpoints.down(600)]: {
-      marginLeft: "168px"
+      marginLeft: "170px"
     },
     [theme.breakpoints.up(600)]: {
       marginLeft: "255px"
@@ -30,7 +30,7 @@ const styles = theme => ({
     float: "right"
   },
   cancelIcon: {
-    marginLeft: "110px",
+    marginLeft: "100px",
     width: "50px",
     height: "50px",
     float: "right",

@@ -11,20 +11,16 @@ import DaiIcon from "../assets/dai.svg";
 import Tooltip from "@material-ui/core/Tooltip";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Modal from "@material-ui/core/Modal";
-import CircularProgress from '@material-ui/core/CircularProgress';
+import CircularProgress from "@material-ui/core/CircularProgress";
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
-import { convertChannelState } from "connext/dist/types";
-import { bigNumberify } from "ethers/utils";
-import { ethers } from "ethers";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
-import { ConnextState } from "connext/dist/state/store";
 import { getAggregateChannelBalance } from "../utils/getAggregateChannelBalance";
 
-const styles = theme =>({
+const styles = theme => ({
   icon: {
     [theme.breakpoints.down(600)]: {
-      marginLeft: "168px"
+      marginLeft: "170px"
     },
     [theme.breakpoints.up(600)]: {
       marginLeft: "255px"
@@ -34,7 +30,7 @@ const styles = theme =>({
     float: "right"
   },
   cancelIcon: {
-    marginLeft: "110px",
+    marginLeft: "100px",
     width: "50px",
     height: "50px",
     float: "right",
@@ -43,6 +39,16 @@ const styles = theme =>({
   button: {
     backgroundColor: "#FCA311",
     color: "#FFF"
+  },
+  modal: {
+    position: "absolute",
+    top: "-400px",
+    left: "150px",
+    width: theme.spacing.unit * 50,
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing.unit * 4,
+    outline: "none"
   }
 });
 
@@ -56,6 +62,29 @@ const CancelButton = withRouter(({ history }) => (
     <HighlightOffIcon />
   </IconButton>
 ));
+
+const ProgressModal = ({ classes, withdrawing }) => (
+  <Modal
+    style={{
+      position: "absolute",
+      backgroundColor: "transparent"
+    }}
+    hideBackdrop={true}
+    disablePortal={true}
+    open={withdrawing}
+  >
+    <div>
+      <CircularProgress
+        className={classes.modal}
+        style={{ marginTop: "40%", marginLeft: "40%", backgroundColor: "transparent", boxShadow: "none" }}
+        color="primary"
+        variant="indeterminate"
+      />
+    </div>
+  </Modal>
+);
+
+const ProgressModalWrapped = withStyles(styles)(ProgressModal);
 
 class CashOutCard extends Component {
   constructor(props) {
@@ -109,9 +138,7 @@ class CashOutCard extends Component {
 
     this.setState({ withdrawalVal });
 
-    console.log(
-      `Updated withdrawalVal: ${JSON.stringify(withdrawalVal, null, 2)}`
-    );
+    console.log(`Updated withdrawalVal: ${JSON.stringify(withdrawalVal, null, 2)}`);
     return withdrawalVal;
   }
 
@@ -119,11 +146,7 @@ class CashOutCard extends Component {
   // when the component is mounting, or when the props change
   async updateDisplayValue() {
     const { channelState, exchangeRate } = this.props;
-    if (
-      !channelState ||
-      (channelState.balanceWeiUser == "0" &&
-        channelState.balanceTokenUser == "0")
-    ) {
+    if (!channelState || (channelState.balanceWeiUser === "0" && channelState.balanceTokenUser === "0")) {
       this.setState({ aggregateBalance: "$0.00" });
       return;
     }
@@ -155,55 +178,58 @@ class CashOutCard extends Component {
       oldState.withdrawalVal.recipient = value;
       return oldState;
     });
-    console.log(
-      `Updated recipient: ${JSON.stringify(
-        this.state.withdrawalVal.recipient,
-        null,
-        2
-      )}`
-    );
+    console.log(`Updated recipient: ${JSON.stringify(this.state.withdrawalVal.recipient, null, 2)}`);
   }
 
+  async checkState() {
+    const { channelState } = this.props;
+    if (channelState.pendingWithdrawalWeiUser !== "0") {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  //withRouter(async ({ history })
+
+  poller = async () => {
+    var interval = setInterval(async () => {
+      var didWithdraw = this.checkState();
+      if (didWithdraw) {
+        this.setState({ withdrawing: false });
+        clearInterval(interval);
+        this.props.history.push("/");
+      }
+    }, 1000);
+  };
+
   async withdrawalHandler(withdrawEth) {
-    const { channelState, connext, web3, exchangeRate } = this.props;
+    const { connext, web3 } = this.props;
     const withdrawalVal = await this.updateWithdrawalVals(withdrawEth);
     this.setState({ addressError: null, balanceError: null });
     // check for valid address
     // let addressError = null
     // let balanceError = null
     if (!web3.utils.isAddress(withdrawalVal.recipient)) {
-      const addressError = `${
-        withdrawalVal.recipient == "0x0..."
-          ? "Must provide address."
-          : withdrawalVal.recipient + " is not a valid address"
-      }`;
+      const addressError = `${withdrawalVal.recipient === "0x0..." ? "Must provide address." : withdrawalVal.recipient + " is not a valid address"}`;
       this.setState({ addressError });
       return;
     }
     // check the input balance is under channel balance
     // TODO: allow partial withdrawals?
-    console.log(`Withdrawing: ${JSON.stringify(withdrawalVal, null, 2)}`);
-    let withdrawalRes = await connext.withdraw(withdrawalVal);
-    console.log(`Withdrawal result: ${JSON.stringify(withdrawalRes, null, 2)}`);
-    
     //invoke withdraw modal
     this.setState({ withdrawing: true });
 
-    if (withdrawalRes) {
-      this.setState({ withdrawing: false });
-      window.history.push("/");
-    }
+    console.log(`Withdrawing: ${JSON.stringify(withdrawalVal, null, 2)}`);
+    let withdrawalRes = await connext.withdraw(withdrawalVal);
+    console.log(`Withdrawal result: ${JSON.stringify(withdrawalRes, null, 2)}`);
+
+    this.poller();
   }
 
   render() {
     const { classes, exchangeRate, connextState } = this.props;
-    const {
-      recipientDisplayVal,
-      addressError,
-      scan,
-      withdrawEth,
-      aggregateBalance
-    } = this.state;
+    const { recipientDisplayVal, addressError, scan, aggregateBalance, withdrawing } = this.state;
     return (
       <Grid
         container
@@ -217,20 +243,8 @@ class CashOutCard extends Component {
           textAlign: "center"
         }}
       >
-      {/* <Modal
-          id="withdrawing"
-          open={this.state.withdrawing}
-          style={{ width: "inherit", height: "inherit" }}
-        >
-          <CircularProgress color="primary" variant="indeterminate"/>
-      </Modal> */}
-        <Grid
-          container
-          wrap="nowrap"
-          direction="row"
-          justify="center"
-          alignItems="center"
-        >
+        <ProgressModalWrapped withdrawing={withdrawing} />
+        <Grid container wrap="nowrap" direction="row" justify="center" alignItems="center">
           <Grid item xs={12}>
             <UnarchiveIcon className={classes.icon} />
           </Grid>
@@ -266,17 +280,8 @@ class CashOutCard extends Component {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <Tooltip
-                    disableFocusListener
-                    disableTouchListener
-                    title="Scan with QR code"
-                  >
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      style={{ color: "primary" }}
-                      onClick={() => this.setState({ scan: true })}
-                    >
+                  <Tooltip disableFocusListener disableTouchListener title="Scan with QR code">
+                    <Button variant="contained" color="primary" style={{ color: "primary" }} onClick={() => this.setState({ scan: true })}>
                       <QRIcon />
                     </Button>
                   </Tooltip>
@@ -285,22 +290,11 @@ class CashOutCard extends Component {
             }}
           />
         </Grid>
-        <Modal
-          id="qrscan"
-          open={scan}
-          onClose={() => this.setState({ scan: false })}
-          style={{ width: "full", height: "full" }}
-        >
+        <Modal id="qrscan" open={scan} onClose={() => this.setState({ scan: false })} style={{ width: "full", height: "full" }}>
           <QRScan handleResult={this.updateRecipientHandler.bind(this)} />
         </Modal>
         <Grid item xs={12}>
-          <Grid
-            container
-            spacing={8}
-            direction="row"
-            alignItems="center"
-            justify="center"
-          >
+          <Grid container spacing={8} direction="row" alignItems="center" justify="center">
             <Grid item xs={6}>
               <Button
                 className={classes.button}
@@ -309,27 +303,13 @@ class CashOutCard extends Component {
                 disabled={!connextState || !connextState.runtime.canWithdraw}
               >
                 Cash Out Eth
-                <img
-                  src={EthIcon}
-                  style={{ width: "15px", height: "15px", marginLeft: "5px" }}
-                  alt=""
-                />
+                <img src={EthIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} alt="" />
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button
-                className={classes.button}
-                variant="contained"
-                fullWidth
-                onClick={() => this.withdrawalHandler(false)}
-                disabled
-              >
+              <Button className={classes.button} variant="contained" fullWidth onClick={() => this.withdrawalHandler(false)} disabled>
                 Cash Out Dai
-                <img
-                  src={DaiIcon}
-                  style={{ width: "15px", height: "15px", marginLeft: "5px" }}
-                  alt=""
-                />
+                <img src={DaiIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} alt="" />
               </Button>
             </Grid>
           </Grid>
