@@ -90,13 +90,15 @@ class DepositCard extends Component {
         </Grid>
         <Grid item xs={12}>
           <Button variant="outlined" fullWidth>
-            <CopyIcon style={{ marginRight: "5px" }} />
             <CopyToClipboard text={address}>
+            <Grid>
+            <CopyIcon style={{ marginRight: "5px" }} />
               <Typography noWrap variant="body1">
                 <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
                   <span>{address}</span>
                 </Tooltip>
               </Typography>
+            </Grid>
             </CopyToClipboard>
           </Button>
         </Grid>
