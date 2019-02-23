@@ -7,7 +7,6 @@ import SvgIcon from '@material-ui/core/SvgIcon';
 
 
 const noAddrBlocky = require("../assets/noAddress.png");
-const connext = require("../assets/Connext.svg");
 
 function HomeIcon(props) {
   return (

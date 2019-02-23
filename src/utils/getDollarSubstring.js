@@ -7,7 +7,7 @@ export function getDollarSubstring (string) {
   }
   temp = temp.multipliedBy(new BigNumber(10).exponentiatedBy(-18));
   let substring = temp.toString().split(".");
-  if (substring.length == 1) {
+  if (substring.length === 1) {
     // temp is an integer
     substring.push("00")
   }
