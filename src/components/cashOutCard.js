@@ -74,7 +74,12 @@ const ProgressModal = ({ classes, withdrawing }) => (
     open={withdrawing}
   >
     <div>
-      <CircularProgress className={classes.modal} style={{ marginTop: "40%", marginLeft: "40%" }} color="primary" variant="indeterminate" />
+      <CircularProgress
+        className={classes.modal}
+        style={{ marginTop: "40%", marginLeft: "40%", backgroundColor: "transparent", boxShadow: "none" }}
+        color="primary"
+        variant="indeterminate"
+      />
     </div>
   </Modal>
 );
