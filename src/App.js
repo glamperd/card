@@ -10,7 +10,7 @@ import ProviderOptions from "./utils/ProviderOptions.ts";
 import clientProvider from "./utils/web3/clientProvider.ts";
 import { createWalletFromMnemonic } from "./walletGen";
 import axios from "axios";
-import { Grid, Paper, withStyles } from "@material-ui/core";
+import { Paper, withStyles } from "@material-ui/core";
 import AppBarComponent from "./components/AppBar";
 import SettingsCard from "./components/settingsCard";
 import ReceiveCard from "./components/receiveCard";
@@ -64,32 +64,30 @@ const opts = {
 const styles = theme => ({
   paper: {
     paddingBottom: theme.spacing.unit * 2,
-    height: '101%',
-    width: '100%',
+    height: "101%",
+    width: "100%",
     [theme.breakpoints.up(600)]: {
       width: 550
-    },
+    }
   },
   app: {
-    display:'flex',
-    justifyContent: 'center',
+    display: "flex",
+    justifyContent: "center",
     flexGrow: 1,
     fontFamily: ["proxima-nova", "sans-serif"],
     /* background-color: #fcfbf3; */
     /* background-color:  //#c8d0de */
     /* background-color: #F4F5F7; */
     backgroundColor: "#FFF",
-    width:'103vw',
+    width: "103vw",
     [theme.breakpoints.up(824)]: {
       height: "100%"
     },
     [theme.breakpoints.down(824)]: {
-      height: '102vh'
-    },
+      height: "102vh"
+    }
   },
-  grid: {
-
-  }
+  grid: {}
 });
 
 class App extends React.Component {
@@ -198,24 +196,24 @@ class App extends React.Component {
     switch (rpc) {
       case "LOCALHOST":
         rpcUrl = localProvider;
-        hubWalletAddress = hubWalletAddressLocal
-        channelManagerAddress = channelManagerAddressLocal
-        tokenAddress = tokenAddressLocal
-        hubUrl = hubUrlLocal
+        hubWalletAddress = hubWalletAddressLocal;
+        channelManagerAddress = channelManagerAddressLocal;
+        tokenAddress = tokenAddressLocal;
+        hubUrl = hubUrlLocal;
         break;
       case "RINKEBY":
         rpcUrl = rinkebyProvider;
-        hubWalletAddress = hubWalletAddressRinkeby
-        channelManagerAddress = channelManagerAddressRinkeby
-        tokenAddress = tokenAddressRinkeby
-        hubUrl = hubUrlRinkeby
+        hubWalletAddress = hubWalletAddressRinkeby;
+        channelManagerAddress = channelManagerAddressRinkeby;
+        tokenAddress = tokenAddressRinkeby;
+        hubUrl = hubUrlRinkeby;
         break;
       case "MAINNET":
         rpcUrl = mainnetProvider;
-        hubWalletAddress = hubWalletAddressMainnet
-        channelManagerAddress = channelManagerAddressMainnet
-        tokenAddress = tokenAddressMainnet
-        hubUrl = hubUrlMainnet
+        hubWalletAddress = hubWalletAddressMainnet;
+        channelManagerAddress = channelManagerAddressMainnet;
+        tokenAddress = tokenAddressMainnet;
+        hubUrl = hubUrlMainnet;
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
@@ -283,7 +281,7 @@ class App extends React.Component {
       this.setState({
         channelState: state.persistent.channel,
         connextState: state,
-        exchangeRate: state.runtime.exchangeRate.rates.USD,
+        exchangeRate: state.runtime.exchangeRate.rates.USD
       });
     });
     // start polling
@@ -363,7 +361,7 @@ class App extends React.Component {
   // ************************************************* //
 
   async authorizeHandler() {
-    const hubUrl = this.state.hubUrl
+    const hubUrl = this.state.hubUrl;
     const web3 = this.state.customWeb3;
     const challengeRes = await axios.post(`${hubUrl}/auth/challenge`, {}, opts);
 
@@ -410,7 +408,7 @@ class App extends React.Component {
         amount,
         recipient
       }
-    })
+    });
   }
 
   async collateralHandler() {
@@ -425,21 +423,51 @@ class App extends React.Component {
     return (
       <Router>
         <div className={classes.app} container spacing={24} direction="row" justify="center" alignItems="center">
-              <Paper className={classes.paper}>
-                <AppBarComponent address={address} />
-                <Route exact path="/" render={props => <Home {...props} address={address} channelState={channelState} publicUrl={publicUrl} scanURL={this.scanURL.bind(this)} />} />
-                <Route path="/deposit" render={props => <DepositCard {...props} address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} exchangeRate={exchangeRate} />} />
-                <Route path="/settings" render={props => <SettingsCard {...props} networkHandler={this.networkHandler} />} />
-                <Route path="/receive" render={props => <ReceiveCard {...props} address={address} channelState={channelState} publicUrl={publicUrl} />} />
-                <Route
-                  path="/send"
-                  render={props => <SendCard {...props} web3={customWeb3} connext={connext} address={address} channelState={channelState} publicUrl={publicUrl} scanArgs={sendScanArgs}/>}
+          <Paper className={classes.paper}>
+            <AppBarComponent address={address} />
+            <Route
+              exact
+              path="/"
+              render={props => (
+                <Home {...props} address={address} channelState={channelState} publicUrl={publicUrl} scanURL={this.scanURL.bind(this)} />
+              )}
+            />
+            <Route
+              path="/deposit"
+              render={props => <DepositCard {...props} address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} exchangeRate={exchangeRate} />}
+            />
+            <Route path="/settings" render={props => <SettingsCard {...props} networkHandler={this.networkHandler} />} />
+            <Route path="/receive" render={props => <ReceiveCard {...props} address={address} channelState={channelState} publicUrl={publicUrl} />} />
+            <Route
+              path="/send"
+              render={props => (
+                <SendCard
+                  {...props}
+                  web3={customWeb3}
+                  connext={connext}
+                  address={address}
+                  channelState={channelState}
+                  publicUrl={publicUrl}
+                  scanArgs={sendScanArgs}
                 />
-                <Route
-                  path="/cashout"
-                  render={() => <CashOutCard address={address} channelState={channelState} publicUrl={publicUrl} exchangeRate={exchangeRate} web3={customWeb3} connext={connext} connextState={connextState} />}
+              )}
+            />
+            <Route
+              path="/cashout"
+              render={props => (
+                <CashOutCard
+                  {...props}
+                  address={address}
+                  channelState={channelState}
+                  publicUrl={publicUrl}
+                  exchangeRate={exchangeRate}
+                  web3={customWeb3}
+                  connext={connext}
+                  connextState={connextState}
                 />
-              </Paper>
+              )}
+            />
+          </Paper>
         </div>
       </Router>
     );
