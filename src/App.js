@@ -283,7 +283,7 @@ class App extends React.Component {
       this.setState({
         channelState: state.persistent.channel,
         connextState: state,
-        exchangeRate: state.runtime.exchangeRate.rates.USD
+        exchangeRate: state.runtime.exchangeRate ? state.runtime.exchangeRate.rates.USD : 0
       });
     });
     // start polling
