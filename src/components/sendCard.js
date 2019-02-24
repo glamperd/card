@@ -11,7 +11,6 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
-import { emptyAddress } from "connext/dist/Utils";
 import { withStyles, Grid, Typography } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
 
