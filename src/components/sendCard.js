@@ -249,7 +249,7 @@ class PayCard extends Component {
           onClose={() => this.setState({ scan: false })}
           style={{ width: "full", height: "full" }}
         >
-          <QRScan handleResult={this.handleQRData.bind(this)} />
+          <QRScan handleResult={this.handleQRData.bind(this)} history={this.props.history} />
         </Modal>
         <Grid item xs={12}>
           <Grid
@@ -296,7 +296,7 @@ class PayCard extends Component {
               width: "15%",
               marginTop: "10%"
             }}
-            size="small" 
+            size="medium" 
             onClick={()=>this.props.history.push("/")}
           >
             Back

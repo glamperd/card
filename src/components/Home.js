@@ -69,7 +69,7 @@ class Home extends React.Component {
               onClose={() => this.setState({ modals: { ...modals, scan: false } })}
               style={{ width: "full", height: "full" }}
             >
-              <QRScan handleResult={this.scanQRCode.bind(this)} />
+              <QRScan handleResult={this.scanQRCode.bind(this)} history={this.props.history} />
             </Modal>
           </div>
         </div>

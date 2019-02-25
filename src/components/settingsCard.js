@@ -237,7 +237,7 @@ class SettingsCard extends Component {
               color: "#F22424",
               width: "15%",
             }}
-            size="small" 
+            size="medium" 
             onClick={()=>this.props.history.push("/")}
           >
             Back

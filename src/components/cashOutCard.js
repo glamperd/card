@@ -264,7 +264,7 @@ class CashOutCard extends Component {
           />
         </Grid>
         <Modal id="qrscan" open={scan} onClose={() => this.setState({ scan: false })} style={{ width: "full", height: "full" }}>
-          <QRScan handleResult={this.updateRecipientHandler.bind(this)} />
+          <QRScan handleResult={this.updateRecipientHandler.bind(this)} history={this.props.history} />
         </Modal>
         <Grid item xs={12}>
           <Grid container spacing={8} direction="row" alignItems="center" justify="center">
@@ -296,7 +296,7 @@ class CashOutCard extends Component {
               color: "#F22424",
               width: "15%",
             }}
-            size="small" 
+            size="medium" 
             onClick={()=>this.props.history.push("/")}
           >
             Back
