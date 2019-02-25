@@ -5,7 +5,6 @@ import SettingIcon from "@material-ui/icons/Settings";
 import { Link } from "react-router-dom";
 import SvgIcon from '@material-ui/core/SvgIcon';
 
-
 const noAddrBlocky = require("../assets/noAddress.png");
 
 function HomeIcon(props) {
@@ -17,7 +16,7 @@ function HomeIcon(props) {
 }
 
 const AppBarComponent = props => (
-  <AppBar position="sticky" elevation="0" color="secondary" style={{ paddingTop: "2%" }}>
+  <AppBar position="sticky" elevation={0} color="secondary" style={{ paddingTop: "2%" }}>
     <Toolbar>
       <Grid container spacing={24} direction="row" justify="space-between" alignItems="center" style={{ textAlign: "center" }}>
         <Grid item xs={3}>
