@@ -49,22 +49,24 @@ class Confirmations extends Component {
     } catch (e) {}
   }
 
-  async checkPaymentState() {
-    const { channelState, runtime } = this.props;
-    let payStatus;
-    try {
-      if (runtime.syncResultsFromHub[0].update) {
-        switch (runtime.syncResultsFromHub[0].update.reason) {
-          case "Payment":
-            payStatus = "PAID";
-            break;
-          default:
-            payStatus = "AWAITING";
-        }
-      }
-      await this.setState({ payStatus });
-    } catch (e) {}
-  }
+  // async checkPaymentState() {
+  //   const { runtime } = this.props;
+  //   let payStatus;
+  //   try {
+  //     if (runtime.syncResultsFromHub[0].update) {
+  //       switch (runtime.syncResultsFromHub[0].update.reason) {
+  //         case "Payment":
+  //           payStatus = "PAID";
+  //           break;
+  //         default:
+  //           payStatus = "AWAITING";
+  //       }
+  //       }
+  //     await this.setState({ payStatus });
+  //   } catch (e){
+  //     console.log(`error caught: ${e}`)
+  //   }
+  // }
 
   async checkWithdrawState() {
     const { channelState, runtime } = this.props;
@@ -100,9 +102,9 @@ class Confirmations extends Component {
       await this.checkWithdrawState();
     }, 200);
 
-    var payment = setInterval(async () => {
-      await this.checkPaymentState();
-    }, 200);
+    // var payment = setInterval(async () => {
+    //   await this.checkPaymentState();
+    // }, 200);
   };
 
   componentDidMount = async () => {
@@ -121,7 +123,7 @@ class Confirmations extends Component {
         <Snackbar
           handleClick={() => this.handleClick()}
           open={depositStatus === "SUCCESS"}
-          text="Deposit Success!"
+          text="Deposit Confirmed!"
         />
         <Snackbar
           handleClick={() => this.handleClick()}
@@ -131,7 +133,7 @@ class Confirmations extends Component {
         <Snackbar
           handleClick={() => this.handleClick()}
           open={withdrawStatus === "SUCCESS"}
-          text="Withdrawal complete!"
+          text="Withdrawal Confirmed!"
         />
         <Snackbar
           handleClick={() => this.handleClick()}

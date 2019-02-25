@@ -13,6 +13,7 @@ import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
+import Snackbar from "./snackBar";
 
 const queryString = require("query-string");
 
@@ -57,6 +58,8 @@ class PayCard extends Component {
       },
       addressError: null,
       balanceError: null,
+      sendError: null,
+      sendSuccess: null,
       scan: false,
       displayVal: this.props.scanArgs.amount ? this.props.scanArgs.amount : "0"
     };
@@ -121,8 +124,13 @@ class PayCard extends Component {
     //     Number(this.state.paymentVal.payments[0].amount.amountWei) <= Number(channelState.balanceWeiUser)
     // ) {
     if (web3.utils.isAddress(this.state.paymentVal.payments[0].recipient)) {
-      let paymentRes = await connext.buy(this.state.paymentVal);
-      console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
+      try{
+        let paymentRes = await connext.buy(this.state.paymentVal);
+        console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
+      }catch(e){
+        await this.setState({ sendError: true })
+      }
+      this.setState({ sendSuccess: true })
     } else {
       this.setState({ addressError: "Please choose a valid address" });
     }
@@ -131,8 +139,16 @@ class PayCard extends Component {
     // }
   }
 
+  handleError = async () => {
+    await this.setState({ sendError: false });
+  };
+  handleSuccess = async () => {
+    await this.setState({ sendSuccess: false });
+  };
+
   render() {
     const { classes, channelState } = this.props;
+    const { sendError, sendSuccess } = this.state;
     return (
       <Grid
         container
@@ -148,6 +164,18 @@ class PayCard extends Component {
           justifyContent: "center"
         }}
       >
+      <Snackbar
+          onClose={() => this.handleError()}
+          handleClick={() => this.handleError()}
+          open={sendError}
+          text="Payment failed. We're getting a lot of traffic, so try again in 30 seconds!"
+        />
+      <Snackbar
+          onClose={() => this.handleSuccess()}
+          handleClick={() => this.handleSuccess()}
+          open={sendSuccess}
+          text="Payment sent!"
+        />
         <Grid
           container
           wrap="nowrap"
