@@ -17,6 +17,7 @@ import ReceiveCard from "./components/receiveCard";
 import SendCard from "./components/sendCard";
 import CashOutCard from "./components/cashOutCard";
 import { createWallet } from "./walletGen";
+import Confirmations from './components/Confirmations';
 
 export const store = createStore(setWallet, null);
 
@@ -119,6 +120,7 @@ class App extends React.Component {
       exchangeRate: "0.00",
       interval: null,
       connextState: null,
+      runtime: null,
       sendScanArgs: {
         amount: null,
         recipient: null
@@ -281,6 +283,7 @@ class App extends React.Component {
       this.setState({
         channelState: state.persistent.channel,
         connextState: state,
+        runtime: state.runtime,
         exchangeRate: state.runtime.exchangeRate ? state.runtime.exchangeRate.rates.USD : 0
       });
     });
@@ -418,18 +421,19 @@ class App extends React.Component {
   }
 
   render() {
-    const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState } = this.state;
+    const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState, runtime } = this.state;
     const { classes } = this.props;
     return (
       <Router>
         <div className={classes.app}>
           <Paper className={classes.paper} elevation={1}>
+            <Confirmations channelState={channelState} runtime={runtime} />
             <AppBarComponent address={address} />
             <Route
               exact
               path="/"
               render={props => (
-                <Home {...props} address={address} channelState={channelState} publicUrl={publicUrl} scanURL={this.scanURL.bind(this)} />
+                <Home {...props} address={address} connextState={connextState} channelState={channelState} publicUrl={publicUrl} scanURL={this.scanURL.bind(this)} />
               )}
             />
             <Route

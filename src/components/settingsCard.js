@@ -15,6 +15,8 @@ import CopyIcon from "@material-ui/icons/FileCopy";
 import SubmitIcon from "@material-ui/icons/ArrowRight";
 import { createWallet, createWalletFromMnemonic } from "../walletGen";
 import SettingsIcon from "@material-ui/icons/Settings";
+import Snackbar from './snackBar';
+
 
 const styles = {
   card: {
@@ -48,8 +50,13 @@ class SettingsCard extends Component {
       showRecovery: false,
       inputRecovery: false,
       rpc: localStorage.getItem("rpc"),
-      mnemonic: null
+      mnemonic: null,
+      copied: null
     };
+  }
+
+  handleClick = async() => {
+    await this.setState({copied:false});
   }
 
   async generateNewAddress() {
@@ -74,6 +81,7 @@ class SettingsCard extends Component {
 
   render() {
     const { classes } = this.props;
+    const { copied } = this.state;
     // TODO: WHY ISNT THE JUSTIFY CENTER WORKING???
     return (
       <Grid
@@ -88,6 +96,11 @@ class SettingsCard extends Component {
           textAlign: "center"
         }}
       >
+      <Snackbar 
+            handleClick={() => this.handleClick()}
+            onClose={() => this.handleClick()}
+            open={copied}
+            text="Copied!"/>
         <Grid item xs={12}>
           <SettingsIcon className={classes.icon} />
         </Grid>
@@ -154,6 +167,7 @@ class SettingsCard extends Component {
             >
               <CopyIcon style={{ marginRight: "5px" }} />
               <CopyToClipboard
+                onCopy={() => this.setState({copied: true})}
                 text={localStorage.getItem("mnemonic")}
                 color="primary"
               >

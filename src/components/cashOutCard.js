@@ -49,28 +49,28 @@ const CancelButton = withRouter(({ history }) => (
   </IconButton>
 ));
 
-const ProgressModal = ({ classes, withdrawing }) => (
-  <Modal
-    style={{
-      position: "absolute",
-      backgroundColor: "transparent"
-    }}
-    hideBackdrop={true}
-    disablePortal={true}
-    open={withdrawing}
-  >
-    <div>
-      <CircularProgress
-        className={classes.modal}
-        style={{ marginTop: "40%", marginLeft: "40%", backgroundColor: "transparent", boxShadow: "none" }}
-        color="primary"
-        variant="indeterminate"
-      />
-    </div>
-  </Modal>
-);
+// const ProgressModal = ({ classes, withdrawing }) => (
+//   <Modal
+//     style={{
+//       position: "absolute",
+//       backgroundColor: "transparent"
+//     }}
+//     hideBackdrop={true}
+//     disablePortal={true}
+//     open={withdrawing}
+//   >
+//     <div>
+//       <CircularProgress
+//         className={classes.modal}
+//         style={{ marginTop: "40%", marginLeft: "40%", backgroundColor: "transparent", boxShadow: "none" }}
+//         color="primary"
+//         variant="indeterminate"
+//       />
+//     </div>
+//   </Modal>
+// );
 
-const ProgressModalWrapped = withStyles(styles)(ProgressModal);
+// const ProgressModalWrapped = withStyles(styles)(ProgressModal);
 
 class CashOutCard extends Component {
   constructor(props) {
@@ -230,7 +230,7 @@ class CashOutCard extends Component {
           justifyContent: "center"
         }}
       >
-        <ProgressModalWrapped withdrawing={withdrawing} />
+        {/* <ProgressModalWrapped withdrawing={withdrawing} /> */}
         <Grid container wrap="nowrap" direction="row" justifyContent="center" alignItems="center">
           <Grid item xs={12}>
             <UnarchiveIcon className={classes.icon} />
