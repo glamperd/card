@@ -118,7 +118,7 @@ class Confirmations extends Component {
         <Snackbar
           handleClick={() => this.handleClick()}
           open={depositStatus === "PENDING"}
-          text="Deposit Pending"
+          text="Processing deposit, we'll let you know when it's done."
         />
         <Snackbar
           handleClick={() => this.handleClick()}
@@ -128,7 +128,7 @@ class Confirmations extends Component {
         <Snackbar
           handleClick={() => this.handleClick()}
           open={withdrawStatus === "PENDING"}
-          text="Withdraw Pending"
+          text="Processing deposit, we'll let you know when it's done."
         />
         <Snackbar
           handleClick={() => this.handleClick()}
@@ -138,7 +138,7 @@ class Confirmations extends Component {
         <Snackbar
           handleClick={() => this.handleClick()}
           open={payStatus === "PAID"}
-          text="Payment Sent!"
+          text="Payment sent successfully!"
         />
       </div>
     );
