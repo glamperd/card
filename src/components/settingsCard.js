@@ -85,10 +85,11 @@ class SettingsCard extends Component {
           paddingRight: 12,
           paddingTop: "10%",
           paddingBottom: "10%",
-          textAlign: "center"
+          textAlign: "center",
+          justifyContent: "center"
         }}
       >
-        <Grid item xs={12}>
+        <Grid item xs={12} style={{justifyContent: "center"}}>
           <SettingsIcon className={classes.icon} />
         </Grid>
         <Grid item xs={12}>
@@ -99,16 +100,18 @@ class SettingsCard extends Component {
             style={{
               border: "1px solid #3CB8F2",
               color: "#3CB8F2",
-              textAlign: "center"
+              textAlign: "center",
+              borderRadius: "4px",
+              height: "45px"
             }}
             disableUnderline
             IconComponent={() => null}
           >
             <MenuItem disabled={true} value={"MAINNET"}>
-              Mainnet
+              MAINNET
             </MenuItem>
-            <MenuItem value={"RINKEBY"}>Rinkeby</MenuItem>
-            <MenuItem value={"LOCALHOST"}>Localhost</MenuItem>
+            <MenuItem value={"RINKEBY"}>RINKEBY</MenuItem>
+            <MenuItem value={"LOCALHOST"}>LOCALHOST</MenuItem>
           </Select>
         </Grid>
         <Grid item xs={12} className={classes.button}>
