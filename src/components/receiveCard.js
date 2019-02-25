@@ -83,7 +83,7 @@ class ReceiveCard extends Component {
           container
           wrap="nowrap"
           direction="row"
-          justifyContent="center"
+          justify="center"
           alignItems="center"
         >
           <Grid item xs={12}>

@@ -83,7 +83,6 @@ class SettingsCard extends Component {
   render() {
     const { classes } = this.props;
     const { copied } = this.state;
-    // TODO: WHY ISNT THE JUSTIFY CENTER WORKING???
     return (
       <Grid
         container
@@ -136,16 +135,10 @@ class SettingsCard extends Component {
               border: "1px solid #7289da",
               color: "#7289da"
             }}
+            onClick={() => {window.open('https://discord.gg/q2cakRc','_blank');window.close();return false}}
             size="large"
           >
-            <a
-              rel="noopener noreferrer"
-              target="_blank"
-              style={{ textDecoration: "none", color: "#7289da" }}
-              href="https://discord.gg/q2cakRc"
-            >
-              Discord
-            </a>
+            Discord
           </Button>
         </Grid>
         <Grid item xs={12} className={classes.button}>

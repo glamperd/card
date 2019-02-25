@@ -197,7 +197,7 @@ class CashOutCard extends Component {
         }}
       >
         {/* <ProgressModalWrapped withdrawing={withdrawing} /> */}
-        <Grid container wrap="nowrap" direction="row" justifyContent="center" alignItems="center">
+        <Grid container wrap="nowrap" direction="row" justify="center" alignItems="center">
           <Grid item xs={12}>
             <UnarchiveIcon className={classes.icon} />
           </Grid>

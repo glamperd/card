@@ -73,7 +73,7 @@ class PayCard extends Component {
         oldState.paymentVal.payments[0].amount.amountToken = (
           query.amounttoken * Math.pow(10, 18)
         ).toString();
-        oldState.displayVal = query.amounttoken;
+        oldState.displayVal = query.amounToken;
         return oldState;
       });
     }
@@ -179,7 +179,7 @@ class PayCard extends Component {
           paddingTop: "10%",
           paddingBottom: "10%",
           textAlign: "center",
-          justifyContent: "center"
+          justify: "center"
         }}
       >
       <Snackbar
@@ -198,7 +198,7 @@ class PayCard extends Component {
           container
           wrap="nowrap"
           direction="row"
-          justifyContent="center"
+          justify="center"
           alignItems="center"
         >
           <Grid item xs={12}>
@@ -322,7 +322,6 @@ class PayCard extends Component {
               border: "1px solid #F22424",
               color: "#F22424",
               width: "15%",
-              marginTop: "10%"
             }}
             size="medium" 
             onClick={()=>this.props.history.push("/")}
