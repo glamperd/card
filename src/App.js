@@ -63,29 +63,27 @@ const opts = {
 
 const styles = theme => ({
   paper: {
-    paddingBottom: theme.spacing.unit * 2,
-    height: "101%",
+    height: "100%",
     width: "100%",
     [theme.breakpoints.up(600)]: {
       width: 550
     },
-    zIndex: 1000
+    zIndex: 1000,
+    margin: "0px",
   },
   app: {
     display: "flex",
     justifyContent: "center",
     flexGrow: 1,
     fontFamily: ["proxima-nova", "sans-serif"],
-    /* background-color: #fcfbf3; */
-    /* background-color:  //#c8d0de */
-    /* background-color: #F4F5F7; */
     backgroundColor: "#FFF",
-    width: "103vw",
+    width: "100%",
+    margin: "0px",
     [theme.breakpoints.up(824)]: {
       height: "100%"
     },
     [theme.breakpoints.down(824)]: {
-      height: "102vh"
+      height: "100vh"
     }
   },
   zIndex: 1000,
