@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import QrReader from "react-qr-reader";
+import {Grid, Button} from "@material-ui/core";
  
 class QRScan extends Component {
   constructor(props) {
@@ -20,17 +21,43 @@ class QRScan extends Component {
 
   render() {
     return (
-      <div>
-        <QrReader
-            delay={this.state.delay}
-            onError={(error) => this.setState({error})}
-            onScan={this.handleScan}
-            style={{ width: "100%" }}
-        />
-        {/* <h1 style={{textAlign: "center"}}>
-            {this.state.result}
-        </h1> */}
-      </div>
+      <Grid
+        container
+        spacing={24}
+        direction="column"
+        style={{
+          display: "flex",
+          paddingTop: "5%",
+          paddingBottom: "5%",
+          textAlign: "center",
+          justifyContent: "center",
+          background: "#FFF"
+        }}
+      >
+        <Grid item xs={12}>
+          <QrReader
+              delay={this.state.delay}
+              onError={(error) => this.setState({error})}
+              onScan={this.handleScan}
+              style={{ width: "100%" }}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Button 
+            variant="outlined" 
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              width: "15%",
+            }}
+            size="small" 
+            onClick={()=>this.props.history.push("/")}
+          >
+            Back
+          </Button>
+        </Grid>
+      </Grid>
     );
   }
 }

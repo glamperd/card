@@ -197,22 +197,6 @@ class ChannelCard extends Component {
       <Card className={classes.card}>
       <Grid container direction="column" alignItems="center">
       <ProgressModalWrapped handleClick={() => this.handleClick()} small={progressSmall} depositing={depositDetected} />
-
-      {/* <Grid item alignItems="center">
-        {this.state.depositDetected ? 
-                (
-                  <Grid container direction="column" alignItems="center" style={{marginBottom:"10%"}}>
-                  <Typography variant="h5" className={classes.pending}>Deposit Pending</Typography>
-                    <CircularProgress
-                    color="primary"
-                    variant="indeterminate"
-                    />
-                  </Grid>
-                )
-        :
-        null
-        }
-       </Grid> */}
        <Grid item>
         <span>
           <Typography inline={true} variant="h5" className={classes.row}>

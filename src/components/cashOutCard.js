@@ -38,17 +38,6 @@ const styles = theme => ({
   }
 });
 
-/* CANCEL BUTTON */
-const CancelButton = withRouter(({ history }) => (
-  <IconButton
-    onClick={() => {
-      history.push("/");
-    }}
-  >
-    <HighlightOffIcon />
-  </IconButton>
-));
-
 const ProgressModal = ({ classes, withdrawing }) => (
   <Modal
     style={{

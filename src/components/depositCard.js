@@ -19,17 +19,6 @@ const styles = theme => ({
   }
 });
 
-/* CANCEL BUTTON */
-const CancelButton = withRouter(({ history }) => (
-  <IconButton
-    onClick={() => {
-      history.push("/");
-    }}
-  >
-    <HighlightOffIcon />
-  </IconButton>
-));
-
 class DepositCard extends Component {
   constructor(props) {
     super(props);
