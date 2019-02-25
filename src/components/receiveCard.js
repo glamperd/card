@@ -123,20 +123,16 @@ class ReceiveCard extends Component {
           <QRGenerate value={qrUrl} />
         </Grid>
         <Grid item xs={12}>
-          <Button variant="outlined" fullWidth>
-            <CopyIcon style={{ marginRight: "5px" }} />
-            <CopyToClipboard text={qrUrl}>
+          <CopyIcon style={{marginBottom: "2px"}}/>
+          <CopyToClipboard text={qrUrl}>
+            <Button variant="outlined" fullWidth>
               <Typography noWrap variant="body1">
-                <Tooltip
-                  disableFocusListener
-                  disableTouchListener
-                  title="Click to Copy"
-                >
+                <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
                   <span>{qrUrl}</span>
                 </Tooltip>
               </Typography>
-            </CopyToClipboard>
-          </Button>
+            </Button>
+          </CopyToClipboard>
         </Grid>
       </Grid>
     );

@@ -13,19 +13,9 @@ import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core";
 
 const styles = theme => ({
-  paper: {
-    paddingBottom: theme.spacing.unit * 2
-  },
   icon: {
-    [theme.breakpoints.down(600)]: {
-      marginLeft: "190px"
-    },
-    [theme.breakpoints.up(600)]: {
-      marginLeft: "255px"
-    },
     width: "40px",
-    height: "40px",
-    float: "right"
+    height: "40px"
   },
   cancelIcon: {
     marginLeft: "100px",
@@ -61,27 +51,24 @@ class DepositCard extends Component {
     const { classes, address } = this.props;
 
     return (
-      <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: "10%", paddingBottom: "10%", textAlign: "center" }}>
+      <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: "10%", paddingBottom: "10%", textAlign: "center", justifyContent: "center" }}>
 
         <Grid
           container
           wrap="nowrap"
           direction="row"
-          justify="center"
+          justifyContent="center"
           alignItems="center"
         >
           <Grid item xs={12}>
             <DepositIcon className={classes.icon} />
           </Grid>
-          <Grid item xs={12} className={classes.cancelIcon}>
-            <CancelButton />
-          </Grid>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="caption">
             <Tooltip disableFocusListener disableTouchListener title="Because gas">
-              <span>{`Deposit minimum ${this.props.minDepositWei / Math.pow(10, 18)} Eth 
-                      or ${this.props.minDepositWei / Math.pow(10,18) * this.props.exchangeRate} Dai to card.`}</span>
+              <span>{`Deposit minimum + gas fee = ${this.props.minDepositWei / Math.pow(10, 18)} Eth 
+                      or ${(this.props.minDepositWei / Math.pow(10,18) * this.props.exchangeRate).toString().substring(0,4)} Dai.`}</span>
             </Tooltip>
           </Typography>
         </Grid>
@@ -89,18 +76,16 @@ class DepositCard extends Component {
           <QRGenerate value={address} />
         </Grid>
         <Grid item xs={12}>
-          <Button variant="outlined" fullWidth>
-            <CopyToClipboard text={address}>
-            <Grid>
-            <CopyIcon style={{ marginRight: "5px" }} />
+          <CopyIcon style={{marginBottom: "2px"}}/>
+          <CopyToClipboard text={address}>
+            <Button variant="outlined" fullWidth>
               <Typography noWrap variant="body1">
                 <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
                   <span>{address}</span>
                 </Tooltip>
               </Typography>
-            </Grid>
-            </CopyToClipboard>
-          </Button>
+            </Button>
+          </CopyToClipboard>
         </Grid>
       </Grid>
     );
