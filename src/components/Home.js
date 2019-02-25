@@ -69,7 +69,7 @@ class Home extends React.Component {
               onClose={() => this.setState({ modals: { ...modals, scan: false } })}
               style={{ width: "full", height: "full" }}
             >
-              <QRScan handleResult={this.scanQRCode.bind(this)} />
+              <QRScan handleResult={this.scanQRCode.bind(this)} history={this.props.history} />
             </Modal>
           </div>
         </div>
@@ -88,7 +88,7 @@ class Home extends React.Component {
                   component={Link}
                   to="/receive"
                 >
-                  Receive
+                  Request
                   <ReceiveIcon style={{ marginLeft: "5px" }} />
                 </Button>
               </Grid>
@@ -111,7 +111,7 @@ class Home extends React.Component {
             </Grid>
           </Grid>
           <Grid item xs={12}>
-            <Button fullWidth color="primary" variant="outlined" size="large" component={Link} to="/cashout">
+            <Button style={{marginBottom: "20%"}} fullWidth color="primary" variant="outlined" size="large" component={Link} to="/cashout">
               Cash Out
             </Button>
           </Grid>

@@ -1,23 +1,25 @@
 import React, { Component } from "react";
+import { withRouter } from "react-router-dom";
 import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
 import SendIcon from "@material-ui/icons/Send";
 import TextField from "@material-ui/core/TextField";
 import QRIcon from "mdi-material-ui/QrcodeScan";
 import LinkIcon from "@material-ui/icons/Link";
+import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
-import { emptyAddress } from "connext/dist/Utils";
 import { withStyles, Grid, Typography } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
 
 const queryString = require("query-string");
 
-const styles = {
+const styles = theme => ({
   icon: {
     width: "40px",
-    height: "40px"
+    height: "40px",
   },
   input: {
     width: "100%"
@@ -26,7 +28,7 @@ const styles = {
     backgroundColor: "#FCA311",
     color: "#FFF"
   }
-};
+});
 
 class PayCard extends Component {
   constructor(props) {
@@ -42,7 +44,7 @@ class PayCard extends Component {
           {
             recipient: this.props.scanArgs.recipient
               ? this.props.scanArgs.recipient
-              : emptyAddress.substr(0, 3) + "...",
+              : "",
             amount: {
               amountToken: this.props.scanArgs.amount
                 ? (this.props.scanArgs.amount * Math.pow(10, 18)).toString()
@@ -63,7 +65,7 @@ class PayCard extends Component {
   async componentDidMount() {
     const { location } = this.props;
     const query = queryString.parse(location.search);
-    if (query.amounttoken) {
+    if (query.amountToken) {
       await this.setState(oldState => {
         oldState.paymentVal.payments[0].amount.amountToken = (
           query.amounttoken * Math.pow(10, 18)
@@ -93,12 +95,30 @@ class PayCard extends Component {
     );
   }
 
+  async handleQRData(scanResult) {
+    const { publicUrl } = this.props;
+
+    let data = scanResult.split("/send?");
+    if (data[0] === publicUrl) {
+      let temp = data[1].split("&");
+      let amount = temp[0].split("=")[1];
+      let recipient = temp[1].split("=")[1];
+      this.setState({
+        modals: { scan: false }
+      });
+      this.updatePaymentHandler(amount)
+      this.updateRecipientHandler(recipient)
+    } else {
+      this.updateRecipientHandler(scanResult)
+      console.log("incorrect site");
+    }
+  }
+
   async updateRecipientHandler(value) {
     await this.setState(oldState => {
       oldState.paymentVal.payments[0].recipient = value;
       return oldState;
     });
-    this.setState({ scan: false });
     console.log(
       `Updated recipient: ${JSON.stringify(
         this.state.paymentVal.payments[0].recipient,
@@ -143,15 +163,25 @@ class PayCard extends Component {
         spacing={24}
         direction="column"
         style={{
+          display: "flex",
           paddingLeft: 12,
           paddingRight: 12,
           paddingTop: "10%",
           paddingBottom: "10%",
-          textAlign: "center"
+          textAlign: "center",
+          justifyContent: "center"
         }}
       >
-        <Grid item xs={12}>
-          <SendIcon className={classes.icon} />
+        <Grid
+          container
+          wrap="nowrap"
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Grid item xs={12}>
+            <SendIcon className={classes.icon} />
+          </Grid>
         </Grid>
         <Grid item xs={12}>
           <Grid container direction="row" justify="center" alignItems="center">
@@ -172,27 +202,25 @@ class PayCard extends Component {
         </Grid>
         <Grid item xs={12}>
           <TextField
-            fullWidth
-            className={classes.input}
-            id="outlined-number"
-            label="Amount"
-            placeholder="$0.00"
-            required
-            value={this.state.displayVal}
-            onChange={evt => this.updatePaymentHandler(evt.target.value)}
-            type="number"
-            margin="normal"
-            variant="outlined"
-            helperText={this.state.balanceError}
-            error={this.state.balanceError != null}
-          />
+              fullWidth
+              id="outlined-number"
+              label="Amount"
+              value={this.state.displayVal}
+              type="number"
+              margin="normal"
+              variant="outlined"
+              onChange={evt => this.updatePaymentHandler(evt.target.value)}
+              error={this.state.balanceError != null}
+              helperText={this.state.balanceError}
+            />
         </Grid>
         <Grid item xs={12}>
           <TextField
             style={{ width: "100%" }}
-            id="outlined-with-placeholder"
-            label="Recipient"
-            placeholder="0x0... (Optional for Link)"
+            id="outlined"
+            label="Recipient Address"
+            type="string"
+            required
             value={this.state.paymentVal.payments[0].recipient}
             onChange={evt => this.updateRecipientHandler(evt.target.value)}
             margin="normal"
@@ -227,21 +255,8 @@ class PayCard extends Component {
           onClose={() => this.setState({ scan: false })}
           style={{ width: "full", height: "full" }}
         >
-          <QRScan handleResult={this.updateRecipientHandler.bind(this)} />
+          <QRScan handleResult={this.handleQRData.bind(this)} history={this.props.history} />
         </Modal>
-        {/* <TextField
-          className={classes.input}
-          id="outlined-number"
-          label="Message"
-          placeholder="Groceries, etc. (Optional)"
-          value={this.state.paymentVal.meta.memo}
-          onChange={evt => this.setState({paymentVal: {meta: {memo: evt.target.value }}})}
-          type="string"
-          margin="normal"
-          variant="outlined"
-          helperText={this.state.balanceError}
-          error={this.state.balanceError != null}
-        /> */}
         <Grid item xs={12}>
           <Grid
             container
@@ -275,6 +290,22 @@ class PayCard extends Component {
               </Button>
             </Grid>
           </Grid>
+        </Grid>
+        <Grid item xs={12}>
+          <Button 
+            variant="outlined" 
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              width: "15%",
+              marginTop: "10%"
+            }}
+            size="medium" 
+            onClick={()=>this.props.history.push("/")}
+          >
+            Back
+          </Button>
         </Grid>
       </Grid>
     );

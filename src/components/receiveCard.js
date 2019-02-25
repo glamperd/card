@@ -7,14 +7,17 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import Typography from "@material-ui/core/Typography";
 import CopyIcon from "@material-ui/icons/FileCopy";
 import QRGenerate from "./qrGenerate";
+import IconButton from "@material-ui/core/IconButton";
+import HighlightOffIcon from "@material-ui/icons/HighlightOff";
+import { withRouter } from "react-router-dom";
 import { withStyles, Grid } from "@material-ui/core";
 
-const styles = {
+const styles = theme => ({
   icon: {
     width: "40px",
     height: "40px"
   }
-};
+});
 
 class ReceiveCard extends Component {
   constructor(props) {
@@ -37,7 +40,7 @@ class ReceiveCard extends Component {
   }
 
   generateQrUrl(value) {
-    const { publicUrl, address } = this.props
+    const { publicUrl, address } = this.props;
     // function should take a payment value
     // and convert it to the url with
     // appropriate strings to prefill a send
@@ -49,11 +52,31 @@ class ReceiveCard extends Component {
 
   render() {
     const { classes } = this.props;
-    const { qrUrl, error, displayVal } = this.state
+    const { qrUrl, error, displayVal } = this.state;
     return (
-      <Grid container spacing={16} direction="column" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: "10%", paddingBottom: "10%", textAlign: "center" }}>
-        <Grid item xs={12}>
-          <ReceiveIcon className={classes.icon} />
+      <Grid
+        container
+        spacing={16}
+        direction="column"
+        style={{
+          paddingLeft: 12,
+          paddingRight: 12,
+          paddingTop: "10%",
+          paddingBottom: "10%",
+          textAlign: "center",
+          justifyContent: "center"
+        }}
+      >
+        <Grid
+          container
+          wrap="nowrap"
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Grid item xs={12}>
+            <ReceiveIcon className={classes.icon} />
+          </Grid>
         </Grid>
         <Grid item xs={12}>
           <TextField
@@ -73,15 +96,30 @@ class ReceiveCard extends Component {
           <QRGenerate value={qrUrl} />
         </Grid>
         <Grid item xs={12}>
-          <Button variant="outlined" fullWidth>
-            <CopyIcon style={{ marginRight: "5px" }} />
-            <CopyToClipboard text={qrUrl}>
+          {/* <CopyIcon style={{marginBottom: "2px"}}/> */}
+          <CopyToClipboard text={qrUrl}>
+            <Button variant="outlined" fullWidth>
               <Typography noWrap variant="body1">
                 <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
                   <span>{qrUrl}</span>
                 </Tooltip>
               </Typography>
-            </CopyToClipboard>
+            </Button>
+          </CopyToClipboard>
+        </Grid>
+        <Grid item xs={12}>
+          <Button 
+            variant="outlined" 
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              width: "15%",
+            }}
+            size="medium" 
+            onClick={()=>this.props.history.push("/")}
+          >
+            Back
           </Button>
         </Grid>
       </Grid>
