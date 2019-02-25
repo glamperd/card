@@ -108,6 +108,12 @@ class PayCard extends Component {
     );
   }
 
+  async linkHandler() {
+    const { connext, web3 } = this.props
+    const { paymentVal } = this.state
+    
+  }
+
   async paymentHandler() {
     console.log(
       `Submitting payment: ${JSON.stringify(this.state.paymentVal, null, 2)}`
@@ -250,8 +256,7 @@ class PayCard extends Component {
                 className={classes.button}
                 variant="contained"
                 size="large"
-                disabled
-                //TODO ENABLE THIS WHEN WE ADD FUNCTIONALITY
+                onClick={() => this.linkHandler()}
               >
                 Link
                 <LinkIcon style={{ marginLeft: "5px" }} />
