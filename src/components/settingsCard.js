@@ -141,33 +141,33 @@ class SettingsCard extends Component {
               size="large"
               onClick={() => this.setState({ showRecovery: true })}
             >
-              Show Mnemonic
+              Show Backup Phrase
             </Button>
           ) : (
-            <Button
-              fullWidth
-              className={classes.button}
-              variant="outlined"
-              color="primary"
-              size="large"
-              onClick={() => this.setState({ showRecovery: true })}
+            <CopyToClipboard
+            text={localStorage.getItem("mnemonic")}
+            color="primary"
             >
-              <CopyIcon style={{ marginRight: "5px" }} />
-              <CopyToClipboard
-                text={localStorage.getItem("mnemonic")}
+              <Button
+                fullWidth
+                className={classes.button}
+                variant="outlined"
                 color="primary"
+                size="large"
+                onClick={() => this.setState({ showRecovery: true })}
               >
-                <Typography noWrap variant="body1" color="primary">
-                  <Tooltip
-                    disableFocusListener
-                    disableTouchListener
-                    title="Click to Copy"
-                  >
-                    <span>{localStorage.getItem("mnemonic")}</span>
-                  </Tooltip>
-                </Typography>
-              </CopyToClipboard>
-            </Button>
+                <CopyIcon style={{ marginRight: "5px" }} />
+                  <Typography noWrap variant="body1" color="primary">
+                    <Tooltip
+                      disableFocusListener
+                      disableTouchListener
+                      title="Click to Copy"
+                    >
+                      <span>{localStorage.getItem("mnemonic")}</span>
+                    </Tooltip>
+                  </Typography>
+              </Button>
+            </CopyToClipboard>
           )}
         </Grid>
         <Grid item xs={12} className={classes.button}>
@@ -180,7 +180,7 @@ class SettingsCard extends Component {
               size="large"
               onClick={() => this.setState({ inputRecovery: true })}
             >
-              Import Wallet
+              Import from Backup
             </Button>
           ) : (
             <TextField
