@@ -148,7 +148,9 @@ class PayCard extends Component {
       }catch(e){
         await this.setState({ sendError: true })
       }
-      this.setState({ sendSuccess: true })
+      if (!this.state.sendError){
+        this.setState({ sendSuccess: true });
+      }
     } else {
       this.setState({ addressError: "Please choose a valid address" });
     }

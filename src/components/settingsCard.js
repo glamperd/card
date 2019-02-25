@@ -251,7 +251,7 @@ class SettingsCard extends Component {
               right: "0",
             }}
           >
-            <Grid container style={{backgroundColor: "#FFF", padding: "5%", flexDirection: "column"}}>
+            <Grid container style={{backgroundColor: "#FFF", padding: "3% 3% 3% 3%", flexDirection: "column"}}>
               <Grid item style={{margin: "1em"}}>
                 <Typography variant="h5" style={{color:"#F22424"}}>
                   Are you sure you want to burn your Card? 

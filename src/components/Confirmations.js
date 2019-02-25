@@ -1,5 +1,22 @@
 import React, { Component } from "react";
-import Snackbar from "./snackBar";
+import { withStyles } from '@material-ui/core';
+import ConfirmationSnackbar from "./snackBar";
+
+const styles = ({
+  success: {
+    backgroundColor: "#08B22D",
+    color: "#FFF"
+  },
+  pending: {
+    backgroundColor: "#3CB8F2",
+    color: "#FFF"
+  },
+  error: {
+    backgroundColor: "#FCA311",
+    color: "#FFF"
+  }
+});
+
 
 class Confirmations extends Component {
   constructor(props) {
@@ -112,30 +129,38 @@ class Confirmations extends Component {
   };
 
   render() {
+    const { classes } = this.props;
     const { depositStatus, withdrawStatus, payStatus } = this.state;
     return (
       <div>
-        <Snackbar
+        <ConfirmationSnackbar
+          //bodyStyle={{backgroundColor:"#3CB8F2", color:"white"}}
           handleClick={() => this.handleClick()}
           open={depositStatus === "PENDING"}
           text="Processing deposit, we'll let you know when it's done."
         />
-        <Snackbar
+        <ConfirmationSnackbar
+          className={styles.success}
+         //bodyStyle={{backgroundColor:"#08B22D", color:"white"}}
           handleClick={() => this.handleClick()}
-          open={depositStatus === "SUCCESS"}
-          text="Deposit Confirmed!"
+          open={true}//depositStatus === "SUCCESS"}
+          text="Deposit Confirmed!" 
         />
-        <Snackbar
+        <ConfirmationSnackbar
+        className={classes.pending}
+         //bodyStyle={{backgroundColor:"#3CB8F2", color:"white"}}
           handleClick={() => this.handleClick()}
           open={withdrawStatus === "PENDING"}
           text="Processing deposit, we'll let you know when it's done."
         />
-        <Snackbar
+        <ConfirmationSnackbar
+        className={classes.success}
+         // bodyStyle={{backgroundColor:"#08B22D", color:"white"}}
           handleClick={() => this.handleClick()}
           open={withdrawStatus === "SUCCESS"}
           text="Withdrawal Confirmed!"
         />
-        <Snackbar
+        <ConfirmationSnackbar
           handleClick={() => this.handleClick()}
           open={payStatus === "PAID"}
           text="Payment sent successfully!"
@@ -145,4 +170,4 @@ class Confirmations extends Component {
   }
 }
 
-export default Confirmations;
+export default withStyles(styles)(Confirmations);
