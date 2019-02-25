@@ -14,22 +14,8 @@ import { withStyles, Grid } from "@material-ui/core";
 
 const styles = theme => ({
   icon: {
-    [theme.breakpoints.down(600)]: {
-      marginLeft: "190px"
-    },
-    [theme.breakpoints.up(600)]: {
-      marginLeft: "255px"
-    },
     width: "40px",
-    height: "40px",
-    float: "right"
-  },
-  cancelIcon: {
-    marginLeft: "100px",
-    width: "50px",
-    height: "50px",
-    float: "right",
-    cursor: "pointer"
+    height: "40px"
   }
 });
 
@@ -88,21 +74,19 @@ class ReceiveCard extends Component {
           paddingRight: 12,
           paddingTop: "10%",
           paddingBottom: "10%",
-          textAlign: "center"
+          textAlign: "center",
+          justifyContent: "center"
         }}
       >
         <Grid
           container
           wrap="nowrap"
           direction="row"
-          justify="center"
+          justifyContent="center"
           alignItems="center"
         >
           <Grid item xs={12}>
             <ReceiveIcon className={classes.icon} />
-          </Grid>
-          <Grid item xs={12} className={classes.cancelIcon}>
-            <CancelButton />
           </Grid>
         </Grid>
         <Grid item xs={12}>
@@ -123,7 +107,7 @@ class ReceiveCard extends Component {
           <QRGenerate value={qrUrl} />
         </Grid>
         <Grid item xs={12}>
-          <CopyIcon style={{marginBottom: "2px"}}/>
+          {/* <CopyIcon style={{marginBottom: "2px"}}/> */}
           <CopyToClipboard text={qrUrl}>
             <Button variant="outlined" fullWidth>
               <Typography noWrap variant="body1">
@@ -133,6 +117,21 @@ class ReceiveCard extends Component {
               </Typography>
             </Button>
           </CopyToClipboard>
+        </Grid>
+        <Grid item xs={12}>
+          <Button 
+            variant="outlined" 
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              width: "15%",
+            }}
+            size="small" 
+            onClick={()=>this.props.history.push("/")}
+          >
+            Back
+          </Button>
         </Grid>
       </Grid>
     );

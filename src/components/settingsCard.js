@@ -225,6 +225,21 @@ class SettingsCard extends Component {
             Burn Wallet
           </Button>
         </Grid>
+        <Grid item xs={12}>
+          <Button 
+            variant="outlined" 
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              width: "15%",
+            }}
+            size="small" 
+            onClick={()=>this.props.history.push("/")}
+          >
+            Back
+          </Button>
+        </Grid>
       </Grid>
     );
   }

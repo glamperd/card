@@ -16,13 +16,6 @@ const styles = theme => ({
   icon: {
     width: "40px",
     height: "40px"
-  },
-  cancelIcon: {
-    marginLeft: "100px",
-    width: "50px",
-    height: "50px",
-    float: "right",
-    cursor: "pointer"
   }
 });
 
@@ -76,7 +69,7 @@ class DepositCard extends Component {
           <QRGenerate value={address} />
         </Grid>
         <Grid item xs={12}>
-          <CopyIcon style={{marginBottom: "2px"}}/>
+          {/* <CopyIcon style={{marginBottom: "2px"}}/> */}
           <CopyToClipboard text={address}>
             <Button variant="outlined" fullWidth>
               <Typography noWrap variant="body1">
@@ -86,6 +79,21 @@ class DepositCard extends Component {
               </Typography>
             </Button>
           </CopyToClipboard>
+        </Grid>
+        <Grid item xs={12}>
+          <Button 
+            variant="outlined" 
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              width: "15%",
+            }}
+            size="small" 
+            onClick={()=>this.props.history.push("/")}
+          >
+            Back
+          </Button>
         </Grid>
       </Grid>
     );

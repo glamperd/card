@@ -19,22 +19,8 @@ import { getAggregateChannelBalance } from "../utils/getAggregateChannelBalance"
 
 const styles = theme => ({
   icon: {
-    [theme.breakpoints.down(600)]: {
-      marginLeft: "190px"
-    },
-    [theme.breakpoints.up(600)]: {
-      marginLeft: "255px"
-    },
     width: "40px",
     height: "40px",
-    float: "right"
-  },
-  cancelIcon: {
-    marginLeft: "100px",
-    width: "50px",
-    height: "50px",
-    float: "right",
-    cursor: "pointer"
   },
   button: {
     backgroundColor: "#FCA311",
@@ -240,16 +226,14 @@ class CashOutCard extends Component {
           paddingRight: 12,
           paddingTop: "10%",
           paddingBottom: "10%",
-          textAlign: "center"
+          textAlign: "center",
+          justifyContent: "center"
         }}
       >
         <ProgressModalWrapped withdrawing={withdrawing} />
-        <Grid container wrap="nowrap" direction="row" justify="center" alignItems="center">
+        <Grid container wrap="nowrap" direction="row" justifyContent="center" alignItems="center">
           <Grid item xs={12}>
             <UnarchiveIcon className={classes.icon} />
-          </Grid>
-          <Grid item xs={12} className={classes.cancelIcon}>
-            <CancelButton />
           </Grid>
         </Grid>
         <Grid item xs={12}>
@@ -313,6 +297,21 @@ class CashOutCard extends Component {
               </Button>
             </Grid>
           </Grid>
+        </Grid>
+        <Grid item xs={12}>
+          <Button 
+            variant="outlined" 
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              width: "15%",
+            }}
+            size="small" 
+            onClick={()=>this.props.history.push("/")}
+          >
+            Back
+          </Button>
         </Grid>
       </Grid>
     );
