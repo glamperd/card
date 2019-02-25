@@ -51,7 +51,8 @@ class SettingsCard extends Component {
       inputRecovery: false,
       rpc: localStorage.getItem("rpc"),
       mnemonic: null,
-      copied: null
+      copied: null,
+      showWarning: false
     };
   }
 
@@ -154,7 +155,7 @@ class SettingsCard extends Component {
               size="large"
               onClick={() => this.setState({ showRecovery: true })}
             >
-              Show Mnemonic
+              Show Backup Phrase
             </Button>
           ) : (
             <Button
@@ -202,7 +203,7 @@ class SettingsCard extends Component {
               color="primary"
               variant="outlined"
               size="large"
-              placeholder="Enter mnemonic and submit"
+              placeholder="Enter backup phrase and submit"
               value={this.state.mnemonic}
               onChange={event =>
                 this.setState({ mnemonic: event.target.value })
@@ -226,7 +227,8 @@ class SettingsCard extends Component {
           )}
         </Grid>
         <Grid item xs={12} className={classes.button}>
-          <Button
+          {!this.state.showWarning ? (
+            <Button
             fullWidth
             style={{
               background: "#FFF",
@@ -234,10 +236,60 @@ class SettingsCard extends Component {
               color: "#F22424"
             }}
             size="large"
-            onClick={() => this.generateNewAddress()}
+            onClick={() => this.setState({ showWarning: true })}
           >
             Burn Wallet
           </Button>
+          ) : (
+            <Button
+              fullWidth
+              style={{
+                background: "#FFF",
+                border: "1px solid #F22424",
+                color: "#F22424"
+              }}
+              variant="outlined"
+              size="large"
+            >
+              Are you sure you want to burn your wallet? 
+              You will not be able to 
+              access your funds without restoring from your backup phrase. 
+              <Button
+              style={{
+                background: "#FFF",
+                border: "1px solid #F22424",
+                color: "#F22424",
+                marginLeft: "10%",
+                ':hover':{
+                  background:"#F22424",
+                  color:"#FFF"
+                }
+              }}
+              variant="outlined"
+              size="small"
+              onClick={() => this.generateNewAddress()}
+            >
+            Yes
+            </Button>
+            <Button
+              style={{
+                background: "#FFF",
+                border: "1px solid #F22424",
+                color: "#F22424",
+                marginLeft: "2%",
+                ':hover':{
+                  background:"#F22424",
+                  color:"#FFF"
+                }
+              }}
+              variant="outlined"
+              size="small"
+              onClick={() => this.setState({ showWarning: false })}
+            >
+            No
+            </Button>
+            </Button>
+          )}
         </Grid>
         <Grid item xs={12}>
           <Button 
