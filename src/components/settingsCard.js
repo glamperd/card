@@ -8,7 +8,8 @@ import {
   Tooltip,
   TextField,
   InputAdornment,
-  withStyles
+  withStyles,
+  Modal
 } from "@material-ui/core";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import CopyIcon from "@material-ui/icons/FileCopy";
@@ -222,69 +223,74 @@ class SettingsCard extends Component {
           )}
         </Grid>
         <Grid item xs={12} className={classes.button}>
-          {!this.state.showWarning ? (
-            <Button
-            fullWidth
-            style={{
-              background: "#FFF",
-              border: "1px solid #F22424",
-              color: "#F22424"
-            }}
-            size="large"
-            onClick={() => this.setState({ showWarning: true })}
+          <Button
+          fullWidth
+          style={{
+            background: "#FFF",
+            border: "1px solid #F22424",
+            color: "#F22424"
+          }}
+          size="large"
+          onClick={() => this.setState({ showWarning: true })}
           >
-            Burn Wallet
+            Burn Card
           </Button>
-          ) : (
-            <Button
-              fullWidth
-              style={{
-                background: "#FFF",
-                border: "1px solid #F22424",
-                color: "#F22424"
-              }}
-              variant="outlined"
-              size="large"
-            >
-              Are you sure you want to burn your wallet? 
-              You will not be able to 
-              access your funds without restoring from your backup phrase. 
-              <Button
-              style={{
-                background: "#FFF",
-                border: "1px solid #F22424",
-                color: "#F22424",
-                marginLeft: "10%",
-                ':hover':{
-                  background:"#F22424",
-                  color:"#FFF"
-                }
-              }}
-              variant="outlined"
-              size="small"
-              onClick={() => this.generateNewAddress()}
-            >
-            Yes
-            </Button>
-            <Button
-              style={{
-                background: "#FFF",
-                border: "1px solid #F22424",
-                color: "#F22424",
-                marginLeft: "2%",
-                ':hover':{
-                  background:"#F22424",
-                  color:"#FFF"
-                }
-              }}
-              variant="outlined"
-              size="small"
-              onClick={() => this.setState({ showWarning: false })}
-            >
-            No
-            </Button>
-            </Button>
-          )}
+          <Modal
+            open={this.state.showWarning}
+            onBackdropClick={() => this.setState({showWarning: false})}
+            style={{
+              justifyContent: "center", 
+              alignItems: "center", 
+              textAlign: "center", 
+              position: "absolute", 
+              top: "25%", 
+              width: "375px",
+              marginLeft: "auto",
+              marginRight: "auto",
+              left: "0",
+              right: "0",
+            }}
+          >
+            <Grid container style={{backgroundColor: "#FFF", padding: "5%", flexDirection: "column"}}>
+              <Grid item style={{margin: "1em"}}>
+                <Typography variant="h5" style={{color:"#F22424"}}>
+                  Are you sure you want to burn your Card? 
+                </Typography>
+              </Grid>
+              <Grid item style={{margin: "1em"}}>
+                <Typography variant="body1" style={{color:"#F22424"}}>
+                  You will lose access to your funds unless you save your backup phrase!
+                </Typography>
+              </Grid>
+              <Grid item style={{margin: "1em"}}>
+                <Button
+                  style={{
+                    background: "#F22424",
+                    border: "1px solid #F22424",
+                    color: "#FFF",
+                  }}
+                  variant="contained"
+                  size="small"
+                  onClick={() => this.generateNewAddress()}
+                >
+                Burn
+                </Button>
+                <Button
+                  style={{
+                    background: "#FFF",
+                    border: "1px solid #F22424",
+                    color: "#F22424",
+                    marginLeft: "5%",
+                  }}
+                  variant="outlined"
+                  size="small"
+                  onClick={() => this.setState({ showWarning: false })}
+                >
+                Cancel
+                </Button>
+              </Grid>
+            </Grid>
+          </Modal>
         </Grid>
         <Grid item xs={12}>
           <Button 
