@@ -424,8 +424,8 @@ class App extends React.Component {
     const { classes } = this.props;
     return (
       <Router>
-        <div className={classes.app} container spacing={24} direction="row" justify="center" alignItems="center">
-          <Paper className={classes.paper}>
+        <div className={classes.app}>
+          <Paper className={classes.paper} elevation={1}>
             <AppBarComponent address={address} />
             <Route
               exact

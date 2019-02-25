@@ -194,7 +194,7 @@ class ChannelCard extends Component {
     const { depositDetected, progressSmall } = this.state
     const substr = channelState ? getDollarSubstring(channelState.balanceTokenUser) : ["0","00"]
     return (
-      <Card className={classes.card} container>
+      <Card className={classes.card}>
       <Grid container direction="column" alignItems="center">
       <ProgressModalWrapped handleClick={() => this.handleClick()} small={progressSmall} depositing={depositDetected} />
 

@@ -34,7 +34,7 @@ const AppBarComponent = props => (
         </Grid>
         <Grid item xs={3}>
           <IconButton color="inherit" variant="contained" component={Link} to="/">
-            <HomeIcon color="white" alt="" style={{ width: "30px", height: "30px", cursor:"pointer" }} />
+            <HomeIcon alt="" style={{ width: "30px", height: "30px", cursor:"pointer" }} />
           </IconButton>
         </Grid>
         <Grid item xs={3}>
