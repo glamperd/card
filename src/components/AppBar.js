@@ -1,5 +1,5 @@
 import React from "react";
-import { AppBar, Toolbar, IconButton, Typography, Grid } from "@material-ui/core";
+import { AppBar, Toolbar, IconButton, Typography, Grid, Button } from "@material-ui/core";
 import blockies from "ethereum-blockies-png";
 import SettingIcon from "@material-ui/icons/Settings";
 import { Link } from "react-router-dom";
@@ -23,10 +23,14 @@ const AppBarComponent = props => (
             </Typography>
           </IconButton>
         </Grid>
-        <Grid item xs={3}>
-          <IconButton color="inherit" variant="contained" component={Link} to="/settings">
-            <SettingIcon />
-          </IconButton>
+        <Grid item xs={5}>
+          <Button size="small" variant="outlined" style={{ color: "#c1c6ce", borderColor: "#c1c6ce", fontSize: "small"}} component={Link} to="/settings">
+            {localStorage.getItem("rpc")}
+            <SettingIcon style={{marginLeft:"3px"}}/>
+          </Button>
+          {/* <IconButton color="inherit" variant="contained" component={Link} to="/settings">
+
+          </IconButton> */}
         </Grid>
       </Grid>
     </Toolbar>

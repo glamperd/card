@@ -44,7 +44,7 @@ class PayCard extends Component {
           {
             recipient: this.props.scanArgs.recipient
               ? this.props.scanArgs.recipient
-              : null,
+              : "",
             amount: {
               amountToken: this.props.scanArgs.amount
                 ? (this.props.scanArgs.amount * Math.pow(10, 18)).toString()
