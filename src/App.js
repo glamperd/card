@@ -27,25 +27,17 @@ const humanTokenAbi = require("./abi/humanToken.json");
 const env = process.env.NODE_ENV;
 const tokenAbi = humanTokenAbi;
 console.log(`starting app in env: ${JSON.stringify(process.env, null, 1)}`);
+
 // Provider info
 // local
 const hubUrlLocal = process.env.REACT_APP_LOCAL_HUB_URL.toLowerCase();
 const localProvider = process.env.REACT_APP_LOCAL_RPC_URL.toLowerCase();
-const tokenAddressLocal = process.env.REACT_APP_LOCAL_TOKEN_ADDRESS.toLowerCase();
-const hubWalletAddressLocal = process.env.REACT_APP_LOCAL_HUB_WALLET_ADDRESS.toLowerCase();
-const channelManagerAddressLocal = process.env.REACT_APP_LOCAL_CHANNEL_MANAGER_ADDRESS.toLowerCase();
 // rinkeby
 const hubUrlRinkeby = process.env.REACT_APP_RINKEBY_HUB_URL.toLowerCase();
 const rinkebyProvider = process.env.REACT_APP_RINKEBY_RPC_URL.toLowerCase();
-const tokenAddressRinkeby = process.env.REACT_APP_RINKEBY_TOKEN_ADDRESS.toLowerCase();
-const hubWalletAddressRinkeby = process.env.REACT_APP_RINKEBY_HUB_WALLET_ADDRESS.toLowerCase();
-const channelManagerAddressRinkeby = process.env.REACT_APP_RINKEBY_CHANNEL_MANAGER_ADDRESS.toLowerCase();
 // mainnet
 const hubUrlMainnet = process.env.REACT_APP_MAINNET_HUB_URL.toLowerCase();
 const mainnetProvider = process.env.REACT_APP_MAINNET_RPC_URL.toLowerCase();
-const tokenAddressMainnet = process.env.REACT_APP_MAINNET_TOKEN_ADDRESS.toLowerCase();
-const hubWalletAddressMainnet = process.env.REACT_APP_MAINNET_HUB_WALLET_ADDRESS.toLowerCase();
-const channelManagerAddressMainnet = process.env.REACT_APP_MAINNET_CHANNEL_MANAGER_ADDRESS.toLowerCase();
 
 const publicUrl = process.env.REACT_APP_PUBLIC_URL.toLowerCase();
 
@@ -149,7 +141,7 @@ class App extends React.Component {
     if (mnemonic) {
       const delegateSigner = await createWalletFromMnemonic(mnemonic);
       const address = await delegateSigner.getAddressString();
-      console.log("address: ", address);
+      console.log("Autosigner address: ", address);
       this.setState({ delegateSigner, address });
       store.dispatch({
         type: "SET_WALLET",
@@ -194,27 +186,18 @@ class App extends React.Component {
 
   // either LOCALHOST MAINNET or RINKEBY
   async setWeb3(rpc) {
-    let rpcUrl, hubWalletAddress, channelManagerAddress, tokenAddress, hubUrl;
+    let rpcUrl, hubUrl;
     switch (rpc) {
       case "LOCALHOST":
         rpcUrl = localProvider;
-        hubWalletAddress = hubWalletAddressLocal;
-        channelManagerAddress = channelManagerAddressLocal;
-        tokenAddress = tokenAddressLocal;
         hubUrl = hubUrlLocal;
         break;
       case "RINKEBY":
         rpcUrl = rinkebyProvider;
-        hubWalletAddress = hubWalletAddressRinkeby;
-        channelManagerAddress = channelManagerAddressRinkeby;
-        tokenAddress = tokenAddressRinkeby;
         hubUrl = hubUrlRinkeby;
         break;
       case "MAINNET":
         rpcUrl = mainnetProvider;
-        hubWalletAddress = hubWalletAddressMainnet;
-        channelManagerAddress = channelManagerAddressMainnet;
-        tokenAddress = tokenAddressMainnet;
         hubUrl = hubUrlMainnet;
         break;
       default:
@@ -233,7 +216,8 @@ class App extends React.Component {
     const provider = clientProvider(providerOpts);
     const customWeb3 = new Web3(provider);
     const customId = await customWeb3.eth.net.getId();
-    this.setState({ customWeb3, hubWalletAddress, channelManagerAddress, tokenAddress, hubUrl });
+    // NOTE: token/contract/hubWallet ddresses are set to state while initializing connext
+    this.setState({ customWeb3, hubUrl });
     if (windowId && windowId !== customId) {
       alert(`Your card is set to ${JSON.stringify(rpc)}. To avoid losing funds, please make sure your metamask and card are using the same network.`);
     }
@@ -253,22 +237,29 @@ class App extends React.Component {
   }
 
   async setConnext() {
-    const { hubWalletAddress, channelManagerAddress, address, customWeb3, tokenAddress, hubUrl } = this.state;
+    const { address, customWeb3, hubUrl } = this.state;
 
     const opts = {
       web3: customWeb3,
-      hubAddress: hubWalletAddress, //"0xfb482f8f779fd96a857f1486471524808b97452d" ,
-      hubUrl, //http://localhost:8080,
-      contractAddress: channelManagerAddress, //"0xa8c50098f6e144bf5bae32bdd1ed722e977a0a42",
-      user: address,
-      tokenAddress: tokenAddress
+      hubUrl, // in dev-mode: http://localhost:8080,
+      user: address
     };
     console.log("Setting up connext with opts:", opts);
 
     // *** Instantiate the connext client ***
-    const connext = getConnextClient(opts);
-    console.log("Successfully set up connext!");
-    this.setState({ connext });
+    const connext = await getConnextClient(opts);
+    console.log(`Successfully set up connext! Connext config:`);
+    console.log(`  - tokenAddress: ${connext.opts.tokenAddress}`);
+    console.log(`  - hubAddress: ${connext.opts.hubAddress}`);
+    console.log(`  - contractAddress: ${connext.opts.contractAddress}`);
+    console.log(`  - ethNetworkId: ${connext.opts.ethNetworkId}`);
+    this.setState({
+      connext,
+      tokenAddress: connext.opts.tokenAddress,
+      channelManagerAddress: connext.opts.contractAddress,
+      hubWalletAddress: connext.opts.hubAddress,
+      ethNetworkId: connext.opts.ethNetworkId
+    });
   }
 
   // ************************************************* //
