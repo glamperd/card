@@ -13,6 +13,9 @@ import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
+import { emptyAddress } from "connext/dist/Utils";
+import { convertPayment } from "connext/dist/types";
+import BN from "bn.js"
 
 const queryString = require("query-string");
 
@@ -129,30 +132,70 @@ class PayCard extends Component {
   }
 
   async linkHandler() {
-    const { connext, web3 } = this.props
+    const { connext } = this.props
     const { paymentVal } = this.state
-    
+
+    // generate secret, set type, and set
+    // recipient to empty address
+    const payment = {
+      ...(paymentVal.payments[0]),
+      type: 'PT_LINK',
+      recipient: emptyAddress,
+      secret: connext.generateSecret()
+    }
+
+    console.log(
+      `Updated paymentVal: ${JSON.stringify(payment, null, 2)}`
+    );
+
+    const updatedPaymentVal = {
+      ...paymentVal,
+      payments: [payment],
+    }
+
+    this.setState({ 
+      paymentVal: updatedPaymentVal,
+    })
+
+    await this._paymentHandler(updatedPaymentVal)
   }
 
   async paymentHandler() {
+    await this._paymentHandler(this.state.paymentVal)
+  }
+
+  async _paymentHandler(paymentVal) {
+    const { connext, web3, channelState } = this.props;
+
     console.log(
-      `Submitting payment: ${JSON.stringify(this.state.paymentVal, null, 2)}`
+      `Submitting payment: ${JSON.stringify(paymentVal, null, 2)}`
     );
     this.setState({ addressError: null, balanceError: null });
-    const { connext, web3 } = this.props;
+    let balanceError, addressError
 
-    // if( Number(this.state.paymentVal.payments[0].amount.amountToken) <= Number(channelState.balanceTokenUser) &&
-    //     Number(this.state.paymentVal.payments[0].amount.amountWei) <= Number(channelState.balanceWeiUser)
-    // ) {
-    if (web3.utils.isAddress(this.state.paymentVal.payments[0].recipient)) {
-      let paymentRes = await connext.buy(this.state.paymentVal);
-      console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
-    } else {
-      this.setState({ addressError: "Please choose a valid address" });
+    // validate that the token amount is within bounds
+    const payment = convertPayment('bn', paymentVal.payments[0].amount)
+    if (
+      payment.amountToken.gt(new BN(channelState.balanceTokenUser))
+    ) {
+      balanceError = "You can't afford that bro"
     }
-    // } else {
-    //   this.setState({balanceError: "Insufficient balance in channel"})
-    // }
+
+    // validate recipient is valid address OR the empty address
+    const recipient = paymentVal.payments[0].recipient
+    if (!web3.utils.isAddress(recipient) && recipient != emptyAddress) {
+      addressError = "Please choose a valid address"
+    }
+
+    // return if either errors exist
+    if (balanceError || addressError) {
+      this.setState({ balanceError, addressError })
+      return
+    }
+
+    // otherwise make payment
+    let paymentRes = await connext.buy(paymentVal);
+    console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
   }
 
   render() {
