@@ -94,7 +94,8 @@ class SettingsCard extends Component {
           paddingRight: 12,
           paddingTop: "10%",
           paddingBottom: "10%",
-          textAlign: "center"
+          textAlign: "center",
+          justifyContent: "center"
         }}
       >
       <Snackbar 
@@ -102,7 +103,7 @@ class SettingsCard extends Component {
             onClose={() => this.handleClick()}
             open={copied}
             text="Copied!"/>
-        <Grid item xs={12}>
+        <Grid item xs={12} style={{justifyContent: "center"}}>
           <SettingsIcon className={classes.icon} />
         </Grid>
         <Grid item xs={12}>
@@ -113,16 +114,18 @@ class SettingsCard extends Component {
             style={{
               border: "1px solid #3CB8F2",
               color: "#3CB8F2",
-              textAlign: "center"
+              textAlign: "center",
+              borderRadius: "4px",
+              height: "45px"
             }}
             disableUnderline
             IconComponent={() => null}
           >
             <MenuItem disabled={true} value={"MAINNET"}>
-              Mainnet
+              MAINNET
             </MenuItem>
-            <MenuItem value={"RINKEBY"}>Rinkeby</MenuItem>
-            <MenuItem value={"LOCALHOST"}>Localhost</MenuItem>
+            <MenuItem value={"RINKEBY"}>RINKEBY</MenuItem>
+            <MenuItem value={"LOCALHOST"}>LOCALHOST</MenuItem>
           </Select>
         </Grid>
         <Grid item xs={12} className={classes.button}>
@@ -158,31 +161,30 @@ class SettingsCard extends Component {
               Show Backup Phrase
             </Button>
           ) : (
-            <Button
-              fullWidth
-              className={classes.button}
-              variant="outlined"
-              color="primary"
-              size="large"
-              onClick={() => this.setState({ showRecovery: true })}
+            <CopyToClipboard
+            text={localStorage.getItem("mnemonic")}
+            color="primary"
             >
-              <CopyIcon style={{ marginRight: "5px" }} />
-              <CopyToClipboard
-                onCopy={() => this.setState({copied: true})}
-                text={localStorage.getItem("mnemonic")}
+              <Button
+                fullWidth
+                className={classes.button}
+                variant="outlined"
                 color="primary"
+                size="large"
+                onClick={() => this.setState({ showRecovery: true })}
               >
-                <Typography noWrap variant="body1" color="primary">
-                  <Tooltip
-                    disableFocusListener
-                    disableTouchListener
-                    title="Click to Copy"
-                  >
-                    <span>{localStorage.getItem("mnemonic")}</span>
-                  </Tooltip>
-                </Typography>
-              </CopyToClipboard>
-            </Button>
+                <CopyIcon style={{ marginRight: "5px" }} />
+                  <Typography noWrap variant="body1" color="primary">
+                    <Tooltip
+                      disableFocusListener
+                      disableTouchListener
+                      title="Click to Copy"
+                    >
+                      <span>{localStorage.getItem("mnemonic")}</span>
+                    </Tooltip>
+                  </Typography>
+              </Button>
+            </CopyToClipboard>
           )}
         </Grid>
         <Grid item xs={12} className={classes.button}>
@@ -195,7 +197,7 @@ class SettingsCard extends Component {
               size="large"
               onClick={() => this.setState({ inputRecovery: true })}
             >
-              Import Wallet
+              Import from Backup
             </Button>
           ) : (
             <TextField
@@ -300,7 +302,7 @@ class SettingsCard extends Component {
               color: "#F22424",
               width: "15%",
             }}
-            size="small" 
+            size="medium" 
             onClick={()=>this.props.history.push("/")}
           >
             Back

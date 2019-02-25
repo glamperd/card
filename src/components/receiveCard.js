@@ -21,17 +21,6 @@ const styles = theme => ({
   }
 });
 
-/* CANCEL BUTTON */
-const CancelButton = withRouter(({ history }) => (
-  <IconButton
-    onClick={() => {
-      history.push("/");
-    }}
-  >
-    <HighlightOffIcon />
-  </IconButton>
-));
-
 class ReceiveCard extends Component {
   constructor(props) {
     super(props);
@@ -141,7 +130,7 @@ class ReceiveCard extends Component {
               color: "#F22424",
               width: "15%",
             }}
-            size="small" 
+            size="medium" 
             onClick={()=>this.props.history.push("/")}
           >
             Back

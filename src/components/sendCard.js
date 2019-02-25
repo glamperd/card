@@ -45,7 +45,7 @@ class PayCard extends Component {
           {
             recipient: this.props.scanArgs.recipient
               ? this.props.scanArgs.recipient
-              : null,
+              : "",
             amount: {
               amountToken: this.props.scanArgs.amount
                 ? (this.props.scanArgs.amount * Math.pow(10, 18)).toString()
@@ -68,7 +68,7 @@ class PayCard extends Component {
   async componentDidMount() {
     const { location } = this.props;
     const query = queryString.parse(location.search);
-    if (query.amounttoken) {
+    if (query.amountToken) {
       await this.setState(oldState => {
         oldState.paymentVal.payments[0].amount.amountToken = (
           query.amounttoken * Math.pow(10, 18)
@@ -98,12 +98,30 @@ class PayCard extends Component {
     );
   }
 
+  async handleQRData(scanResult) {
+    const { publicUrl } = this.props;
+
+    let data = scanResult.split("/send?");
+    if (data[0] === publicUrl) {
+      let temp = data[1].split("&");
+      let amount = temp[0].split("=")[1];
+      let recipient = temp[1].split("=")[1];
+      this.setState({
+        modals: { scan: false }
+      });
+      this.updatePaymentHandler(amount)
+      this.updateRecipientHandler(recipient)
+    } else {
+      this.updateRecipientHandler(scanResult)
+      console.log("incorrect site");
+    }
+  }
+
   async updateRecipientHandler(value) {
     await this.setState(oldState => {
       oldState.paymentVal.payments[0].recipient = value;
       return oldState;
     });
-    this.setState({ scan: false });
     console.log(
       `Updated recipient: ${JSON.stringify(
         this.state.paymentVal.payments[0].recipient,
@@ -223,6 +241,7 @@ class PayCard extends Component {
             style={{ width: "100%" }}
             id="outlined"
             label="Recipient Address"
+            type="string"
             required
             value={this.state.paymentVal.payments[0].recipient}
             onChange={evt => this.updateRecipientHandler(evt.target.value)}
@@ -258,21 +277,8 @@ class PayCard extends Component {
           onClose={() => this.setState({ scan: false })}
           style={{ width: "full", height: "full" }}
         >
-          <QRScan handleResult={this.updateRecipientHandler.bind(this)} />
+          <QRScan handleResult={this.handleQRData.bind(this)} history={this.props.history} />
         </Modal>
-        {/* <TextField
-          className={classes.input}
-          id="outlined-number"
-          label="Message"
-          placeholder="Groceries, etc. (Optional)"
-          value={this.state.paymentVal.meta.memo}
-          onChange={evt => this.setState({paymentVal: {meta: {memo: evt.target.value }}})}
-          type="string"
-          margin="normal"
-          variant="outlined"
-          helperText={this.state.balanceError}
-          error={this.state.balanceError != null}
-        /> */}
         <Grid item xs={12}>
           <Grid
             container
@@ -318,7 +324,7 @@ class PayCard extends Component {
               width: "15%",
               marginTop: "10%"
             }}
-            size="small" 
+            size="medium" 
             onClick={()=>this.props.history.push("/")}
           >
             Back

@@ -38,40 +38,6 @@ const styles = theme => ({
   }
 });
 
-/* CANCEL BUTTON */
-const CancelButton = withRouter(({ history }) => (
-  <IconButton
-    onClick={() => {
-      history.push("/");
-    }}
-  >
-    <HighlightOffIcon />
-  </IconButton>
-));
-
-// const ProgressModal = ({ classes, withdrawing }) => (
-//   <Modal
-//     style={{
-//       position: "absolute",
-//       backgroundColor: "transparent"
-//     }}
-//     hideBackdrop={true}
-//     disablePortal={true}
-//     open={withdrawing}
-//   >
-//     <div>
-//       <CircularProgress
-//         className={classes.modal}
-//         style={{ marginTop: "40%", marginLeft: "40%", backgroundColor: "transparent", boxShadow: "none" }}
-//         color="primary"
-//         variant="indeterminate"
-//       />
-//     </div>
-//   </Modal>
-// );
-
-// const ProgressModalWrapped = withStyles(styles)(ProgressModal);
-
 class CashOutCard extends Component {
   constructor(props) {
     super(props);
@@ -275,7 +241,7 @@ class CashOutCard extends Component {
           />
         </Grid>
         <Modal id="qrscan" open={scan} onClose={() => this.setState({ scan: false })} style={{ width: "full", height: "full" }}>
-          <QRScan handleResult={this.updateRecipientHandler.bind(this)} />
+          <QRScan handleResult={this.updateRecipientHandler.bind(this)} history={this.props.history} />
         </Modal>
         <Grid item xs={12}>
           <Grid container spacing={8} direction="row" alignItems="center" justify="center">
@@ -307,7 +273,7 @@ class CashOutCard extends Component {
               color: "#F22424",
               width: "15%",
             }}
-            size="small" 
+            size="medium" 
             onClick={()=>this.props.history.push("/")}
           >
             Back
