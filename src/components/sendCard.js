@@ -181,6 +181,12 @@ class PayCard extends Component {
       balanceError = "You can't afford that bro"
     }
 
+    if (
+      payment.amountToken.isZero()
+    ) {
+      balanceError = "That's a worthless payment"
+    }
+
     // validate recipient is valid address OR the empty address
     const recipient = paymentVal.payments[0].recipient
     if (!web3.utils.isAddress(recipient) && recipient != emptyAddress) {
@@ -264,7 +270,7 @@ class PayCard extends Component {
             label="Recipient Address"
             type="string"
             required
-            value={this.state.paymentVal.payments[0].recipient}
+            value={this.state.paymentVal.payments[0].recipient == emptyAddress ? "" : this.state.paymentVal.payments[0].recipient} 
             onChange={evt => this.updateRecipientHandler(evt.target.value)}
             margin="normal"
             variant="outlined"
