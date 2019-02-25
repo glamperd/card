@@ -319,7 +319,7 @@ class App extends React.Component {
       }
       // only proceed with deposit request if you can deposit
       if (!connextState || !connextState.runtime.canDeposit) {
-        console.log("Cannot deposit");
+        // console.log("Cannot deposit");
         return;
       }
 
@@ -345,7 +345,7 @@ class App extends React.Component {
   async autoSwap() {
     const { channelState, connextState } = this.state;
     if (!connextState || !connextState.runtime.canExchange) {
-      console.log("Cannot exchange");
+      // console.log("Cannot exchange");
       return;
     }
     const weiBalance = eth.utils.bigNumberify(channelState.balanceWeiUser);

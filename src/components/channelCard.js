@@ -157,10 +157,8 @@ class ChannelCard extends Component {
     const { channelState } = this.props;
     try{
       if (channelState.pendingDepositWeiUser !== "0" || channelState.pendingDepositTokenUser !== "0" ) {
-        console.log(``)
         return true;
       } else {
-        console.log(`No deposit found :(`)
         return false;
       }
     }catch{
