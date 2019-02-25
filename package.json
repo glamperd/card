@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "react-scripts start",
+    "start": "cp -f ops/dev.env .env && react-scripts start",
     "build": "react-scripts build",
     "build-prod": "bash ops/build.sh",
     "test": "react-scripts test",
