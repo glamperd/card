@@ -24,13 +24,20 @@ class RedeemCard extends Component {
 
     this.state = {
       secret: null,
+      isConfirm: false,
     };
   }
 
   async componentWillMount() {
     const { location } = this.props;
     const query = queryString.parse(location.search);
-    console.log("query", query);
+
+    // set state vars if they exist
+    if (location.state && location.state.isConfirm) {
+      // TODO: test what happens if not routed with isConfirm
+      this.setState({ isConfirm: location.state.isConfirm })
+    }
+    
     if (query.secret) {
       this.setState({ secret: query.secret });
     }
@@ -44,6 +51,8 @@ class RedeemCard extends Component {
 
   render() {
     const { secret } = this.state;
+    console.log("state", this.state)
+
     const { classes } = this.props;
     const url = this.generateQrUrl(secret);
     return (
@@ -62,6 +71,11 @@ class RedeemCard extends Component {
       >
         <Grid item xs={12}>
           <ReceiveIcon className={classes.icon} />
+        </Grid>
+        <Grid item xs={12}>
+          <Typography noWrap variant="h5">
+            Scan to Redeem
+          </Typography>
         </Grid>
         <Grid item xs={12}>
           <QRGenerate value={url} />
