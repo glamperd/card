@@ -157,6 +157,8 @@ class PayCard extends Component {
       paymentVal: updatedPaymentVal,
     })
 
+    // refactored to avoid race conditions around
+    // setting state
     await this._paymentHandler(updatedPaymentVal)
   }
 
