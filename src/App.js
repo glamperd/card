@@ -449,9 +449,7 @@ class App extends React.Component {
               render={props => (
                 <RedeemCard 
                   {...props} 
-                  address={address} 
-                  minDepositWei={DEPOSIT_MINIMUM_WEI} 
-                  exchangeRate={exchangeRate} 
+                  publicUrl={publicUrl}
                   />
               )}
             />
