@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 const noAddrBlocky = require("../assets/noAddress.png");
 
 const AppBarComponent = props => (
-  <AppBar position="sticky" color="secondary" style={{ paddingTop: "2%" }}>
+  <AppBar position="sticky" color="secondary" elevation={0} style={{ paddingTop: "2%" }}>
     <Toolbar>
       <Grid container spacing={24} direction="row" justify="space-between" alignItems="center" style={{ textAlign: "center" }}>
         <Grid item xs={3}>
