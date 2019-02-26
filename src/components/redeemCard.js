@@ -24,7 +24,6 @@ class RedeemCard extends Component {
 
     this.state = {
       secret: null,
-      confirmation: false,
     };
   }
 
@@ -33,7 +32,7 @@ class RedeemCard extends Component {
     const query = queryString.parse(location.search);
     console.log("query", query);
     if (query.secret) {
-      this.setState({ secret: query.secret, confirmation: true });
+      this.setState({ secret: query.secret });
     }
   }
 
