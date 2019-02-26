@@ -451,6 +451,7 @@ class App extends React.Component {
                   {...props} 
                   publicUrl={publicUrl}
                   connext={connext}
+                  channelState={channelState}
                   />
               )}
             />
