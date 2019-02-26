@@ -450,6 +450,7 @@ class App extends React.Component {
                 <RedeemCard 
                   {...props} 
                   publicUrl={publicUrl}
+                  connext={connext}
                   />
               )}
             />
