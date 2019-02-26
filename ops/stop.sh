@@ -3,6 +3,7 @@ set -e
 
 name=daicard
 docker container stop ${name}_builder 2> /dev/null || true
+docker container stop connext_card 2> /dev/null || true
 docker stack rm $name 2> /dev/null || true
 
 echo -n "Waiting for the $name stack to shutdown."

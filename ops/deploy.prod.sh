@@ -33,7 +33,7 @@ volumes:
   certs:
 services:
   proxy:
-    image: $proxy_image
+    image: $image
     environment:
       DOMAINNAME: $DOMAINNAME
       EMAIL: $EMAIL

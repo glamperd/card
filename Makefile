@@ -7,6 +7,8 @@ proxy=$(cwd)/ops/proxy
 flags=.makeflags
 VPATH=build:$(flags)
 version=$(shell cat package.json | grep '"version":' | egrep -o '[.0-9]+')
+find_options=-type f -not -path "node_modules/*" -not -name "*.swp" -not -path "*/.*"
+src=$(shell find src $(find_options))
 
 # Setup docker run time
 # If on Linux, give the container our uid & gid so we know what to reset permissions to
@@ -76,7 +78,7 @@ proxy: env node-modules ops/proxy/dev.dockerfile
 	docker build --file ops/proxy/dev.dockerfile --tag $(project)_proxy:dev .
 	$(log_finish) && touch $(flags)/$@
 
-card-prod: prod-env node-modules
+card-prod: prod-env node-modules $(src)
 	$(log_start)
 	$(docker_run) "npm run build"
 	$(log_finish) && touch $(flags)/$@
