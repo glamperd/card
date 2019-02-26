@@ -10,6 +10,8 @@ import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
+import red from "@material-ui/core/colors/red"
+import green from "@material-ui/core/colors/green"
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
@@ -188,11 +190,13 @@ class PayCard extends Component {
           onClose={() => this.handleError()}
           handleClick={() => this.handleError()}
           open={sendError}
-          text="Payment failed. We're getting a lot of traffic, so try again in 30 seconds!"
+          style={{backgroundColor:red[600]}}
+          text="Payment failed. This is probably because receiver's channel needs to be recollateralized. Please try again in 30 seconds!"
         />
       <Snackbar
           onClose={() => this.handleSuccess()}
           handleClick={() => this.handleSuccess()}
+          style={{backgroundColor:green[600]}}
           open={sendSuccess}
           text="Payment sent!"
         />

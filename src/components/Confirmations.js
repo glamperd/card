@@ -1,173 +1,157 @@
 import React, { Component } from "react";
-import { withStyles } from '@material-ui/core';
-import ConfirmationSnackbar from "./snackBar";
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import Button from '@material-ui/core/Button';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import ErrorIcon from '@material-ui/icons/Error';
+import InfoIcon from '@material-ui/icons/Info';
+import CloseIcon from '@material-ui/icons/Close';
+import green from '@material-ui/core/colors/green';
+import amber from '@material-ui/core/colors/amber';
+import red from '@material-ui/core/colors/red'
+import IconButton from '@material-ui/core/IconButton';
+import Snackbar from '@material-ui/core/Snackbar';
+import SnackbarContent from '@material-ui/core/SnackbarContent';
+import HourglassIcon from '@material-ui/icons/HourglassFull';
+import { withStyles } from '@material-ui/core/styles';
 
-const styles = ({
+const variantIcon = {
+  success: CheckCircleIcon,
+  warning: HourglassIcon,
+  error: ErrorIcon,
+  info: InfoIcon,
+};
+
+const styles1 = theme => ({
   success: {
-    backgroundColor: "#08B22D",
-    color: "#FFF"
-  },
-  pending: {
-    backgroundColor: "#3CB8F2",
-    color: "#FFF"
+    backgroundColor: green[600],
   },
   error: {
-    backgroundColor: "#FCA311",
-    color: "#FFF"
-  }
+    backgroundColor: red[600],
+  },
+  warning: {
+    backgroundColor: amber[700],
+  },
+  icon: {
+    fontSize: 20,
+  },
+  iconVariant: {
+    opacity: 0.9,
+    marginRight: theme.spacing.unit,
+  },
+  message: {
+    display: 'flex',
+    alignItems: 'center',
+  },
 });
 
+function MySnackbarContent(props) {
+  const { classes, className, message, onClose, variant, ...other } = props;
+  const Icon = variantIcon[variant];
+
+  return (
+    <SnackbarContent
+      className={classNames(classes[variant], className)}
+      aria-describedby="client-snackbar"
+      message={
+        <span id="client-snackbar" className={classes.message}>
+          <Icon className={classNames(classes.icon, classes.iconVariant)} />
+          {message}
+        </span>
+      }
+      action={[
+        <IconButton
+          key="close"
+          aria-label="Close"
+          color="inherit"
+          className={classes.close}
+          onClick={onClose}
+        >
+          <CloseIcon className={classes.icon} />
+        </IconButton>,
+      ]}
+      {...other}
+    />
+  );
+}
+
+MySnackbarContent.propTypes = {
+  classes: PropTypes.object.isRequired,
+  className: PropTypes.string,
+  message: PropTypes.node,
+  onClose: PropTypes.func,
+  variant: PropTypes.oneOf(['success', 'warning', 'error']).isRequired,
+};
+
+const MySnackbarContentWrapper = withStyles(styles1)(MySnackbarContent);
+
+const styles2 = theme => ({
+  margin: {
+    margin: theme.spacing.unit,
+  },
+});
 
 class Confirmations extends Component {
   constructor(props) {
     super(props);
-
-    this.state = {
-      depositStatus: null,
-      withdrawStatus: null,
-      payStatus: null
-    };
   }
-
-  handleClick = async () => {
-    await this.setState({ depositStatus: "AWAITING" });
-    await this.setState({ withdrawStatus: "AWAITING" });
-    await this.setState({ payStatus: "AWAITING" });
-  };
-
-  async checkDepositState() {
-    const { channelState, runtime } = this.props;
-    let depositStatus;
-    try {
-      if (runtime.syncResultsFromHub[0].update) {
-        switch (runtime.syncResultsFromHub[0].update.reason) {
-          case "ProposePendingDeposit":
-            depositStatus = "PENDING";
-            break;
-          case "ConfirmPending":
-            if (
-              channelState.pendingDepositWeiUser !== "0" ||
-              channelState.pendingDepositTokenUser !== "0"
-            ) {
-              depositStatus = "SUCCESS";
-            }
-            break;
-          // case("Exchange"):
-          // if(channelState.pendingDepositWeiUser !== "0" || channelState.pendingDepositTokenUser !== "0"){
-          //   depositStatus = "SUCCESS";
-          // }
-          //  break;
-          default:
-            depositStatus = "AWAITING";
-        }
-      }
-
-      await this.setState({ depositStatus });
-    } catch (e) {}
-  }
-
-  // async checkPaymentState() {
-  //   const { runtime } = this.props;
-  //   let payStatus;
-  //   try {
-  //     if (runtime.syncResultsFromHub[0].update) {
-  //       switch (runtime.syncResultsFromHub[0].update.reason) {
-  //         case "Payment":
-  //           payStatus = "PAID";
-  //           break;
-  //         default:
-  //           payStatus = "AWAITING";
-  //       }
-  //       }
-  //     await this.setState({ payStatus });
-  //   } catch (e){
-  //     console.log(`error caught: ${e}`)
-  //   }
-  // }
-
-  async checkWithdrawState() {
-    const { channelState, runtime } = this.props;
-    let withdrawStatus;
-    try {
-      if (runtime.syncResultsFromHub[0].update) {
-        switch (runtime.syncResultsFromHub[0].update.reason) {
-          case "ProposePendingWithdrawal":
-            withdrawStatus = "PENDING";
-            break;
-          case "ConfirmPending":
-            if (
-              channelState.pendingWithdrawalWeiUser !== "0" ||
-              channelState.pendingWithdrawalTokenUser !== "0"
-            ) {
-              withdrawStatus = "SUCCESS";
-            }
-            break;
-          default:
-            withdrawStatus = "AWAITING";
-        }
-      }
-      await this.setState({ withdrawStatus });
-    } catch (e) {}
-  }
-
-  poller = async () => {
-    var deposit = setInterval(async () => {
-      await this.checkDepositState();
-    }, 200);
-
-    var withdraw = setInterval(async () => {
-      await this.checkWithdrawState();
-    }, 200);
-
-    // var payment = setInterval(async () => {
-    //   await this.checkPaymentState();
-    // }, 200);
-  };
-
-  componentDidMount = async () => {
-    setTimeout(await this.poller(), 4000);
-  };
 
   render() {
-    const { classes } = this.props;
-    const { depositStatus, withdrawStatus, payStatus } = this.state;
+    const { deposit, withdraw, payment } = this.props.status;
     return (
       <div>
-        <ConfirmationSnackbar
-          //bodyStyle={{backgroundColor:"#3CB8F2", color:"white"}}
-          handleClick={() => this.handleClick()}
-          open={depositStatus === "PENDING"}
-          text="Processing deposit, we'll let you know when it's done."
-        />
-        <ConfirmationSnackbar
-          className={styles.success}
-         //bodyStyle={{backgroundColor:"#08B22D", color:"white"}}
-          handleClick={() => this.handleClick()}
-          open={true}//depositStatus === "SUCCESS"}
-          text="Deposit Confirmed!" 
-        />
-        <ConfirmationSnackbar
-        className={classes.pending}
-         //bodyStyle={{backgroundColor:"#3CB8F2", color:"white"}}
-          handleClick={() => this.handleClick()}
-          open={withdrawStatus === "PENDING"}
-          text="Processing deposit, we'll let you know when it's done."
-        />
-        <ConfirmationSnackbar
-        className={classes.success}
-         // bodyStyle={{backgroundColor:"#08B22D", color:"white"}}
-          handleClick={() => this.handleClick()}
-          open={withdrawStatus === "SUCCESS"}
-          text="Withdrawal Confirmed!"
-        />
-        <ConfirmationSnackbar
-          handleClick={() => this.handleClick()}
-          open={payStatus === "PAID"}
-          text="Payment sent successfully!"
-        />
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'middle',
+          }}
+          open={deposit === "PENDING"}
+          autoHideDuration={4000}
+          onClose={() => this.props.closeConfirmations()}
+        >
+          <MySnackbarContentWrapper
+            onClose={this.handleClose}
+            variant="warning"
+            message="Processing deposit, we'll let you know when it's done."
+          />
+        </Snackbar>
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'middle',
+          }}
+          open={withdraw === "PENDING"}
+          autoHideDuration={4000}
+          onClose={() => this.props.closeConfirmations()}
+        >
+          <MySnackbarContentWrapper
+            onClose={this.handleClose}
+            variant="warning"
+            message="Processing withdrawal, we'll let you know when it's done."
+          />
+        </Snackbar>
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'middle',
+          }}
+          open={withdraw === "SUCCESS"}
+          autoHideDuration={4000}
+          onClose={() => this.props.closeConfirmations()}
+        >
+          <MySnackbarContentWrapper
+            onClose={this.handleClose}
+            variant="success"
+            message="Pending transaction confirmed!"
+          />
+        </Snackbar>
       </div>
     );
   }
 }
 
-export default withStyles(styles)(Confirmations);
+Confirmations.propTypes = {
+  classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles2)(Confirmations);

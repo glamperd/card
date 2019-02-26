@@ -117,7 +117,12 @@ class App extends React.Component {
         amount: null,
         recipient: null
       },
-      address: ""
+      address: "",
+      status: {
+        deposit: "",
+        withdraw: "",
+        payment: "",
+      }
     };
 
     this.networkHandler = this.networkHandler.bind(this);
@@ -290,6 +295,10 @@ class App extends React.Component {
       await this.autoDeposit();
       await this.autoSwap();
     }, 1000);
+
+    setInterval(async() => {
+      await this.checkStatus();
+    }, 400);
   }
 
   async autoDeposit() {
@@ -347,6 +356,33 @@ class App extends React.Component {
     if (channelState && weiBalance.gt(eth.utils.bigNumberify("0")) && tokenBalance.lte(HUB_EXCHANGE_CEILING)) {
       console.log(`Exchanging ${channelState.balanceWeiUser} wei`);
       await this.state.connext.exchange(channelState.balanceWeiUser, "wei");
+    }
+  }
+
+  async checkStatus() {
+    const { channelState, runtime } = this.state;
+    let deposit = null;
+    let payment = null;
+    let withdraw = null;
+    if (runtime.syncResultsFromHub[0]) {
+      switch (runtime.syncResultsFromHub[0].update.reason) {
+        case "ProposePendingDeposit":
+          deposit = "PENDING";
+          break;
+        case "ProposePendingWithdrawal":
+          withdraw = "PENDING";
+          break;
+        case "ConfirmPending":
+          withdraw = "SUCCESS";
+        case "Payment":
+          payment = "SUCCESS";
+          break;
+        default:
+          deposit = null;
+          withdraw = null;
+          payment = null;
+      }
+      await this.setState({ status: {deposit, withdraw, payment} });
     }
   }
 
@@ -411,6 +447,13 @@ class App extends React.Component {
     console.log(`Collateral result: ${JSON.stringify(collateralRes, null, 2)}`);
   }
 
+  async closeConfirmations() {
+    let deposit = null;
+    let payment = null;
+    let withdraw = null;
+    this.setState({status: {deposit, payment, withdraw}})
+  }
+
   render() {
     const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState, runtime } = this.state;
     const { classes } = this.props;
@@ -418,7 +461,7 @@ class App extends React.Component {
       <Router>
         <div className={classes.app}>
           <Paper className={classes.paper} elevation={1}>
-            <Confirmations channelState={channelState} runtime={runtime} />
+            <Confirmations status={this.state.status} closeConfirmations={this.closeConfirmations.bind(this)}/>
             <AppBarComponent address={address} />
             <Route
               exact
