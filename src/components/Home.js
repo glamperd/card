@@ -43,7 +43,7 @@ class Home extends React.Component {
 
   render() {
     const { modals } = this.state;
-    const { address, channelState } = this.props;
+    const { address, channelState, connextState } = this.props;
     return (
       <>
         <div className="row" style={{ marginBottom: "-7.5%" }}>

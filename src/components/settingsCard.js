@@ -8,13 +8,16 @@ import {
   Tooltip,
   TextField,
   InputAdornment,
-  withStyles
+  withStyles,
+  Modal
 } from "@material-ui/core";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import CopyIcon from "@material-ui/icons/FileCopy";
 import SubmitIcon from "@material-ui/icons/ArrowRight";
 import { createWallet, createWalletFromMnemonic } from "../walletGen";
 import SettingsIcon from "@material-ui/icons/Settings";
+import Snackbar from './snackBar';
+
 
 const styles = {
   card: {
@@ -48,8 +51,14 @@ class SettingsCard extends Component {
       showRecovery: false,
       inputRecovery: false,
       rpc: localStorage.getItem("rpc"),
-      mnemonic: null
+      mnemonic: null,
+      copied: null,
+      showWarning: false
     };
+  }
+
+  handleClick = async() => {
+    await this.setState({copied:false});
   }
 
   async generateNewAddress() {
@@ -74,7 +83,7 @@ class SettingsCard extends Component {
 
   render() {
     const { classes } = this.props;
-    // TODO: WHY ISNT THE JUSTIFY CENTER WORKING???
+    const { copied } = this.state;
     return (
       <Grid
         container
@@ -89,6 +98,11 @@ class SettingsCard extends Component {
           justifyContent: "center"
         }}
       >
+      <Snackbar 
+            handleClick={() => this.handleClick()}
+            onClose={() => this.handleClick()}
+            open={copied}
+            text="Copied!"/>
         <Grid item xs={12} style={{justifyContent: "center"}}>
           <SettingsIcon className={classes.icon} />
         </Grid>
@@ -122,16 +136,10 @@ class SettingsCard extends Component {
               border: "1px solid #7289da",
               color: "#7289da"
             }}
+            onClick={() => {window.open('https://discord.gg/q2cakRc','_blank');window.close();return false}}
             size="large"
           >
-            <a
-              rel="noopener noreferrer"
-              target="_blank"
-              style={{ textDecoration: "none", color: "#7289da" }}
-              href="https://discord.gg/q2cakRc"
-            >
-              Discord
-            </a>
+            Discord
           </Button>
         </Grid>
         <Grid item xs={12} className={classes.button}>
@@ -191,7 +199,7 @@ class SettingsCard extends Component {
               color="primary"
               variant="outlined"
               size="large"
-              placeholder="Enter mnemonic and submit"
+              placeholder="Enter backup phrase and submit"
               value={this.state.mnemonic}
               onChange={event =>
                 this.setState({ mnemonic: event.target.value })
@@ -216,17 +224,73 @@ class SettingsCard extends Component {
         </Grid>
         <Grid item xs={12} className={classes.button}>
           <Button
-            fullWidth
-            style={{
-              background: "#FFF",
-              border: "1px solid #F22424",
-              color: "#F22424"
-            }}
-            size="large"
-            onClick={() => this.generateNewAddress()}
+          fullWidth
+          style={{
+            background: "#FFF",
+            border: "1px solid #F22424",
+            color: "#F22424"
+          }}
+          size="large"
+          onClick={() => this.setState({ showWarning: true })}
           >
-            Burn Wallet
+            Burn Card
           </Button>
+          <Modal
+            open={this.state.showWarning}
+            onBackdropClick={() => this.setState({showWarning: false})}
+            style={{
+              justifyContent: "center", 
+              alignItems: "center", 
+              textAlign: "center", 
+              position: "absolute", 
+              top: "25%", 
+              width: "375px",
+              marginLeft: "auto",
+              marginRight: "auto",
+              left: "0",
+              right: "0",
+            }}
+          >
+            <Grid container style={{backgroundColor: "#FFF", padding: "3% 3% 3% 3%", flexDirection: "column"}}>
+              <Grid item style={{margin: "1em"}}>
+                <Typography variant="h5" style={{color:"#F22424"}}>
+                  Are you sure you want to burn your Card? 
+                </Typography>
+              </Grid>
+              <Grid item style={{margin: "1em"}}>
+                <Typography variant="body1" style={{color:"#F22424"}}>
+                  You will lose access to your funds unless you save your backup phrase!
+                </Typography>
+              </Grid>
+              <Grid item style={{margin: "1em"}}>
+                <Button
+                  style={{
+                    background: "#F22424",
+                    border: "1px solid #F22424",
+                    color: "#FFF",
+                  }}
+                  variant="contained"
+                  size="small"
+                  onClick={() => this.generateNewAddress()}
+                >
+                Burn
+                </Button>
+                <Button
+                  style={{
+                    background: "#FFF",
+                    border: "1px solid #F22424",
+                    color: "#F22424",
+                    marginLeft: "5%",
+                  }}
+                  variant="outlined"
+                  size="small"
+                  onClick={() => this.setState({ showWarning: false })}
+                >
+                Cancel
+                </Button>
+              </Grid>
+            </Grid>
+          </Modal>
         </Grid>
         <Grid item xs={12}>
           <Button 

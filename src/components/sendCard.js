@@ -10,9 +10,12 @@ import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
+import red from "@material-ui/core/colors/red"
+import green from "@material-ui/core/colors/green"
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
+import Snackbar from "./snackBar";
 
 const queryString = require("query-string");
 
@@ -57,6 +60,8 @@ class PayCard extends Component {
       },
       addressError: null,
       balanceError: null,
+      sendError: null,
+      sendSuccess: null,
       scan: false,
       displayVal: this.props.scanArgs.amount ? this.props.scanArgs.amount : "0"
     };
@@ -70,7 +75,7 @@ class PayCard extends Component {
         oldState.paymentVal.payments[0].amount.amountToken = (
           query.amounttoken * Math.pow(10, 18)
         ).toString();
-        oldState.displayVal = query.amounttoken;
+        oldState.displayVal = query.amounToken;
         return oldState;
       });
     }
@@ -139,8 +144,15 @@ class PayCard extends Component {
     //     Number(this.state.paymentVal.payments[0].amount.amountWei) <= Number(channelState.balanceWeiUser)
     // ) {
     if (web3.utils.isAddress(this.state.paymentVal.payments[0].recipient)) {
-      let paymentRes = await connext.buy(this.state.paymentVal);
-      console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
+      try{
+        let paymentRes = await connext.buy(this.state.paymentVal);
+        console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
+      }catch(e){
+        await this.setState({ sendError: true })
+      }
+      if (!this.state.sendError){
+        this.setState({ sendSuccess: true });
+      }
     } else {
       this.setState({ addressError: "Please choose a valid address" });
     }
@@ -149,8 +161,16 @@ class PayCard extends Component {
     // }
   }
 
+  handleError = async () => {
+    await this.setState({ sendError: false });
+  };
+  handleSuccess = async () => {
+    await this.setState({ sendSuccess: false });
+  };
+
   render() {
     const { classes, channelState } = this.props;
+    const { sendError, sendSuccess } = this.state;
     return (
       <Grid
         container
@@ -163,14 +183,28 @@ class PayCard extends Component {
           paddingTop: "10%",
           paddingBottom: "10%",
           textAlign: "center",
-          justifyContent: "center"
+          justify: "center"
         }}
       >
+      <Snackbar
+          onClose={() => this.handleError()}
+          handleClick={() => this.handleError()}
+          open={sendError}
+          style={{backgroundColor:red[600]}}
+          text="Payment failed. This is probably because receiver's channel needs to be recollateralized. Please try again in 30 seconds!"
+        />
+      <Snackbar
+          onClose={() => this.handleSuccess()}
+          handleClick={() => this.handleSuccess()}
+          style={{backgroundColor:green[600]}}
+          open={sendSuccess}
+          text="Payment sent!"
+        />
         <Grid
           container
           wrap="nowrap"
           direction="row"
-          justifyContent="center"
+          justify="center"
           alignItems="center"
         >
           <Grid item xs={12}>
@@ -294,7 +328,6 @@ class PayCard extends Component {
               border: "1px solid #F22424",
               color: "#F22424",
               width: "15%",
-              marginTop: "10%"
             }}
             size="medium" 
             onClick={()=>this.props.history.push("/")}
