@@ -1,4 +1,4 @@
-project=daicard
+project=$(shell cat package.json | grep '"name":' | awk -F '"' '{print $$4}' | tr -d '-')
 registry=docker.io/connextproject
 prod_image=$(registry)/$(project)
 cwd=$(shell pwd)

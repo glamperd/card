@@ -16,7 +16,7 @@ then echo "Make sure you're logged into docker & have push permissions: docker l
 fi
 
 echo;echo
-echo "Preparing to re-deploy the in-production card app. Without running any tests. Good luck."
+echo "Preparing to re-deploy the card app to $prod_server. Without running any tests. Good luck."
 echo;echo
 sleep 2 # Give the user one last chance to ctrl-c before we pull the trigger
 

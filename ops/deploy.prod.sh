@@ -1,6 +1,6 @@
 #!/bin/bash
 
-project="daicard"
+project="`cat package.json | grep '"name":' | awk -F '"' '{print $4}' | tr -d '-'`"
 number_of_services=1
 version="`cat package.json | grep '"version":' | egrep -o '[.0-9]+'`"
 

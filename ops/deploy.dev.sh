@@ -1,6 +1,6 @@
 #!/bin/bash
 
-project="daicard"
+project="`cat package.json | grep '"name":' | awk -F '"' '{print $4}' | tr -d '-'`"
 number_of_services=2
 proxy_image="${project}_proxy:dev"
 server_image="${project}_builder"

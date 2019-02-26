@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-project=daicard
+project="`cat package.json | grep '"name":' | awk -F '"' '{print $4}' | tr -d '-'`"
 name=$1
 shift
 
