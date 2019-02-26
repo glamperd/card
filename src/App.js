@@ -17,6 +17,7 @@ import ReceiveCard from "./components/receiveCard";
 import SendCard from "./components/sendCard";
 import CashOutCard from "./components/cashOutCard";
 import { createWallet } from "./walletGen";
+import RedeemCard from "./components/redeemCard";
 
 export const store = createStore(setWallet, null);
 
@@ -441,6 +442,17 @@ class App extends React.Component {
                   publicUrl={publicUrl}
                   scanArgs={sendScanArgs}
                 />
+              )}
+            />
+            <Route
+              path="/redeem"
+              render={props => (
+                <RedeemCard 
+                  {...props} 
+                  address={address} 
+                  minDepositWei={DEPOSIT_MINIMUM_WEI} 
+                  exchangeRate={exchangeRate} 
+                  />
               )}
             />
             <Route
