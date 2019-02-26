@@ -180,13 +180,13 @@ class PayCard extends Component {
     if (
       payment.amountToken.gt(new BN(channelState.balanceTokenUser))
     ) {
-      balanceError = "You can't afford that bro"
+      balanceError = "Looks like that amount is more than exists in your channel token balance"
     }
 
     if (
       payment.amountToken.isZero()
     ) {
-      balanceError = "That's a worthless payment"
+      balanceError = "Please enter a payment amount above 0"
     }
 
     // validate recipient is valid address OR the empty address
@@ -202,8 +202,13 @@ class PayCard extends Component {
     }
 
     // otherwise make payment
-    let paymentRes = await connext.buy(paymentVal);
+    const paymentRes = await connext.buy(paymentVal);
     console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
+
+    // if payment type was link, route to the
+    // redeem component
+    this.props.history.push('/redeem')
+    return
   }
 
   render() {
