@@ -207,7 +207,8 @@ class PayCard extends Component {
 
     // if payment type was link, route to the
     // redeem component
-    this.props.history.push('/redeem')
+    const secret = paymentVal.payments[0].secret
+    this.props.history.push(`/redeem?secret=${secret}`)
     return
   }
 
