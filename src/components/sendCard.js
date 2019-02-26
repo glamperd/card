@@ -209,7 +209,11 @@ class PayCard extends Component {
     // redeem component
     if (paymentVal.payments[0].type == "PT_LINK") {
       const secret = paymentVal.payments[0].secret
-      this.props.history.push(`/redeem?secret=${secret}`)
+      this.props.history.push({
+        pathname: '/redeem',
+        search: `?secret=${secret}`,
+        state: { isConfirm: true, secret, }
+      })
     }
     return
   }
