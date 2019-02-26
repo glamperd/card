@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-docker container stop connext_card 2> /dev/null || true
-docker container prune -f
+bash ops/stop.sh
 
-bash ops/start.sh $1
+if [[ "$1" == "prod" ]]
+then bash ops/deploy.prod.sh
+else bash ops/deploy.dev.sh
+fi
