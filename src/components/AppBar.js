@@ -4,7 +4,6 @@ import blockies from "ethereum-blockies-png";
 import SettingIcon from "@material-ui/icons/Settings";
 import { Link } from "react-router-dom";
 
-
 const noAddrBlocky = require("../assets/noAddress.png");
 
 const AppBarComponent = props => (
