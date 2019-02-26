@@ -1,8 +1,8 @@
 #!/bin/bash
 
 project="daicard"
-number_of_services=2
-image=docker.io/connextproject/daicard:latest
+number_of_services=1
+version="`cat package.json | grep '"version":' | egrep -o '[.0-9]+'`"
 
 if [[ -n "$DOMAINNAME" ]] 
 then DOMAINNAME=$DOMAINNAME
@@ -14,7 +14,17 @@ then EMAIL=$EMAIL
 else EMAIL=noreply@gmail.com
 fi
 
-docker pull $image
+if [[ "$DOMAINNAME" == "localhost" ]]
+then image=daicard:latest
+else
+  if [[ "$MODE" == "live" ]]
+  then image=docker.io/connextproject/daicard:$version
+  else image=docker.io/connextproject/daicard:latest
+  fi
+  docker pull $image
+fi
+
+echo "Deploying image: $image"
 
 mkdir -p /tmp/$project
 cat - > /tmp/$project/docker-compose.yml <<EOF

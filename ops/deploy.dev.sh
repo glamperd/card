@@ -13,6 +13,8 @@ volumes:
 services:
   proxy:
     image: $proxy_image
+    environment:
+      - "MODE=dev"
     ports:
       - "80:80"
     volumes:
