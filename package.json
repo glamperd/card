@@ -1,11 +1,11 @@
 {
-  "name": "dai-card",
+  "name": "connext-card",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "react-scripts start",
-    "start-prod": "make start-prod",
+    "start": "cp -f ops/dev.env .env && react-scripts start",
     "build": "react-scripts build",
+    "build-prod": "bash ops/build.sh",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -61,8 +61,5 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ],
-  "devDependencies": {
-    "cypress": "^3.1.5"
-  }
+  ]
 }

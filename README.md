@@ -8,11 +8,11 @@ Mainnet implementation: https://daicard.io (coming soon!)
 
 ## Overview
 
+Developer note: for branch `get-hub-config` to be functional in production, the updates from indra branch `config-endpoint` need to be merged to master, deployed to prod, and have it's client changed published to npm.
+
 ## Local development
 
-1. Run Indra (the hub server) locally
-
-Check out the instructions at https://github.com/ConnextProject/indra
+1. Make sure you have indra running locally. Check out the instructions at https://github.com/ConnextProject/indra
 
 TL;DR:
 
@@ -22,14 +22,17 @@ cd indra
 npm start
 ```
 
-(You'll need to have both `make` and `docker` installed to run Indra)
-
-2. Run the Dai Card locally in dev-mode
+2. Clone this repo and install dependencies
 
 ```
 git clone https://github.com/ConnextProject/card.git
 cd card
 npm i
+```
+
+3. Start the app in developer-mode
+
+```
 npm start
 ```
 
@@ -42,6 +45,5 @@ npm start
 cp -rf ../indra/modules/client connext
 rm -rf node_modules/connext
 ln -s ../connext node_modules/connext
-npm start
 # then restart local development according to the instructions above
 ```
