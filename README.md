@@ -19,8 +19,7 @@ Mainnet implementation: https://daicard.io (coming soon!)
     - [Making ETH <-> Token Swaps](#making-eth-to-token-swaps)
     - [Making Payments](#making-payments)
     - [Withdrawals](#withdrawals)
-    - [Advanced - Considerations For Hub Operators](#advanced---considerations-for-hub-operators)
-        - [Collateralization](#collateralization)
+    - [Collateralization](#collateralization)
 
 ## Overview
 
@@ -340,14 +339,9 @@ await connext.withdraw(withdrawalVal);
 ```
 
 Because the card is effectively a hot wallet, we've set our implementation of `connext.withdraw()` to withdraw all funds from the channel; however, in practice users can withdraw however much or little they'd like.
-     
 
 
-### Advanced - Considerations For Hub Operators 
-
-[[SECTION UNDER CONSTRUCTION]]
-
-#### Collateralization
+### Collateralization
 
 To receive payments, the recipient's channel must be collateralized. This presents a few practical challenges: hub operators must decide how to allocate their reserves to minimize (a) the number of payments that fail due to uncollateralized channels and (b) the amount of funds locked up in channels. Because this is new technology, we're still exploring the best ways to handle collateralization and hub reserve management. 
 
