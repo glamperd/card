@@ -246,7 +246,7 @@ async autoDeposit() {
   }
   ```
   
-  ### Making ETH to Token Swaps 
+### Making ETH to Token Swaps 
   
   How and if you use the in-channel swap functionality will depend largely on your use case. If you have an ecosystem with a native token, you can use in-channel swaps to onboard new users without them buying your token a priori: just have them deposit ETH and swap it for tokens from your reserve. You can also give users the option to swap in your UI.
   
@@ -274,16 +274,40 @@ async autoDeposit() {
   }
   ```
   
-  ### Making Payments 
+### Making Payments 
   
-  [[UNDER CONSTRUCTION]]
-  
-  ### Withdrawals 
-  
-  [[UNDER CONSTRUCTION]]
-  
-  
-  ### Advanced - Considerations For Hub Operators 
-  
-  [[UNDER CONSTRUCTION]]
+Making payments is the core functionality of Connext, and you have a great degree of flexibility in terms of implementing payments in your application. Much like the other Connext functions, you call it on the Connext object (likely passed down from App.js) and pass it parameters containing relevant Wei/Token and recipient values:
+
+```
+paymentVal: {
+        meta: {
+          purchaseId: "payment"
+        },
+        payments: [
+          {
+            recipient: "0x0...."
+            amount: {
+              amountToken: "10"
+              amountWei: "0"
+            },
+            type: "PT_CHANNEL"
+          }
+        ]
+      }
+      
+ await connext.buy(paymentVal);
+ ```
+ 
+ In the card, we've wrapped `connext.buy()` in a button; users enter an address and payment amount, the paymentVal object is updated, and the function is called onClick. However, `connext.buy()` can be implemented to fit your use case: streaming payments, for example, could run `buy` on a poller until a user stops watching a video. Alternatively, a machine could trigger a payment on receipt of data--and this is just the tip of the iceberg!
+ 
+You'll notice that the paymentVal object allows for multiple payments. This is done so that, if you'd like, you can batch payments. This could be helpful if (e.g.) you're using Metamask as a signer instead of an autosigner and want to batch payments from a user; it could also help with invoicing or accounting if you're operating an ecosystem with a many-to-one payment paradigm.
+    
+### Withdrawals 
+
+[[UNDER CONSTRUCTION]]
+
+
+### Advanced - Considerations For Hub Operators 
+
+[[UNDER CONSTRUCTION]]
   
