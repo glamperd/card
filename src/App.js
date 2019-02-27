@@ -18,6 +18,7 @@ import SendCard from "./components/sendCard";
 import CashOutCard from "./components/cashOutCard";
 import { createWallet } from "./walletGen";
 import Confirmations from './components/Confirmations';
+import BigNumber from "bignumber.js";
 
 export const store = createStore(setWallet, null);
 
@@ -122,7 +123,7 @@ class App extends React.Component {
         deposit: "",
         withdraw: "",
         payment: "",
-      }
+      },
     };
 
     this.networkHandler = this.networkHandler.bind(this);
@@ -302,8 +303,9 @@ class App extends React.Component {
   }
 
   async autoDeposit() {
-    const { address, tokenContract, customWeb3, connextState, tokenAddress } = this.state;
+    const { address, tokenContract, customWeb3, connextState, tokenAddress, exchangeRate, channelState } = this.state;
     const balance = await customWeb3.eth.getBalance(address);
+    console.log('browser wallet balance', balance)
     let tokenBalance = "0";
     try {
       tokenBalance = await tokenContract.methods.balanceOf(address).call();
@@ -318,15 +320,29 @@ class App extends React.Component {
     if (balance !== "0" || tokenBalance !== "0") {
       if (eth.utils.bigNumberify(balance).lte(DEPOSIT_MINIMUM_WEI)) {
         // don't autodeposit anything under the threshold
+        console.log('balance below min')
         return;
       }
       // only proceed with deposit request if you can deposit
-      if (!connextState || !connextState.runtime.canDeposit) {
-        // console.log("Cannot deposit");
+      if (!connextState || !connextState.runtime.canDeposit || exchangeRate == "0.00") {
+        console.log("Cannot deposit");
         return;
       }
 
-      const actualDeposit = {
+      // if you already have the maximum balance tokens hub will exchange
+      // do not deposit any more eth to be swapped
+      if (eth.utils.bigNumberify(channelState.balanceTokenUser).gte(HUB_EXCHANGE_CEILING)) {
+        console.log('Channel state token balance at max, refunding browser balance')
+        // refund any wei that is in the browser wallet and exit
+        const refundWei = BigNumber.max(
+          new BigNumber(balance).minus(DEPOSIT_MINIMUM_WEI),
+          0
+        )
+        await this.returnWeiDeposit(refundWei)
+        return
+      }
+
+      let channelDeposit = {
         amountWei: eth.utils
           .bigNumberify(balance)
           .sub(DEPOSIT_MINIMUM_WEI)
@@ -334,15 +350,85 @@ class App extends React.Component {
         amountToken: tokenBalance
       };
 
-      if (actualDeposit.amountWei === "0" && actualDeposit.amountToken === "0") {
+      if (channelDeposit.amountWei === "0" && channelDeposit.amountToken === "0") {
         console.log(`Actual deposit is 0, not depositing.`);
         return;
       }
 
-      console.log(`Depositing: ${JSON.stringify(actualDeposit, null, 2)}`);
-      let depositRes = await this.state.connext.deposit(actualDeposit);
+      // if amount to deposit into channel is over the channel max
+      // then return excess deposit to the sending account
+      const weiToReturn = this.calculateWeiAboveMax(channelDeposit.amountWei, exchangeRate)
+      // return wei to sender
+      const weiDeposit = new BigNumber(channelDeposit.amountWei)
+      await this.returnWeiDeposit(weiToReturn.toString())
+      channelDeposit.amountWei = weiDeposit.minus(weiToReturn).toString()
+
+      console.log(`Depositing: ${JSON.stringify(channelDeposit, null, 2)}`);
+      let depositRes = await this.state.connext.deposit(channelDeposit);
       console.log(`Deposit Result: ${JSON.stringify(depositRes, null, 2)}`);
     }
+  }
+
+  async returnWeiDeposit(wei) {
+    const { address, customWeb3 } = this.state;
+
+    if (!customWeb3) {
+      return
+    }
+
+    // if wei is 0, save gas and return
+    if (wei == "0") {
+      return
+    }
+
+    // get address of latest sender of most recent transaction
+    // first, get the last 10 blocks
+    const currentBlock = await customWeb3.eth.getBlockNumber()
+    let txs = []
+    const start = (currentBlock - 100) < 0 ? 0 : currentBlock - 100
+    for (let i = currentBlock - 100; i <= currentBlock; i++) {
+      // add any transactions found in the blocks to the txs array
+      const block = await customWeb3.eth.getBlock(i, true)
+      txs = txs.concat(block.transactions)
+    }
+    // sort by nonce and take latest senders address and
+    // return wei to the senders address
+    const filteredTxs = txs.filter(t => t.to.toLowerCase() == address.toLowerCase())
+    const mostRecent = (filteredTxs.sort((a, b) => b.nonce - a.nonce))[0]
+    if (!mostRecent) {
+      console.log('Browser wallet overfunded, but couldnt find most recent tx in last 100 blocks.')
+      return
+    }
+    console.log(`Refunding ${wei} to ${mostRecent.from}`)
+
+    try {
+      const tx = await customWeb3.eth.sendTransaction({
+        from: mostRecent.to,
+        to: mostRecent.from,
+        value: wei,
+      })
+      console.log(tx)
+    } catch (e) {
+      console.log('Error with transaction:', e.message)
+    }
+  }
+
+  // returns a BigNumber
+  calculateWeiAboveMax(wei, exchangeRate) {
+    const weiDeposit = new BigNumber(wei)
+    // calculate the autoswap amount detected
+    const tokensForWei = weiDeposit.multipliedBy(new BigNumber(exchangeRate))
+    const tokensToReturn = BigNumber.max(
+      tokensForWei.minus(HUB_EXCHANGE_CEILING),
+      0
+    )
+
+    if (tokensToReturn.isZero()) {
+      return new BigNumber(0)
+    }
+
+    // otherwise, calculate the equivalent amount of wei
+    return tokensToReturn.dividedBy(new BigNumber(exchangeRate)).toFixed(0)
   }
 
   async autoSwap() {
@@ -455,7 +541,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState, runtime } = this.state;
+    const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState, runtime, } = this.state;
     const { classes } = this.props;
     return (
       <Router>
