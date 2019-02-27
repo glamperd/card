@@ -19,6 +19,8 @@ import CashOutCard from "./components/cashOutCard";
 import { createWallet } from "./walletGen";
 import Confirmations from './components/Confirmations';
 import BigNumber from "bignumber.js";
+import { calculateExchange } from 'connext/dist/StateGenerator.js'
+import { convertExchange } from "connext/dist/types";
 
 export const store = createStore(setWallet, null);
 
@@ -303,9 +305,8 @@ class App extends React.Component {
   }
 
   async autoDeposit() {
-    const { address, tokenContract, customWeb3, connextState, tokenAddress, exchangeRate, channelState } = this.state;
+    const { address, tokenContract, customWeb3, connextState, tokenAddress, exchangeRate, channelState, connext } = this.state;
     const balance = await customWeb3.eth.getBalance(address);
-    console.log('browser wallet balance', balance)
     let tokenBalance = "0";
     try {
       tokenBalance = await tokenContract.methods.balanceOf(address).call();
@@ -338,7 +339,7 @@ class App extends React.Component {
           new BigNumber(balance).minus(DEPOSIT_MINIMUM_WEI),
           0
         )
-        await this.returnWeiDeposit(refundWei)
+        await this.returnWeiDeposit(refundWei.toString())
         return
       }
 
@@ -358,6 +359,8 @@ class App extends React.Component {
       // if amount to deposit into channel is over the channel max
       // then return excess deposit to the sending account
       const weiToReturn = this.calculateWeiAboveMax(channelDeposit.amountWei, exchangeRate)
+      console.log('wei to return to user:', weiToReturn.toString())
+
       // return wei to sender
       const weiDeposit = new BigNumber(channelDeposit.amountWei)
       await this.returnWeiDeposit(weiToReturn.toString())
@@ -386,7 +389,7 @@ class App extends React.Component {
     const currentBlock = await customWeb3.eth.getBlockNumber()
     let txs = []
     const start = (currentBlock - 100) < 0 ? 0 : currentBlock - 100
-    for (let i = currentBlock - 100; i <= currentBlock; i++) {
+    for (let i = start; i <= currentBlock; i++) {
       // add any transactions found in the blocks to the txs array
       const block = await customWeb3.eth.getBlock(i, true)
       txs = txs.concat(block.transactions)
@@ -415,20 +418,35 @@ class App extends React.Component {
 
   // returns a BigNumber
   calculateWeiAboveMax(wei, exchangeRate) {
-    const weiDeposit = new BigNumber(wei)
     // calculate the autoswap amount detected
-    const tokensForWei = weiDeposit.multipliedBy(new BigNumber(exchangeRate))
+    const args = {
+      exchangeRate,
+      seller: "user",
+      tokensToSell: "0",
+      weiToSell: wei,
+    }
+    const { tokensReceived } = calculateExchange(convertExchange('bn', args))
+    
     const tokensToReturn = BigNumber.max(
-      tokensForWei.minus(HUB_EXCHANGE_CEILING),
+      new BigNumber(tokensReceived.toString()).minus(HUB_EXCHANGE_CEILING),
       0
     )
-
     if (tokensToReturn.isZero()) {
-      return new BigNumber(0)
+      return tokensToReturn
     }
 
-    // otherwise, calculate the equivalent amount of wei
-    return tokensToReturn.dividedBy(new BigNumber(exchangeRate)).toFixed(0)
+    // use connext functions to calculate the appropriate equicalent
+    // amount of wei to be returned to user
+    const updatedArgs = {
+      exchangeRate,
+      seller: "user",
+      tokensToSell: tokensToReturn.toString(),
+      weiToSell: "0"
+    }
+    // wei received is amount wei that should be returned to user
+    const { weiReceived } = calculateExchange(convertExchange('bn', updatedArgs))
+
+    return new BigNumber(weiReceived.toString())
   }
 
   async autoSwap() {
