@@ -11,6 +11,8 @@ import IconButton from "@material-ui/core/IconButton";
 import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import { withRouter } from "react-router-dom";
 import { withStyles, Grid } from "@material-ui/core";
+import Snackbar from './snackBar';
+
 
 const styles = theme => ({
   icon: {
@@ -26,8 +28,13 @@ class ReceiveCard extends Component {
     this.state = {
       value: "0",
       error: null,
-      qrUrl: this.generateQrUrl("0")
+      qrUrl: this.generateQrUrl("0"),
+      copied: null
     };
+  }
+
+  handleClick = async() => {
+    await this.setState({copied:false});
   }
 
   async updatePaymentHandler(evt) {
@@ -52,7 +59,7 @@ class ReceiveCard extends Component {
 
   render() {
     const { classes } = this.props;
-    const { qrUrl, error, displayVal } = this.state;
+    const { qrUrl, error, displayVal, copied } = this.state;
     return (
       <Grid
         container
@@ -67,11 +74,16 @@ class ReceiveCard extends Component {
           justifyContent: "center"
         }}
       >
+      <Snackbar 
+            handleClick={() => this.handleClick()}
+            onClose={() => this.handleClick()}
+            open={copied}
+            text="Copied!"/>
         <Grid
           container
           wrap="nowrap"
           direction="row"
-          justifyContent="center"
+          justify="center"
           alignItems="center"
         >
           <Grid item xs={12}>
@@ -97,7 +109,9 @@ class ReceiveCard extends Component {
         </Grid>
         <Grid item xs={12}>
           {/* <CopyIcon style={{marginBottom: "2px"}}/> */}
-          <CopyToClipboard text={qrUrl}>
+          <CopyToClipboard 
+            onCopy={() => this.setState({copied: true})}
+            text={qrUrl}>
             <Button variant="outlined" fullWidth>
               <Typography noWrap variant="body1">
                 <Tooltip disableFocusListener disableTouchListener title="Click to Copy">

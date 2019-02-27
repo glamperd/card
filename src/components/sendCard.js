@@ -10,12 +10,15 @@ import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
+import red from "@material-ui/core/colors/red"
+import green from "@material-ui/core/colors/green"
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
 import { emptyAddress } from "connext/dist/Utils";
 import { convertPayment } from "connext/dist/types";
 import BN from "bn.js"
+import Snackbar from "./snackBar";
 
 const queryString = require("query-string");
 
@@ -60,6 +63,8 @@ class PayCard extends Component {
       },
       addressError: null,
       balanceError: null,
+      sendError: null,
+      sendSuccess: null,
       scan: false,
       displayVal: this.props.scanArgs.amount ? this.props.scanArgs.amount : "0"
     };
@@ -73,7 +78,7 @@ class PayCard extends Component {
         oldState.paymentVal.payments[0].amount.amountToken = (
           query.amounttoken * Math.pow(10, 18)
         ).toString();
-        oldState.displayVal = query.amounttoken;
+        oldState.displayVal = query.amounToken;
         return oldState;
       });
     }
@@ -98,7 +103,7 @@ class PayCard extends Component {
     );
   }
 
-  async handleQRData(scanResult) {
+  handleQRData = async (scanResult) => {
     const { publicUrl } = this.props;
 
     let data = scanResult.split("/send?");
@@ -106,15 +111,15 @@ class PayCard extends Component {
       let temp = data[1].split("&");
       let amount = temp[0].split("=")[1];
       let recipient = temp[1].split("=")[1];
-      this.setState({
-        modals: { scan: false }
-      });
       this.updatePaymentHandler(amount)
       this.updateRecipientHandler(recipient)
     } else {
       this.updateRecipientHandler(scanResult)
       console.log("incorrect site");
     }
+    this.setState({
+      scan: false
+    });
   }
 
   async updateRecipientHandler(value) {
@@ -202,24 +207,38 @@ class PayCard extends Component {
     }
 
     // otherwise make payment
-    const paymentRes = await connext.buy(paymentVal);
-    console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
+    try {
+      const paymentRes = await connext.buy(paymentVal);
+      console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
+      if (paymentVal.payments[0].type == "PT_LINK") {
+        const secret = paymentVal.payments[0].secret
+        this.props.history.push({
+          pathname: '/redeem',
+          search: `?secret=${secret}`,
+          state: { isConfirm: true, secret, }
+        })
+      }
+    } catch (e) {
+      await this.setState({ sendError: true })
+    }
 
-    // if payment type was link, route to the
-    // redeem component
-    if (paymentVal.payments[0].type == "PT_LINK") {
-      const secret = paymentVal.payments[0].secret
-      this.props.history.push({
-        pathname: '/redeem',
-        search: `?secret=${secret}`,
-        state: { isConfirm: true, secret, }
-      })
+    if (!this.state.sendError){
+      this.setState({ sendSuccess: true });
     }
     return
   }
 
+  handleError = async () => {
+    await this.setState({ sendError: false });
+  };
+  handleSuccess = async () => {
+    await this.setState({ sendSuccess: false });
+  };
+
   render() {
     const { classes, channelState } = this.props;
+    const { sendError, sendSuccess, scan } = this.state;
+    console.log('scan: ', scan);
     return (
       <Grid
         container
@@ -232,14 +251,28 @@ class PayCard extends Component {
           paddingTop: "10%",
           paddingBottom: "10%",
           textAlign: "center",
-          justifyContent: "center"
+          justify: "center"
         }}
       >
+      <Snackbar
+          onClose={() => this.handleError()}
+          handleClick={() => this.handleError()}
+          open={sendError}
+          style={{backgroundColor:red[600]}}
+          text="Payment failed. This is probably because receiver's channel needs to be recollateralized. Please try again in 30 seconds!"
+        />
+      <Snackbar
+          onClose={() => this.handleSuccess()}
+          handleClick={() => this.handleSuccess()}
+          style={{backgroundColor:green[600]}}
+          open={sendSuccess}
+          text="Payment sent!"
+        />
         <Grid
           container
           wrap="nowrap"
           direction="row"
-          justifyContent="center"
+          justify="center"
           alignItems="center"
         >
           <Grid item xs={12}>
@@ -318,7 +351,7 @@ class PayCard extends Component {
           onClose={() => this.setState({ scan: false })}
           style={{ width: "full", height: "full" }}
         >
-          <QRScan handleResult={this.handleQRData.bind(this)} history={this.props.history} />
+          <QRScan handleResult={this.handleQRData} history={this.props.history} />
         </Modal>
         <Grid item xs={12}>
           <Grid
@@ -362,7 +395,6 @@ class PayCard extends Component {
               border: "1px solid #F22424",
               color: "#F22424",
               width: "15%",
-              marginTop: "10%"
             }}
             size="medium" 
             onClick={()=>this.props.history.push("/")}
