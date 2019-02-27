@@ -282,7 +282,18 @@ class PayCard extends Component {
           id="qrscan"
           open={this.state.scan}
           onClose={() => this.setState({ scan: false })}
-          style={{ width: "full", height: "full" }}
+          style= {{
+            justifyContent: "center", 
+            alignItems: "center", 
+            textAlign: "center", 
+            position: "absolute", 
+            top: "10%", 
+            width: "375px",
+            marginLeft: "auto",
+            marginRight: "auto",
+            left: "0",
+            right: "0",
+          }}
         >
           <QRScan handleResult={this.handleQRData} history={this.props.history} />
         </Modal>
