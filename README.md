@@ -14,6 +14,7 @@ Mainnet implementation: https://daicard.io (coming soon!)
     - [NPM Package](#npm-package)
     - [Autosigner vs. Metamask](#autosigner-vs-metamask)
     - [Instantiating the Connext Client](#instantiating-the-connext-client)
+    - [User Authentication](#user-authentication)
     - [Making Deposits to Channels](#making-deposits-to-channels)
     - [Making ETH <-> Token Swaps](#making-eth-to-token-swaps)
     - [Making Payments](#making-payments)
@@ -82,7 +83,7 @@ Installation:
 
 `npm i connext`
 
-`import { getConnextClient } from 'connext'`
+`import { getConnextClient } from "connext/dist/Connext.js";`
 
 ### Autosigner vs Metamask
 
@@ -195,6 +196,10 @@ async setConnext() {
     await connext.start();
   }
   ```
+  
+ ### User Authentication
+ 
+ [[Under Construction]]
   
  ### Making Deposits to Channels
  
@@ -340,7 +345,17 @@ Because the card is effectively a hot wallet, we've set our implementation of `c
 
 ### Advanced - Considerations For Hub Operators 
 
-[[UNDER CONSTRUCTION]]
+[[SECTION UNDER CONSTRUCTION]]
 
 #### Collateralization
+
+To receive payments, the recipient's channel must be collateralized. This presents a few practical challenges: hub operators must decide how to allocate their reserves to minimize (a) the number of payments that fail due to uncollateralized channels and (b) the amount of funds locked up in channels. Because this is new technology, we're still exploring the best ways to handle collateralization and hub reserve management. 
+
+A few tips that we've found helpful:
+1. [[TODO]]
+2. [[TODO]]
+3. [[TODO]]
+
+
+
   
