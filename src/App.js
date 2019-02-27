@@ -48,7 +48,7 @@ const publicUrl = process.env.REACT_APP_PUBLIC_URL.toLowerCase();
 const HASH_PREAMBLE = "SpankWallet authentication message:";
 const DEPOSIT_MINIMUM_WEI = eth.utils.parseEther("0.03"); // 30 FIN
 const HUB_EXCHANGE_CEILING = eth.utils.parseEther("69"); // 69 TST
-const CHANNEL_DEPOSIT_MAX = eth.utils.parseEther("0.3"); // 300 FIN
+const CHANNEL_DEPOSIT_MAX = eth.utils.parseEther("30"); // 30 TST
 
 const opts = {
   headers: {
@@ -465,11 +465,17 @@ class App extends React.Component {
 
   // returns a BigNumber
   calculateWeiToRefund(wei, exchangeRate) {
+    // channel max tokens is minimum of the ceiling that
+    // the hub would exchange, or a set deposit max
+    const maxTokens = BigNumber.min(
+      HUB_EXCHANGE_CEILING,
+      CHANNEL_DEPOSIT_MAX,
+    )
     // calculate the max wei the hub is willing to exchange
     const maxWeiExchanged = {
       exchangeRate,
       seller: "user",
-      tokensToSell: HUB_EXCHANGE_CEILING.toString(),
+      tokensToSell: maxTokens.toString(),
       weiToSell: "0"
     }
 
@@ -480,11 +486,7 @@ class App extends React.Component {
 
     // channel max is the minimum of the ceiling that
     // the hub would exchange, or a set deposit max
-    const channelMax = BigNumber.min(
-      new BigNumber(weiReceived.toString()),
-      CHANNEL_DEPOSIT_MAX,
-    )
-    let weiToRefund = new BigNumber(wei).minus(channelMax)
+    let weiToRefund = new BigNumber(wei).minus(new BigNumber(weiReceived.toString()))
     
     if (weiToRefund.isNegative()) {
       return new BigNumber(0)
