@@ -65,6 +65,7 @@ class SettingsCard extends Component {
     // NOTE: DelegateSigner is always recoveredwhic from browser storage.
     //       It is ONLY set to state from within app on load.
     await createWallet(this.state.web3);
+    localStorage.setItem("collateralize", true)
     // Then refresh the page
     window.location.reload();
   }

@@ -11,9 +11,8 @@ class QRScan extends Component {
       result: "No result",
       error: null,
     };
-    this.handleScan = this.handleScan.bind(this);
   }
-  handleScan(data) {
+  handleScan = (data) => {
     if (data) {
       this.props.handleResult(data)
     }
@@ -21,43 +20,12 @@ class QRScan extends Component {
 
   render() {
     return (
-      <Grid
-        container
-        spacing={24}
-        direction="column"
-        style={{
-          display: "flex",
-          paddingTop: "5%",
-          paddingBottom: "5%",
-          textAlign: "center",
-          justifyContent: "center",
-          background: "#FFF"
-        }}
-      >
-        <Grid item xs={12}>
-          <QrReader
-              delay={this.state.delay}
-              onError={(error) => this.setState({error})}
-              onScan={this.handleScan}
-              style={{ width: "100%" }}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Button 
-            variant="outlined" 
-            style={{
-              background: "#FFF",
-              border: "1px solid #F22424",
-              color: "#F22424",
-              width: "15%",
-            }}
-            size="medium" 
-            onClick={()=>this.props.history.push("/")}
-          >
-            Back
-          </Button>
-        </Grid>
-      </Grid>
+      <QrReader
+        delay={this.state.delay}
+        onError={(error) => this.setState({error})}
+        onScan={this.handleScan}
+        style={{ width: "100%" }}
+      />
     );
   }
 }

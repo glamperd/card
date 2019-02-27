@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 user=ubuntu
 prod_server=card.connext.network

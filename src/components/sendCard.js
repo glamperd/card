@@ -100,7 +100,7 @@ class PayCard extends Component {
     );
   }
 
-  async handleQRData(scanResult) {
+  handleQRData = async (scanResult) => {
     const { publicUrl } = this.props;
 
     let data = scanResult.split("/send?");
@@ -108,15 +108,15 @@ class PayCard extends Component {
       let temp = data[1].split("&");
       let amount = temp[0].split("=")[1];
       let recipient = temp[1].split("=")[1];
-      this.setState({
-        modals: { scan: false }
-      });
       this.updatePaymentHandler(amount)
       this.updateRecipientHandler(recipient)
     } else {
       this.updateRecipientHandler(scanResult)
       console.log("incorrect site");
     }
+    this.setState({
+      scan: false
+    });
   }
 
   async updateRecipientHandler(value) {
@@ -170,7 +170,8 @@ class PayCard extends Component {
 
   render() {
     const { classes, channelState } = this.props;
-    const { sendError, sendSuccess } = this.state;
+    const { sendError, sendSuccess, scan } = this.state;
+    console.log('scan: ', scan);
     return (
       <Grid
         container
@@ -281,9 +282,20 @@ class PayCard extends Component {
           id="qrscan"
           open={this.state.scan}
           onClose={() => this.setState({ scan: false })}
-          style={{ width: "full", height: "full" }}
+          style= {{
+            justifyContent: "center", 
+            alignItems: "center", 
+            textAlign: "center", 
+            position: "absolute", 
+            top: "10%", 
+            width: "375px",
+            marginLeft: "auto",
+            marginRight: "auto",
+            left: "0",
+            right: "0",
+          }}
         >
-          <QRScan handleResult={this.handleQRData.bind(this)} history={this.props.history} />
+          <QRScan handleResult={this.handleQRData} history={this.props.history} />
         </Modal>
         <Grid item xs={12}>
           <Grid

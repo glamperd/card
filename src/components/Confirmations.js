@@ -102,7 +102,7 @@ class Confirmations extends Component {
             horizontal: 'center',
           }}
           open={deposit === "PENDING"}
-          autoHideDuration={4000}
+          autoHideDuration={30000}
           onClose={() => this.props.closeConfirmations()}
         >
           <MySnackbarContentWrapper
@@ -117,7 +117,7 @@ class Confirmations extends Component {
             horizontal: 'center',
           }}
           open={withdraw === "PENDING"}
-          autoHideDuration={4000}
+          autoHideDuration={30000}
           onClose={() => this.props.closeConfirmations()}
         >
           <MySnackbarContentWrapper
