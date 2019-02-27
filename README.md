@@ -11,6 +11,7 @@ Mainnet implementation: https://daicard.io (coming soon!)
     - [Local Development](#local-development)
     - [Developing Client Alongside](#developing-connext-client-alongside)
 - [Integrating into your App](#integrating-into-your-app)
+    - [NPM Package](#npm-package)
     - [Autosigner vs. Metamask](#autosigner-vs-metamask)
     - [Instantiating the Connext Client](#instantiating-the-connext-client)
     - [Making Deposits to Channels](#making-deposits-to-channels)
@@ -18,6 +19,7 @@ Mainnet implementation: https://daicard.io (coming soon!)
     - [Making Payments](#making-payments)
     - [Withdrawals](#withdrawals)
     - [Advanced - Considerations For Hub Operators](#advanced---considerations-for-hub-operators)
+        - [Collateralization](#collateralization)
 
 ## Overview
 
@@ -69,6 +71,18 @@ This card is a simple implementation of the Connext Client package. If you'd lik
 (2) Build a more "bespoke" integration to fit your needs
 
 In this section, we'll describe how the Client is integrated into the card, as well as the steps that you'll need to take to build a seamless UX.
+
+### NPM package
+
+The Connext client is a lightweight NPM package that can be found here:
+
+https://www.npmjs.com/package/connext
+
+Installation: 
+
+`npm i connext`
+
+`import { getConnextClient } from 'connext'`
 
 ### Autosigner vs Metamask
 
@@ -304,10 +318,29 @@ You'll notice that the paymentVal object allows for multiple payments. This is d
     
 ### Withdrawals 
 
-[[UNDER CONSTRUCTION]]
+`connext.withdraw()` allows you to withdraw part or all of your funds from a channel to an external address. Called on the Connext object, it accepts parameters indicating the amount to withdraw in tokens and/or Wei. It also includes a `tokensToSell` parameter that, at your/your user's discretion, will automatically swap those tokens for ETH and withdraw your balance in ETH rather than tokens. This is helpful for onboarding to/offboarding from ecosystems with a native token or a specific desired denomination. 
+
+Implementation:
+
+```
+withdrawalVal: {
+        withdrawalWeiUser: "10",
+        tokensToSell: "0",
+        withdrawalTokenUser: "0",
+        weiToSell: "0",
+        recipient: "0x0..."
+      }
+   
+await connext.withdraw(withdrawalVal);
+```
+
+Because the card is effectively a hot wallet, we've set our implementation of `connext.withdraw()` to withdraw all funds from the channel; however, in practice users can withdraw however much or little they'd like.
+     
 
 
 ### Advanced - Considerations For Hub Operators 
 
 [[UNDER CONSTRUCTION]]
+
+#### Collateralization
   
