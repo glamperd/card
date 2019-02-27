@@ -67,9 +67,7 @@ class RedeemCard extends Component {
     }
 
     if (isConfirm) {
-      console.log(
-        "User is creator of linked payment, not automatically redeeming."
-      );
+      console.log("User is creator of linked payment, not automatically redeeming.");
       return;
     }
 
@@ -118,9 +116,7 @@ class RedeemCard extends Component {
           <Typography noWrap variant="h5">
             {isConfirm && <span>{"Scan to Redeem"}</span>}
             {purchaseId == "failed" && <span>{"Uh Oh! Payment Failed"}</span>}
-            {purchaseId && purchaseId != "failed" && (
-              <span>{"Payment Redeemed!"}</span>
-            )}
+            {purchaseId && purchaseId != "failed" && <span>{"Payment Redeemed!"}</span>}
             {!purchaseId && !isConfirm && <span>{"Redeeming Payment..."}</span>}
           </Typography>
         </Grid>
@@ -132,11 +128,7 @@ class RedeemCard extends Component {
             <CopyToClipboard text={url}>
               <Button variant="outlined" fullWidth>
                 <Typography noWrap variant="body1">
-                  <Tooltip
-                    disableFocusListener
-                    disableTouchListener
-                    title="Click to Copy"
-                  >
+                  <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
                     <span>{url}</span>
                   </Tooltip>
                 </Typography>
@@ -153,9 +145,7 @@ class RedeemCard extends Component {
           }}
         >
           {purchaseId == "failed" && <ErrorIcon className={classes.icon} />}
-          {purchaseId && purchaseId != "failed" && (
-            <DoneIcon className={classes.icon} />
-          )}
+          {purchaseId && purchaseId != "failed" && <DoneIcon className={classes.icon} />}
           {!purchaseId && !isConfirm && <CircularProgress />}
         </Grid>
 
