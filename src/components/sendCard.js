@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-//import { withRouter } from "react-router-dom";
-//import IconButton from "@material-ui/core/IconButton";
-//import HighlightOffIcon from "@material-ui/icons/HighlightOff";
+import { withRouter } from "react-router-dom";
 import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
 import SendIcon from "@material-ui/icons/Send";
 import TextField from "@material-ui/core/TextField";
 import QRIcon from "mdi-material-ui/QrcodeScan";
 import LinkIcon from "@material-ui/icons/Link";
+import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
