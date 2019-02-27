@@ -360,7 +360,7 @@ class App extends React.Component {
       // if you already have the maximum balance tokens hub will exchange
       // do not deposit any more eth to be swapped
       // TODO: figure out rounding error
-      if (eth.utils.bigNumberify(channelState.balanceTokenUser).gte(eth.utils.parseEther("6.88"))) {
+      if (eth.utils.bigNumberify(channelState.balanceTokenUser).gte(eth.utils.parseEther("29.8"))) {
         console.log('Channel state token balance at max, refunding browser balance')
         // refund any wei that is in the browser wallet 
         // above the minimum
@@ -460,6 +460,7 @@ class App extends React.Component {
       console.log('Error with transaction:', e.message)
     }
     localStorage.removeItem('refunding')
+    await this.setWeb3(localStorage.getItem('rpc'))
   }
 
   // returns a BigNumber
