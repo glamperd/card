@@ -11,6 +11,32 @@ mkdir -p $devcerts
 mkdir -p /etc/certs
 mkdir -p /var/www/letsencrypt
 
+if [[ "$MODE" == "dev" ]]
+then
+  # Provide a message indicating that we're still waiting for everything to wake up
+  function loading_msg {
+    while true # unix.stackexchange.com/a/37762
+    do echo 'Waiting for the rest of the app to wake up..' | nc -lk -p 80
+    done > /dev/null
+  }
+  loading_msg &
+  loading_pid="$!"
+
+  server=server:3000
+
+  echo "Waiting for $server to wake up..." && bash wait_for.sh -t 60 $server 2> /dev/null
+  while true # Do a more thorough check to ensure the server is online
+  do
+    if curl -s http://$server > /dev/null
+    then break
+    else sleep 1
+    fi
+  done
+
+  # Kill the loading message
+  kill "$loading_pid" && pkill nc
+fi
+
 if [[ "$domain" == "localhost" && ! -f "$devcerts/privkey.pem" ]]
 then
   echo "Developing locally, generating self-signed certs"

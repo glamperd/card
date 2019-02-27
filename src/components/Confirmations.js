@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import Button from '@material-ui/core/Button';
+//import Button from '@material-ui/core/Button';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ErrorIcon from '@material-ui/icons/Error';
 import InfoIcon from '@material-ui/icons/Info';
@@ -92,18 +92,14 @@ const styles2 = theme => ({
 });
 
 class Confirmations extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
-    const { deposit, withdraw, payment } = this.props.status;
+    const { deposit, withdraw } = this.props.status;
     return (
       <div>
         <Snackbar
           anchorOrigin={{
             vertical: 'top',
-            horizontal: 'middle',
+            horizontal: 'center',
           }}
           open={deposit === "PENDING"}
           autoHideDuration={30000}
@@ -118,7 +114,7 @@ class Confirmations extends Component {
         <Snackbar
           anchorOrigin={{
             vertical: 'top',
-            horizontal: 'middle',
+            horizontal: 'center',
           }}
           open={withdraw === "PENDING"}
           autoHideDuration={30000}
@@ -133,7 +129,7 @@ class Confirmations extends Component {
         <Snackbar
           anchorOrigin={{
             vertical: 'top',
-            horizontal: 'middle',
+            horizontal: 'center',
           }}
           open={withdraw === "SUCCESS"}
           autoHideDuration={4000}

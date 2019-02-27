@@ -372,7 +372,7 @@ class App extends React.Component {
   }
 
   async checkStatus() {
-    const { channelState, runtime } = this.state;
+    const { runtime } = this.state;
     let deposit = null;
     let payment = null;
     let withdraw = null;
@@ -386,6 +386,7 @@ class App extends React.Component {
           break;
         case "ConfirmPending":
           withdraw = "SUCCESS";
+          break;
         case "Payment":
           payment = "SUCCESS";
           break;
@@ -461,7 +462,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState, runtime } = this.state;
+    const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState } = this.state;
     const { classes } = this.props;
     return (
       <Router>
