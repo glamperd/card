@@ -141,7 +141,6 @@ class App extends React.Component {
     const mnemonic = localStorage.getItem("mnemonic")
     // on mount, check if you need to refund by removing maxBalance
     localStorage.removeItem("refunding")
-    localStorage.removeItem("maxBalanceAfterRefund")
     let rpc = localStorage.getItem("rpc");
     // TODO: better way to set default provider
     // if it doesnt exist in storage
