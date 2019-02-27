@@ -1,13 +1,13 @@
-import { withStyles, Button } from "@material-ui/core";
+import { withStyles, Button, CircularProgress } from "@material-ui/core";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
+import DoneIcon from "@material-ui/icons/Done";
+import ErrorIcon from "@material-ui/icons/ErrorOutline";
 import React, { Component } from "react";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import Tooltip from "@material-ui/core/Tooltip";
-import DepositIcon from "@material-ui/icons/AttachMoney";
 import QRGenerate from "./qrGenerate";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-
 
 const queryString = require("query-string");
 
@@ -25,22 +25,26 @@ class RedeemCard extends Component {
     this.state = {
       secret: null,
       isConfirm: false,
+      purchaseId: null,
+      retryCount: 0
     };
   }
 
   async componentWillMount() {
     const { location } = this.props;
     const query = queryString.parse(location.search);
+    // uncondonditionally set secret from query
+    this.setState({ secret: query.secret });
 
     // set state vars if they exist
     if (location.state && location.state.isConfirm) {
       // TODO: test what happens if not routed with isConfirm
-      this.setState({ isConfirm: location.state.isConfirm })
+      this.setState({ isConfirm: location.state.isConfirm });
     }
-    
-    if (query.secret) {
-      this.setState({ secret: query.secret });
-    }
+  }
+
+  async componentWillReceiveProps() {
+    await this.redeemPayment();
   }
 
   generateQrUrl(secret) {
@@ -49,12 +53,50 @@ class RedeemCard extends Component {
     return url;
   }
 
+  async redeemPayment() {
+    const { secret, isConfirm, purchaseId, retryCount } = this.state;
+    const { connext, channelState } = this.props;
+    if (!connext || !channelState) {
+      console.log("Connext or channel object not detected");
+      return;
+    }
+
+    if (!secret) {
+      console.log("No secret detected, cannot redeem payment.");
+      return;
+    }
+
+    if (isConfirm) {
+      console.log(
+        "User is creator of linked payment, not automatically redeeming."
+      );
+      return;
+    }
+
+    // user is not payor, can redeem payment
+    try {
+      if (!purchaseId && retryCount < 5) {
+        const updated = await connext.redeem(secret);
+        this.setState({ purchaseId: updated.purchaseId });
+      }
+      if (retryCount >= 5) {
+        this.setState({ purchaseId: "failed" });
+      }
+    } catch (e) {
+      this.setState({ retryCount: retryCount + 1 });
+      console.log("Error redeeming payment:", e.message);
+    }
+  }
+
   render() {
-    const { secret } = this.state;
-    console.log("state", this.state)
+    let { secret, isConfirm, purchaseId } = this.state;
 
     const { classes } = this.props;
     const url = this.generateQrUrl(secret);
+
+    // if you are not the sender, AND the purchase ID is not set
+    // render a loading sign, then a check mark once the purchaseID
+    // is set in the state
     return (
       <Grid
         container
@@ -74,27 +116,49 @@ class RedeemCard extends Component {
         </Grid>
         <Grid item xs={12}>
           <Typography noWrap variant="h5">
-            Scan to Redeem
+            {isConfirm && <span>{"Scan to Redeem"}</span>}
+            {purchaseId == "failed" && <span>{"Uh Oh! Payment Failed"}</span>}
+            {purchaseId && purchaseId != "failed" && (
+              <span>{"Payment Redeemed!"}</span>
+            )}
+            {!purchaseId && !isConfirm && <span>{"Redeeming Payment..."}</span>}
           </Typography>
         </Grid>
         <Grid item xs={12}>
-          <QRGenerate value={url} />
+          {isConfirm && <QRGenerate value={url} />}
         </Grid>
-        <Grid item xs={12}>
-          <CopyToClipboard text={url}>
-            <Button variant="outlined" fullWidth>
-              <Typography noWrap variant="body1">
-                <Tooltip
-                  disableFocusListener
-                  disableTouchListener
-                  title="Click to Copy"
-                >
-                  <span>{url}</span>
-                </Tooltip>
-              </Typography>
-            </Button>
-          </CopyToClipboard>
+        {isConfirm && (
+          <Grid item xs={12}>
+            <CopyToClipboard text={url}>
+              <Button variant="outlined" fullWidth>
+                <Typography noWrap variant="body1">
+                  <Tooltip
+                    disableFocusListener
+                    disableTouchListener
+                    title="Click to Copy"
+                  >
+                    <span>{url}</span>
+                  </Tooltip>
+                </Typography>
+              </Button>
+            </CopyToClipboard>
+          </Grid>
+        )}
+        <Grid
+          item
+          lg
+          style={{
+            paddingTop: "10%",
+            paddingBottom: "15%"
+          }}
+        >
+          {purchaseId == "failed" && <ErrorIcon className={classes.icon} />}
+          {purchaseId && purchaseId != "failed" && (
+            <DoneIcon className={classes.icon} />
+          )}
+          {!purchaseId && !isConfirm && <CircularProgress />}
         </Grid>
+
         <Grid item xs={12}>
           <Button
             variant="outlined"
