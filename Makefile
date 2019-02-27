@@ -61,9 +61,7 @@ push-live:
 ########################################
 # Begin Tests
 
-test: test-default
-test-default: test-e2e
-test-e2e: node-modules prod
+test: node-modules prod
 
 ########################################
 # Begin Real Rules
