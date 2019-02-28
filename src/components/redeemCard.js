@@ -1,4 +1,4 @@
-import { withStyles, Button, CircularProgress } from "@material-ui/core";
+import { withStyles, Button, CircularProgress, Modal } from "@material-ui/core";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
 import DoneIcon from "@material-ui/icons/Done";
 import ErrorIcon from "@material-ui/icons/ErrorOutline";
@@ -26,7 +26,10 @@ class RedeemCard extends Component {
       secret: null,
       isConfirm: false,
       purchaseId: null,
-      retryCount: 0
+      retryCount: 0,
+      sendError: false,
+      showReceipt: false,
+      previouslyRedeemed: false,
     };
   }
 
@@ -55,8 +58,8 @@ class RedeemCard extends Component {
 
   async redeemPayment() {
     const { secret, isConfirm, purchaseId, retryCount } = this.state;
-    const { connext, channelState } = this.props;
-    if (!connext || !channelState) {
+    const { connext, channelState, connextState } = this.props;
+    if (!connext || !channelState || !connextState) {
       console.log("Connext or channel object not detected");
       return;
     }
@@ -79,20 +82,23 @@ class RedeemCard extends Component {
         if (updated.purchaseId == null) {
           this.setState({ retryCount: retryCount + 1})
         }
-        this.setState({ purchaseId: updated.purchaseId });
+        this.setState({ purchaseId: updated.purchaseId, showReceipt: true });
       }
       if (retryCount >= 5) {
-        this.setState({ purchaseId: "failed" });
+        this.setState({ purchaseId: "failed", sendError: true, showReceipt: true });
       }
     } catch (e) {
+      if (e.message.indexOf("Payment has been redeemed") != -1) {
+        this.setState({ retryCount: 5, previouslyRedeemed: true })
+        return
+      }
       this.setState({ retryCount: retryCount + 1 });
       console.log('retryCount', retryCount + 1)
-      console.log("Error redeeming payment:", e.body);
     }
   }
 
   render() {
-    let { secret, isConfirm, purchaseId } = this.state;
+    let { secret, isConfirm, purchaseId, sendError, showReceipt, previouslyRedeemed } = this.state;
 
     const { classes } = this.props;
     const url = this.generateQrUrl(secret);
@@ -169,6 +175,86 @@ class RedeemCard extends Component {
             Back
           </Button>
         </Grid>
+        <Modal
+          open={showReceipt && !isConfirm}
+          onBackdropClick={() => this.setState({ showReceipt: false, sendError: false })}
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            position: "absolute",
+            top: "25%",
+            width: "375px",
+            marginLeft: "auto",
+            marginRight: "auto",
+            left: "0",
+            right: "0"
+          }}
+        >
+          <Grid container style={{ backgroundColor: "#FFF", paddingTop: "10%", paddingBottom: "10%" }} justify="center">
+            {sendError ? ((
+              previouslyRedeemed ? 
+              <Grid style={{ width: "80%" }}>
+                <Grid item style={{ margin: "1em" }}>
+                  <Typography variant="h5" style={{ color: "#F22424" }}>
+                    Payment Failed
+                  </Typography>
+                </Grid>
+                <Grid item style={{ margin: "1em" }}>
+                  <Typography variant="body1" style={{ color: "#0F1012" }}>
+                    It appears this payment has already been redeemed.
+                  </Typography>
+                </Grid>
+              </Grid>
+              :
+              <Grid style={{ width: "80%" }}>
+                <Grid item style={{ margin: "1em" }}>
+                  <Typography variant="h5" style={{ color: "#F22424" }}>
+                    Payment Failed
+                  </Typography>
+                </Grid>
+                <Grid item style={{ margin: "1em" }}>
+                  <Typography variant="body1" style={{ color: "#0F1012" }}>
+                    This is most likely because the recipient's Card is being set up.
+                  </Typography>
+                </Grid>
+                <Grid item style={{ margin: "1em" }}>
+                  <Typography variant="body1" style={{ color: "#0F1012" }}>
+                    Please try again in 30s and contact support if you continue to experience issues. (Settings --> Support)
+                  </Typography>
+                </Grid>
+              </Grid>
+            )) : (
+              <Grid style={{ width: "80%" }}>
+                <Grid item style={{ margin: "1em" }}>
+                  <Typography variant="h5" style={{ color: "#009247" }}>
+                    Redeemed Successfully!
+                  </Typography>
+                </Grid>
+                <Grid item style={{ margin: "1em" }}>
+                  <Typography variant="body1" style={{ color: "#0F1012" }}>
+                    Amount: ${this.props.connextState ? this.props.connextState.persistent.channelUpdate.args.amountToken * Math.pow(10, -18) : ""}
+                  </Typography>
+                </Grid>
+              </Grid>
+            )}
+            <Grid item style={{ margin: "1em", flexDirection: "row", width: "80%" }}>
+              <Button
+                style={{
+                  background: "#FFF",
+                  border: "1px solid #F22424",
+                  color: "#F22424",
+                  marginLeft: "5%"
+                }}
+                variant="outlined"
+                size="small"
+                onClick={() => this.props.history.push("/")}
+              >
+                Home
+              </Button>
+            </Grid>
+          </Grid>
+        </Modal>
       </Grid>
     );
   }
