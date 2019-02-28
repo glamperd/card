@@ -13,7 +13,7 @@ export async function createWallet(web3) {
   localStorage.setItem("privateKey", wallet.getPrivateKeyString());
 
   // update refunding variable on burn
-  localStorage.setItem("refunding", false)
+  localStorage.removeItem("refunding")
   localStorage.removeItem("maxBalanceAfterRefund")
   return wallet
 }
@@ -44,7 +44,7 @@ export async function createWalletFromMnemonic(mnemonic) {
     localStorage.setItem("mnemonic", mnemonic);
     localStorage.setItem("privateKey", wallet.getPrivateKeyString());
     // update refunding variable on import
-    localStorage.setItem("refunding", false)
+    localStorage.removeItem("refunding")
     localStorage.removeItem("maxBalanceAfterRefund")
     return wallet;
   }catch(e){
