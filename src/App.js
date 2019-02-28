@@ -230,7 +230,7 @@ class App extends React.Component {
     const customWeb3 = new Web3(provider);
     const customId = await customWeb3.eth.net.getId();
     // NOTE: token/contract/hubWallet ddresses are set to state while initializing connext
-    this.setState({ customWeb3, hubUrl });
+    this.setState({ customWeb3, hubUrl, rpcUrl });
     if (windowId && windowId !== customId) {
       alert(`Your card is set to ${JSON.stringify(rpc)}. To avoid losing funds, please make sure your metamask and card are using the same network.`);
     }
@@ -310,8 +310,12 @@ class App extends React.Component {
   }
 
   async autoDeposit() {
-    const { address, tokenContract, customWeb3, connextState, tokenAddress, exchangeRate, channelState } = this.state;
-    const balance = await customWeb3.eth.getBalance(address);
+    const { address, tokenContract, connextState, tokenAddress, exchangeRate, channelState, rpcUrl } = this.state;
+    if (!rpcUrl) {
+      return
+    }
+    const web3 = new Web3(rpcUrl)
+    const balance = await web3.eth.getBalance(address);
     console.log('balance wallet:', balance.toString())
 
     const refunding = localStorage.getItem('refunding')
@@ -335,7 +339,7 @@ class App extends React.Component {
       tokenBalance = await tokenContract.methods.balanceOf(address).call();
     } catch (e) {
       console.warn(
-        `Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${await customWeb3.eth.net.getId()}))? Error: ${
+        `Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${await web3.eth.net.getId()}))? Error: ${
           e.message
         }`
       );
