@@ -505,6 +505,7 @@ class App extends React.Component {
                   publicUrl={publicUrl}
                   connext={connext}
                   channelState={channelState}
+                  connextState={connextState}
                   />
               )}
             />
