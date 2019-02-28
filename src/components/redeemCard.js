@@ -215,7 +215,7 @@ class RedeemCard extends Component {
                 </Grid>
                 <Grid item style={{ margin: "1em" }}>
                   <Typography variant="body1" style={{ color: "#0F1012" }}>
-                    This is most likely because the recipient's Card is being set up.
+                    This is most likely because your Card is being set up.
                   </Typography>
                 </Grid>
                 <Grid item style={{ margin: "1em" }}>
