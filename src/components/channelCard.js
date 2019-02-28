@@ -3,10 +3,9 @@ import Card from "@material-ui/core/Card";
 import { Grid, Typography } from "@material-ui/core";
 import { withStyles } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
-import CircularProgress from "@material-ui/core/CircularProgress";
 
 
-const styles = {
+const styles = theme => ({
   card: {
     display: "flex",
     flexDirection: "row",
@@ -32,78 +31,21 @@ const styles = {
   clipboard: {
     cursor: "pointer"
   }
-};
+});
 
 class ChannelCard extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      depositDetected:false
-    };
-  }
-
-  async checkState() {
-    const { channelState } = this.props;
-    //console.log('checkState ', channelState);
-    try{
-      if (channelState.pendingDepositWeiUser !== "0" || channelState.pendingDepositTokenUser !== "0" ) {
-        console.log(``)
-        return true;
-      } else {
-        console.log(`No deposit found :(`)
-        return false;
-      }
-    }catch{
-      console.log("No channel state found")
-    }
-  }
-
-  //withRouter(async ({ history })
-
-  poller = async () => {
-    setInterval(async () => {
-      var depositing = await this.checkState();
-      if (depositing) {
-        await this.setState({ depositDetected: true });
-        //history.push("/");
-      }else{
-        await this.setState({ depositDetected: false })
-      }
-    }, 1000);
-  };
-
-
-
-  componentDidMount = async() => {
-    this.poller();
-  }
 
   render() {
-    const { classes, channelState } = this.props
+    const { classes, channelState } = this.props;
     const substr = channelState ? getDollarSubstring(channelState.balanceTokenUser) : ["0","00"]
     const userWei = channelState ? getDollarSubstring(channelState.balanceWeiUser) : ["0","00"]
     const hubToken = channelState ? getDollarSubstring(channelState.balanceTokenHub) : ["0","00"]
-    const hubWei = channelState ? getDollarSubstring(channelState.balanceWeiHub) : ["0","00"]
+    const hubWei = channelState ? getDollarSubstring(channelState.balanceWeiHub) : ["0","00"];
+
     return (
-      <Card className={classes.card} container>
+      <Card className={classes.card}>
       <Grid container direction="column" alignItems="center">
-      <Grid item alignItems="center">
-        {this.state.depositDetected ?
-                (
-                  <Grid container direction="column" alignItems="center" style={{marginBottom:"10%"}}>
-                  <Typography variant="h5" className={classes.pending}>Deposit Pending</Typography>
-                    <CircularProgress
-                    color="primary"
-                    variant="indeterminate"
-                    />
-                  </Grid>
-                )
-        :
-        null
-        }
-       </Grid>
-       <Grid item>
+      <Grid item>
         <span>
           <Typography inline={true} variant="h5" className={classes.row}>
             {"GZE "}

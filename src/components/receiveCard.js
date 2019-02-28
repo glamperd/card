@@ -11,38 +11,15 @@ import IconButton from "@material-ui/core/IconButton";
 import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import { withRouter } from "react-router-dom";
 import { withStyles, Grid } from "@material-ui/core";
+import Snackbar from './snackBar';
+
 
 const styles = theme => ({
   icon: {
-    [theme.breakpoints.down(600)]: {
-      marginLeft: "170px"
-    },
-    [theme.breakpoints.up(600)]: {
-      marginLeft: "255px"
-    },
     width: "40px",
-    height: "40px",
-    float: "right"
-  },
-  cancelIcon: {
-    marginLeft: "100px",
-    width: "50px",
-    height: "50px",
-    float: "right",
-    cursor: "pointer"
+    height: "40px"
   }
 });
-
-/* CANCEL BUTTON */
-const CancelButton = withRouter(({ history }) => (
-  <IconButton
-    onClick={() => {
-      history.push("/");
-    }}
-  >
-    <HighlightOffIcon />
-  </IconButton>
-));
 
 class ReceiveCard extends Component {
   constructor(props) {
@@ -51,8 +28,13 @@ class ReceiveCard extends Component {
     this.state = {
       value: "0",
       error: null,
-      qrUrl: this.generateQrUrl("0")
+      qrUrl: this.generateQrUrl("0"),
+      copied: null
     };
+  }
+
+  handleClick = async() => {
+    await this.setState({copied:false});
   }
 
   async updatePaymentHandler(evt) {
@@ -77,7 +59,7 @@ class ReceiveCard extends Component {
 
   render() {
     const { classes } = this.props;
-    const { qrUrl, error, displayVal } = this.state;
+    const { qrUrl, error, displayVal, copied } = this.state;
     return (
       <Grid
         container
@@ -88,9 +70,15 @@ class ReceiveCard extends Component {
           paddingRight: 12,
           paddingTop: "10%",
           paddingBottom: "10%",
-          textAlign: "center"
+          textAlign: "center",
+          justifyContent: "center"
         }}
       >
+      <Snackbar 
+            handleClick={() => this.handleClick()}
+            onClose={() => this.handleClick()}
+            open={copied}
+            text="Copied!"/>
         <Grid
           container
           wrap="nowrap"
@@ -100,9 +88,6 @@ class ReceiveCard extends Component {
         >
           <Grid item xs={12}>
             <ReceiveIcon className={classes.icon} />
-          </Grid>
-          <Grid item xs={12} className={classes.cancelIcon}>
-            <CancelButton />
           </Grid>
         </Grid>
         <Grid item xs={12}>
@@ -123,19 +108,32 @@ class ReceiveCard extends Component {
           <QRGenerate value={qrUrl} />
         </Grid>
         <Grid item xs={12}>
-          <Button variant="outlined" fullWidth>
-            <CopyIcon style={{ marginRight: "5px" }} />
-            <CopyToClipboard text={qrUrl}>
+          {/* <CopyIcon style={{marginBottom: "2px"}}/> */}
+          <CopyToClipboard 
+            onCopy={() => this.setState({copied: true})}
+            text={qrUrl}>
+            <Button variant="outlined" fullWidth>
               <Typography noWrap variant="body1">
-                <Tooltip
-                  disableFocusListener
-                  disableTouchListener
-                  title="Click to Copy"
-                >
+                <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
                   <span>{qrUrl}</span>
                 </Tooltip>
               </Typography>
-            </CopyToClipboard>
+            </Button>
+          </CopyToClipboard>
+        </Grid>
+        <Grid item xs={12}>
+          <Button 
+            variant="outlined" 
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              width: "15%",
+            }}
+            size="medium" 
+            onClick={()=>this.props.history.push("/")}
+          >
+            Back
           </Button>
         </Grid>
       </Grid>

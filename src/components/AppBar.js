@@ -1,24 +1,13 @@
 import React from "react";
-import { AppBar, Toolbar, IconButton, Typography, Grid } from "@material-ui/core";
+import { AppBar, Toolbar, IconButton, Typography, Grid, Button } from "@material-ui/core";
 import blockies from "ethereum-blockies-png";
 import SettingIcon from "@material-ui/icons/Settings";
 import { Link } from "react-router-dom";
-import SvgIcon from '@material-ui/core/SvgIcon';
-
 
 const noAddrBlocky = require("../assets/noAddress.png");
-const connext = require("../assets/Connext.svg");
-
-function HomeIcon(props) {
-  return (
-    <SvgIcon {...props}>
-      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-    </SvgIcon>
-  );
-}
 
 const AppBarComponent = props => (
-  <AppBar position="sticky" elevation="0" color="secondary" style={{ paddingTop: "2%" }}>
+  <AppBar position="sticky" color="secondary" elevation={0} style={{ paddingTop: "2%" }}>
     <Toolbar>
       <Grid container spacing={24} direction="row" justify="space-between" alignItems="center" style={{ textAlign: "center" }}>
         <Grid item xs={3}>
@@ -33,15 +22,14 @@ const AppBarComponent = props => (
             </Typography>
           </IconButton>
         </Grid>
-        <Grid item xs={3}>
-          <IconButton color="inherit" variant="contained" component={Link} to="/">
-            <HomeIcon color="white" alt="" style={{ width: "30px", height: "30px", cursor:"pointer" }} />
-          </IconButton>
-        </Grid>
-        <Grid item xs={3}>
-          <IconButton color="inherit" variant="contained" component={Link} to="/settings">
-            <SettingIcon />
-          </IconButton>
+        <Grid item xs={5}>
+          <Button size="small" variant="outlined" style={{ color: "#c1c6ce", borderColor: "#c1c6ce", fontSize: "small"}} component={Link} to="/settings">
+            {localStorage.getItem("rpc")}
+            <SettingIcon style={{marginLeft:"3px"}}/>
+          </Button>
+          {/* <IconButton color="inherit" variant="contained" component={Link} to="/settings">
+
+          </IconButton> */}
         </Grid>
       </Grid>
     </Toolbar>

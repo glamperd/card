@@ -10,31 +10,19 @@ import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
+import red from "@material-ui/core/colors/red"
+import green from "@material-ui/core/colors/green"
 import QRScan from "./qrScan";
-import { emptyAddress } from "connext/dist/Utils";
 import { withStyles, Grid, Typography } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
+import Snackbar from "./snackBar";
 
 const queryString = require("query-string");
 
 const styles = theme => ({
   icon: {
-    [theme.breakpoints.down(600)]: {
-      marginLeft: "170px"
-    },
-    [theme.breakpoints.up(600)]: {
-      marginLeft: "255px"
-    },
     width: "40px",
     height: "40px",
-    float: "right"
-  },
-  cancelIcon: {
-    marginLeft: "100px",
-    width: "50px",
-    height: "50px",
-    float: "right",
-    cursor: "pointer"
   },
   input: {
     width: "100%"
@@ -44,17 +32,6 @@ const styles = theme => ({
     color: "#FFF"
   }
 });
-
-/* CANCEL BUTTON */
-const CancelButton = withRouter(({ history }) => (
-  <IconButton
-    onClick={() => {
-      history.push("/");
-    }}
-  >
-    <HighlightOffIcon />
-  </IconButton>
-));
 
 class PayCard extends Component {
   constructor(props) {
@@ -70,7 +47,7 @@ class PayCard extends Component {
           {
             recipient: this.props.scanArgs.recipient
               ? this.props.scanArgs.recipient
-              : emptyAddress.substr(0, 3) + "...",
+              : "",
             amount: {
               amountToken: this.props.scanArgs.amount
                 ? (this.props.scanArgs.amount * Math.pow(10, 18)).toString()
@@ -83,20 +60,22 @@ class PayCard extends Component {
       },
       addressError: null,
       balanceError: null,
+      sendError: false,
       scan: false,
-      displayVal: this.props.scanArgs.amount ? this.props.scanArgs.amount : "0"
+      displayVal: this.props.scanArgs.amount ? this.props.scanArgs.amount : "0",
+      showReceipt: false,
     };
   }
 
   async componentDidMount() {
     const { location } = this.props;
     const query = queryString.parse(location.search);
-    if (query.amounttoken) {
+    if (query.amountToken) {
       await this.setState(oldState => {
         oldState.paymentVal.payments[0].amount.amountToken = (
           query.amounttoken * Math.pow(10, 18)
         ).toString();
-        oldState.displayVal = query.amounttoken;
+        oldState.displayVal = query.amounToken;
         return oldState;
       });
     }
@@ -121,12 +100,30 @@ class PayCard extends Component {
     );
   }
 
+  handleQRData = async (scanResult) => {
+    const { publicUrl } = this.props;
+
+    let data = scanResult.split("/send?");
+    if (data[0] === publicUrl) {
+      let temp = data[1].split("&");
+      let amount = temp[0].split("=")[1];
+      let recipient = temp[1].split("=")[1];
+      this.updatePaymentHandler(amount)
+      this.updateRecipientHandler(recipient)
+    } else {
+      this.updateRecipientHandler(scanResult)
+      console.log("incorrect site");
+    }
+    this.setState({
+      scan: false
+    });
+  }
+
   async updateRecipientHandler(value) {
     await this.setState(oldState => {
       oldState.paymentVal.payments[0].recipient = value;
       return oldState;
     });
-    this.setState({ scan: false });
     console.log(
       `Updated recipient: ${JSON.stringify(
         this.state.paymentVal.payments[0].recipient,
@@ -141,24 +138,32 @@ class PayCard extends Component {
       `Submitting payment: ${JSON.stringify(this.state.paymentVal, null, 2)}`
     );
     this.setState({ addressError: null, balanceError: null });
-    const { connext, web3 } = this.props;
+    const { connext, web3, channelState } = this.props;
 
-    // if( Number(this.state.paymentVal.payments[0].amount.amountToken) <= Number(channelState.balanceTokenUser) &&
-    //     Number(this.state.paymentVal.payments[0].amount.amountWei) <= Number(channelState.balanceWeiUser)
-    // ) {
-    if (web3.utils.isAddress(this.state.paymentVal.payments[0].recipient)) {
-      let paymentRes = await connext.buy(this.state.paymentVal);
-      console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
+    if( Number(this.state.paymentVal.payments[0].amount.amountToken) <= Number(channelState.balanceTokenUser) &&
+        Number(this.state.paymentVal.payments[0].amount.amountWei) <= Number(channelState.balanceWeiUser)
+    ) {
+      if (web3.utils.isAddress(this.state.paymentVal.payments[0].recipient)) {
+        try{
+          let paymentRes = await connext.buy(this.state.paymentVal);
+          console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
+          this.setState({ showReceipt: true })
+        }catch(e){
+          console.log("SEND ERROR, SETTING")
+          this.setState({ sendError: true, showReceipt: true })
+        }
+      } else {
+        this.setState({ addressError: "Please choose a valid address" });
+      }
     } else {
-      this.setState({ addressError: "Please choose a valid address" });
+      this.setState({balanceError: "Insufficient balance in channel"})
     }
-    // } else {
-    //   this.setState({balanceError: "Insufficient balance in channel"})
-    // }
   }
 
   render() {
     const { classes, channelState } = this.props;
+    const { sendError, scan } = this.state;
+    console.log('scan: ', scan);
     return (
       <Grid
         container
@@ -170,7 +175,8 @@ class PayCard extends Component {
           paddingRight: 12,
           paddingTop: "10%",
           paddingBottom: "10%",
-          textAlign: "center"
+          textAlign: "center",
+          justify: "center"
         }}
       >
         <Grid
@@ -182,9 +188,6 @@ class PayCard extends Component {
         >
           <Grid item xs={12}>
             <SendIcon className={classes.icon} />
-          </Grid>
-          <Grid item xs={12} className={classes.cancelIcon}>
-            <CancelButton />
           </Grid>
         </Grid>
         <Grid item xs={12}>
@@ -206,27 +209,25 @@ class PayCard extends Component {
         </Grid>
         <Grid item xs={12}>
           <TextField
-            fullWidth
-            className={classes.input}
-            id="outlined-number"
-            label="Amount"
-            placeholder="$0.00"
-            required
-            value={this.state.displayVal}
-            onChange={evt => this.updatePaymentHandler(evt.target.value)}
-            type="number"
-            margin="normal"
-            variant="outlined"
-            helperText={this.state.balanceError}
-            error={this.state.balanceError != null}
-          />
+              fullWidth
+              id="outlined-number"
+              label="Amount"
+              value={this.state.displayVal}
+              type="number"
+              margin="normal"
+              variant="outlined"
+              onChange={evt => this.updatePaymentHandler(evt.target.value)}
+              error={this.state.balanceError != null}
+              helperText={this.state.balanceError}
+            />
         </Grid>
         <Grid item xs={12}>
           <TextField
             style={{ width: "100%" }}
-            id="outlined-with-placeholder"
-            label="Recipient"
-            placeholder="0x0... (Optional for Link)"
+            id="outlined"
+            label="Recipient Address"
+            type="string"
+            required
             value={this.state.paymentVal.payments[0].recipient}
             onChange={evt => this.updateRecipientHandler(evt.target.value)}
             margin="normal"
@@ -259,23 +260,21 @@ class PayCard extends Component {
           id="qrscan"
           open={this.state.scan}
           onClose={() => this.setState({ scan: false })}
-          style={{ width: "full", height: "full" }}
+          style= {{
+            justifyContent: "center", 
+            alignItems: "center", 
+            textAlign: "center", 
+            position: "absolute", 
+            top: "10%", 
+            width: "375px",
+            marginLeft: "auto",
+            marginRight: "auto",
+            left: "0",
+            right: "0",
+          }}
         >
-          <QRScan handleResult={this.updateRecipientHandler.bind(this)} />
+          <QRScan handleResult={this.handleQRData} history={this.props.history} />
         </Modal>
-        {/* <TextField
-          className={classes.input}
-          id="outlined-number"
-          label="Message"
-          placeholder="Groceries, etc. (Optional)"
-          value={this.state.paymentVal.meta.memo}
-          onChange={evt => this.setState({paymentVal: {meta: {memo: evt.target.value }}})}
-          type="string"
-          margin="normal"
-          variant="outlined"
-          helperText={this.state.balanceError}
-          error={this.state.balanceError != null}
-        /> */}
         <Grid item xs={12}>
           <Grid
             container
@@ -311,6 +310,100 @@ class PayCard extends Component {
             </Grid>
           </Grid>
         </Grid>
+        <Grid item xs={12}>
+          <Button 
+            variant="outlined" 
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              width: "15%",
+            }}
+            size="medium" 
+            onClick={()=>this.props.history.push("/")}
+          >
+            Back
+          </Button>
+        </Grid>
+          <Modal
+          open={this.state.showReceipt}
+          onBackdropClick={() => this.setState({showReceipt: false, sendError: false})}
+          style={{
+            justifyContent: "center", 
+            alignItems: "center", 
+            textAlign: "center", 
+            position: "absolute", 
+            top: "25%", 
+            width: "375px",
+            marginLeft: "auto",
+            marginRight: "auto",
+            left: "0",
+            right: "0",
+          }}
+        >
+          <Grid container style={{backgroundColor: "#FFF", paddingTop: "10%", paddingBottom: "10%"}} justify="center">
+              {this.state.sendError ? (
+              <Grid style={{width: "80%"}}>
+                <Grid item style={{margin: "1em"}}>
+                  <Typography variant="h5" style={{color:"#F22424"}}>
+                      Payment Failed
+                  </Typography>
+                </Grid>
+                <Grid item style={{margin: "1em"}}>
+                  <Typography variant="body1" style={{color:"#0F1012"}}>
+                    This is most likely because the recipient's Card is being set up.
+                  </Typography>
+                </Grid>
+                <Grid item style={{margin: "1em"}}>
+                  <Typography variant="body1" style={{color:"#0F1012"}}>
+                    Please try again in 30s and contact support if you continue to experience issues. (Settings --> Support)
+                  </Typography>
+                </Grid>
+              </Grid>
+              ): (
+              <Grid style={{width: "80%"}}>
+                <Grid item style={{margin: "1em"}}>
+                  <Typography variant="h5" style={{color: "#009247"}}>
+                      Payment Success!
+                  </Typography>
+                </Grid>
+                <Grid item style={{margin: "1em"}}>
+                  <Typography variant="body1" style={{color:"#0F1012"}}>
+                    Amount: ${this.state.paymentVal.payments[0].amount.amountToken * Math.pow(10,-18)}
+                  </Typography>
+                </Grid>
+                <Grid item style={{margin: "1em"}}>
+                  <Typography variant="body2" style={{color:"#0F1012"}} noWrap>
+                    To: {this.state.paymentVal.payments[0].recipient}
+                  </Typography>
+                </Grid>
+              </Grid>
+              )}
+            <Grid item style={{margin: "1em", flexDirection: "row", width: "80%"}}>
+              <Button
+                color="primary"
+                variant="outlined"
+                size="small"
+                onClick={() => this.setState({ showReceipt: false, sendError: false })}
+              >
+              Pay Again
+              </Button>
+              <Button
+                style={{
+                  background: "#FFF",
+                  border: "1px solid #F22424",
+                  color: "#F22424",
+                  marginLeft: "5%",
+                }}
+                variant="outlined"
+                size="small"
+                onClick={() => this.props.history.push("/")}
+              >
+              Home
+              </Button>
+            </Grid>
+          </Grid>
+        </Modal>
       </Grid>
     );
   }

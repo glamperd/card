@@ -19,22 +19,8 @@ import { getAggregateChannelBalance } from "../utils/getAggregateChannelBalance"
 
 const styles = theme => ({
   icon: {
-    [theme.breakpoints.down(600)]: {
-      marginLeft: "170px"
-    },
-    [theme.breakpoints.up(600)]: {
-      marginLeft: "255px"
-    },
     width: "40px",
     height: "40px",
-    float: "right"
-  },
-  cancelIcon: {
-    marginLeft: "100px",
-    width: "50px",
-    height: "50px",
-    float: "right",
-    cursor: "pointer"
   },
   button: {
     backgroundColor: "#FCA311",
@@ -51,40 +37,6 @@ const styles = theme => ({
     outline: "none"
   }
 });
-
-/* CANCEL BUTTON */
-const CancelButton = withRouter(({ history }) => (
-  <IconButton
-    onClick={() => {
-      history.push("/");
-    }}
-  >
-    <HighlightOffIcon />
-  </IconButton>
-));
-
-const ProgressModal = ({ classes, withdrawing }) => (
-  <Modal
-    style={{
-      position: "absolute",
-      backgroundColor: "transparent"
-    }}
-    hideBackdrop={true}
-    disablePortal={true}
-    open={withdrawing}
-  >
-    <div>
-      <CircularProgress
-        className={classes.modal}
-        style={{ marginTop: "40%", marginLeft: "40%", backgroundColor: "transparent", boxShadow: "none" }}
-        color="primary"
-        variant="indeterminate"
-      />
-    </div>
-  </Modal>
-);
-
-const ProgressModalWrapped = withStyles(styles)(ProgressModal);
 
 class CashOutCard extends Component {
   constructor(props) {
@@ -240,16 +192,14 @@ class CashOutCard extends Component {
           paddingRight: 12,
           paddingTop: "10%",
           paddingBottom: "10%",
-          textAlign: "center"
+          textAlign: "center",
+          justifyContent: "center"
         }}
       >
-        <ProgressModalWrapped withdrawing={withdrawing} />
+        {/* <ProgressModalWrapped withdrawing={withdrawing} /> */}
         <Grid container wrap="nowrap" direction="row" justify="center" alignItems="center">
           <Grid item xs={12}>
             <UnarchiveIcon className={classes.icon} />
-          </Grid>
-          <Grid item xs={12} className={classes.cancelIcon}>
-            <CancelButton />
           </Grid>
         </Grid>
         <Grid item xs={12}>
@@ -290,8 +240,23 @@ class CashOutCard extends Component {
             }}
           />
         </Grid>
-        <Modal id="qrscan" open={scan} onClose={() => this.setState({ scan: false })} style={{ width: "full", height: "full" }}>
-          <QRScan handleResult={this.updateRecipientHandler.bind(this)} />
+        <Modal 
+          id="qrscan" 
+          open={scan} 
+          onClose={() => this.setState({ scan: false })} 
+          style={{ 
+            justifyContent: "center", 
+            alignItems: "center", 
+            textAlign: "center", 
+            position: "absolute", 
+            top: "10%", 
+            width: "375px",
+            marginLeft: "auto",
+            marginRight: "auto",
+            left: "0",
+            right: "0",
+          }}>
+          <QRScan handleResult={this.updateRecipientHandler.bind(this)} history={this.props.history} />
         </Modal>
         <Grid item xs={12}>
           <Grid container spacing={8} direction="row" alignItems="center" justify="center">
@@ -313,6 +278,21 @@ class CashOutCard extends Component {
               </Button>
             </Grid>
           </Grid>
+        </Grid>
+        <Grid item xs={12}>
+          <Button 
+            variant="outlined" 
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              width: "15%",
+            }}
+            size="medium" 
+            onClick={()=>this.props.history.push("/")}
+          >
+            Back
+          </Button>
         </Grid>
       </Grid>
     );

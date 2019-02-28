@@ -20,7 +20,7 @@ class Home extends React.Component {
     sendScanArgs: null,
   };
 
-  async scanQRCode(data) {
+  scanQRCode = async (data) => {
     const { publicUrl } = this.props;
     console.log("PUBLIC URL")
     console.log(publicUrl)
@@ -31,19 +31,19 @@ class Home extends React.Component {
       let temp = data[1].split("&");
       let amount = temp[0].split("=")[1];
       let recipient = temp[1].split("=")[1];
-      this.setState({
-        modals: { scan: false }
-      });
       await this.props.scanURL(amount, recipient)
       this.props.history.push("/send")
     } else {
       console.log("incorrect site");
     }
+    this.setState({
+      modals: { scan: false }
+    });
   }
 
   render() {
     const { modals } = this.state;
-    const { address, channelState } = this.props;
+    const { address, channelState, connextState } = this.props;
     return (
       <>
         <div className="row" style={{ marginBottom: "-7.5%" }}>
@@ -67,9 +67,20 @@ class Home extends React.Component {
               id="qrscan"
               open={this.state.modals.scan}
               onClose={() => this.setState({ modals: { ...modals, scan: false } })}
-              style={{ width: "full", height: "full" }}
+              style={{
+                justifyContent: "center", 
+                alignItems: "center", 
+                textAlign: "center", 
+                position: "absolute", 
+                top: "10%", 
+                width: "375px",
+                marginLeft: "auto",
+                marginRight: "auto",
+                left: "0",
+                right: "0",
+              }}
             >
-              <QRScan handleResult={this.scanQRCode.bind(this)} />
+              <QRScan handleResult={this.scanQRCode} history={this.props.history} />
             </Modal>
           </div>
         </div>
@@ -111,7 +122,7 @@ class Home extends React.Component {
             </Grid>
           </Grid>
           <Grid item xs={12}>
-            <Button fullWidth color="primary" variant="outlined" size="large" component={Link} to="/cashout">
+            <Button style={{marginBottom: "20%"}} fullWidth color="primary" variant="outlined" size="large" component={Link} to="/cashout">
               Cash Out
             </Button>
           </Grid>
