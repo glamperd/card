@@ -10,12 +10,12 @@ import LinkIcon from "@material-ui/icons/Link";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
-import red from "@material-ui/core/colors/red"
-import green from "@material-ui/core/colors/green"
+//import red from "@material-ui/core/colors/red"
+//import green from "@material-ui/core/colors/green"
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
-import Snackbar from "./snackBar";
+//import Snackbar from "./snackBar";
 
 const queryString = require("query-string");
 
@@ -342,7 +342,7 @@ class PayCard extends Component {
           }}
         >
           <Grid container style={{backgroundColor: "#FFF", paddingTop: "10%", paddingBottom: "10%"}} justify="center">
-              {this.state.sendError ? (
+              {sendError ? (
               <Grid style={{width: "80%"}}>
                 <Grid item style={{margin: "1em"}}>
                   <Typography variant="h5" style={{color:"#F22424"}}>

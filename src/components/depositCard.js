@@ -11,7 +11,7 @@ import QRGenerate from "./qrGenerate";
 //import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 //import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core";
-import Snackbar from './snackBar';
+import ConfirmationSnackbar from './snackBar';
 
 const styles = theme => ({ 
   icon: {
@@ -41,7 +41,7 @@ class DepositCard extends Component {
 
     return (
       <Grid container spacing={24} direction="column" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: "10%", paddingBottom: "10%", textAlign: "center", justifyContent: "center" }}>
-      <Snackbar 
+      <ConfirmationSnackbar
             handleClick={() => this.handleClick()}
             onClose={() => this.handleClick()}
             open={copied}
