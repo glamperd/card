@@ -178,7 +178,6 @@ class App extends React.Component {
       await createWallet(this.state.web3);
       // Then refresh the page
       window.location.reload();
-      localStorage.setItem("collateralize", true)
     }
   }
 
@@ -304,7 +303,6 @@ class App extends React.Component {
     setInterval(async () => {
       await this.autoDeposit();
       await this.autoSwap();
-      await this.autoCollateral();
     }, 1000);
 
     setInterval(async() => {
@@ -353,7 +351,7 @@ class App extends React.Component {
         return;
       }
       // only proceed with deposit request if you can deposit
-      if (!connextState || !connextState.runtime.canDeposit || exchangeRate == "0.00") {
+      if (!connextState || !connextState.runtime.canDeposit || exchangeRate === "0.00") {
         return;
       }
 
@@ -414,7 +412,7 @@ class App extends React.Component {
     }
 
     // if wei is 0, save gas and return
-    if (wei == "0") {
+    if (wei === "0") {
       return
     }
 
@@ -430,7 +428,7 @@ class App extends React.Component {
     }
     // sort by nonce and take latest senders address and
     // return wei to the senders address
-    const filteredTxs = txs.filter(t => t.to && t.to.toLowerCase() == address.toLowerCase())
+    const filteredTxs = txs.filter(t => t.to && t.to.toLowerCase() === address.toLowerCase())
     const mostRecent = (filteredTxs.sort((a, b) => b.nonce - a.nonce))[0]
     if (!mostRecent) {
       console.log('Browser wallet overfunded, but couldnt find most recent tx in last 100 blocks.')
@@ -479,7 +477,7 @@ class App extends React.Component {
     }
 
     // see notes in src about tokensSold for "calculateExchange"
-    const { weiReceived, tokensSold } = calculateExchange(convertExchange('bn', maxWeiExchanged))
+    const { weiReceived } = calculateExchange(convertExchange('bn', maxWeiExchanged))
 
     let weiToRefund = new BigNumber(wei).minus(new BigNumber(weiReceived.toString()))
     
@@ -504,18 +502,8 @@ class App extends React.Component {
     }
   }
 
-  async autoCollateral() {
-    const { connext } = this.state
-    let bool = localStorage.getItem("collateralize")
-    if ( bool === "true") {
-      console.log("Collateralized channel, res:")
-      await connext.requestCollateral()
-      localStorage.setItem("collateralize", false)
-    }
-  }
-
   async checkStatus() {
-    const { channelState, runtime } = this.state;
+    const { runtime } = this.state;
     const refundStr = localStorage.getItem('refunding')
     const hasRefund = !!refundStr ? refundStr.split(',') : null
     let deposit = null;
@@ -531,6 +519,7 @@ class App extends React.Component {
           break;
         case "ConfirmPending":
           withdraw = "SUCCESS";
+          break;
         case "Payment":
           payment = "SUCCESS";
           break;
@@ -607,7 +596,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState, runtime, } = this.state;
+    const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState } = this.state;
     const { classes } = this.props;
     return (
       <Router>

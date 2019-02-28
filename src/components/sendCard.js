@@ -1,21 +1,21 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
+//import { withRouter } from "react-router-dom";
+//import IconButton from "@material-ui/core/IconButton";
+//import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import Button from "@material-ui/core/Button";
-import IconButton from "@material-ui/core/IconButton";
 import SendIcon from "@material-ui/icons/Send";
 import TextField from "@material-ui/core/TextField";
 import QRIcon from "mdi-material-ui/QrcodeScan";
 import LinkIcon from "@material-ui/icons/Link";
-import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
-import red from "@material-ui/core/colors/red"
-import green from "@material-ui/core/colors/green"
+//import red from "@material-ui/core/colors/red"
+//import green from "@material-ui/core/colors/green"
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
-import Snackbar from "./snackBar";
+//import Snackbar from "./snackBar";
 
 const queryString = require("query-string");
 
@@ -261,11 +261,11 @@ class PayCard extends Component {
           open={this.state.scan}
           onClose={() => this.setState({ scan: false })}
           style= {{
-            justifyContent: "center", 
-            alignItems: "center", 
-            textAlign: "center", 
-            position: "absolute", 
-            top: "10%", 
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            position: "absolute",
+            top: "10%",
             width: "375px",
             marginLeft: "auto",
             marginRight: "auto",
@@ -311,15 +311,15 @@ class PayCard extends Component {
           </Grid>
         </Grid>
         <Grid item xs={12}>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             style={{
               background: "#FFF",
               border: "1px solid #F22424",
               color: "#F22424",
               width: "15%",
             }}
-            size="medium" 
+            size="medium"
             onClick={()=>this.props.history.push("/")}
           >
             Back
@@ -329,11 +329,11 @@ class PayCard extends Component {
           open={this.state.showReceipt}
           onBackdropClick={() => this.setState({showReceipt: false, sendError: false})}
           style={{
-            justifyContent: "center", 
-            alignItems: "center", 
-            textAlign: "center", 
-            position: "absolute", 
-            top: "25%", 
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            position: "absolute",
+            top: "25%",
             width: "375px",
             marginLeft: "auto",
             marginRight: "auto",
@@ -342,7 +342,7 @@ class PayCard extends Component {
           }}
         >
           <Grid container style={{backgroundColor: "#FFF", paddingTop: "10%", paddingBottom: "10%"}} justify="center">
-              {this.state.sendError ? (
+              {sendError ? (
               <Grid style={{width: "80%"}}>
                 <Grid item style={{margin: "1em"}}>
                   <Typography variant="h5" style={{color:"#F22424"}}>

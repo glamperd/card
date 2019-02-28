@@ -6,8 +6,8 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import QRGenerate from "./qrGenerate";
-import { withStyles } from "@material-ui/core";
 import Snackbar from "./snackBar";
+import { withStyles } from "@material-ui/core";
 
 const styles = theme => ({
   icon: {

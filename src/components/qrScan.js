@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import QrReader from "react-qr-reader";
-import {Grid, Button} from "@material-ui/core";
+//import {Grid, Button} from "@material-ui/core";
  
 class QRScan extends Component {
   constructor(props) {
