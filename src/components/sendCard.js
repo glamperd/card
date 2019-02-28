@@ -157,7 +157,7 @@ class PayCard extends Component {
     // validate that the token amount is within bounds
     const payment = convertPayment("bn", paymentVal.payments[0].amount);
     if (payment.amountToken.gt(new BN(channelState.balanceTokenUser))) {
-      balanceError = "Looks like that amount is more than exists in your channel token balance";
+      balanceError = "Insufficient balance in channel";
     }
 
     if (payment.amountToken.isZero()) {
@@ -177,32 +177,21 @@ class PayCard extends Component {
     }
 
     // otherwise make payment
-    if (
-      Number(paymentVal.payments[0].amount.amountToken) <= Number(channelState.balanceTokenUser) &&
-      Number(paymentVal.payments[0].amount.amountWei) <= Number(channelState.balanceWeiUser)
-    ) {
-      if (web3.utils.isAddress(paymentVal.payments[0].recipient) && recipient !== emptyAddress) {
-        try {
-          let paymentRes = await connext.buy(paymentVal);
-          console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
-          if (paymentVal.payments[0].type === "PT_LINK") {
-            const secret = paymentVal.payments[0].secret;
-            this.props.history.push({
-              pathname: "/redeem",
-              search: `?secret=${secret}`,
-              state: { isConfirm: true, secret }
-            });
-          }
-          this.setState({ showReceipt: true });
-        } catch (e) {
-          console.log("SEND ERROR, SETTING");
-          this.setState({ sendError: true, showReceipt: true });
-        }
-      } else {
-        this.setState({ addressError: "Please choose a valid address" });
+    try {
+      let paymentRes = await connext.buy(paymentVal);
+      console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
+      if (paymentVal.payments[0].type === "PT_LINK") {
+        const secret = paymentVal.payments[0].secret;
+        this.props.history.push({
+          pathname: "/redeem",
+          search: `?secret=${secret}`,
+          state: { isConfirm: true, secret }
+        });
       }
-    } else {
-      this.setState({ balanceError: "Insufficient balance in channel" });
+      this.setState({ showReceipt: true });
+    } catch (e) {
+      console.log("SEND ERROR, SETTING");
+      this.setState({ sendError: true, showReceipt: true });
     }
   }
 
