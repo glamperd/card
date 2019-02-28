@@ -97,9 +97,24 @@ class Confirmations extends Component {
   }
 
   render() {
-    const { deposit, withdraw, payment } = this.props.status;
+    const { deposit, withdraw, payment, hasRefund } = this.props.status;
     return (
       <div>
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'middle',
+          }}
+          open={hasRefund}
+          autoHideDuration={4000}
+          onClose={() => this.props.closeConfirmations()}
+        >
+          <MySnackbarContentWrapper
+            onClose={this.handleClose}
+            variant="warning"
+            message={hasRefund}
+          />
+        </Snackbar>
         <Snackbar
           anchorOrigin={{
             vertical: 'top',
