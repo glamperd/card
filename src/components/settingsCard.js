@@ -61,12 +61,13 @@ class SettingsCard extends Component {
     await this.setState({copied:false});
   }
 
-  async generateNewAddress() {
+  generateNewAddress = async () => {
     // NOTE: DelegateSigner is always recoveredwhic from browser storage.
     //       It is ONLY set to state from within app on load.
     await createWallet(this.state.web3);
     localStorage.setItem("collateralize", true)
     // Then refresh the page
+    this.props.history.push("/")
     window.location.reload();
   }
 

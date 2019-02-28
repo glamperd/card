@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import Button from '@material-ui/core/Button';
+//import Button from '@material-ui/core/Button';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ErrorIcon from '@material-ui/icons/Error';
 import InfoIcon from '@material-ui/icons/Info';
@@ -92,14 +92,25 @@ const styles2 = theme => ({
 });
 
 class Confirmations extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
-    const { deposit, withdraw, payment } = this.props.status;
+    const { deposit, withdraw, hasRefund } = this.props.status;
     return (
       <div>
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+          open={!!hasRefund}
+          autoHideDuration={4000}
+          onClose={() => this.props.closeConfirmations()}
+        >
+          <MySnackbarContentWrapper
+            onClose={this.handleClose}
+            variant="warning"
+            message={`Refunding ${!!hasRefund && hasRefund[0] ? hasRefund[0] : ""} finney to ${!!hasRefund && hasRefund[1] ? hasRefund[1].substr(0, 5).toLowerCase() + '...' : ""}.`}
+          />
+        </Snackbar>
         <Snackbar
           anchorOrigin={{
             vertical: 'top',
@@ -118,7 +129,7 @@ class Confirmations extends Component {
         <Snackbar
           anchorOrigin={{
             vertical: 'top',
-            horizontal: 'middle',
+            horizontal: 'center',
           }}
           open={withdraw === "PENDING"}
           autoHideDuration={30000}
@@ -133,7 +144,7 @@ class Confirmations extends Component {
         <Snackbar
           anchorOrigin={{
             vertical: 'top',
-            horizontal: 'middle',
+            horizontal: 'center',
           }}
           open={withdraw === "SUCCESS"}
           autoHideDuration={4000}
