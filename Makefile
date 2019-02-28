@@ -5,10 +5,11 @@ cwd=$(shell pwd)
 card=$(cwd)
 proxy=$(cwd)/ops/proxy
 flags=.makeflags
-VPATH=build:$(flags)
 version=$(shell cat package.json | grep '"version":' | egrep -o '[.0-9]+')
 find_options=-type f -not -path "node_modules/*" -not -name "*.swp" -not -path "*/.*"
 src=$(shell find src $(find_options))
+VPATH=build:$(flags)
+SHELL=/bin/bash
 
 # Setup docker run time
 # If on Linux, give the container our uid & gid so we know what to reset permissions to
