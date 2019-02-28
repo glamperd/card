@@ -3,8 +3,8 @@ import React from "react";
 import { Snackbar, IconButton } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 
-const ConfirmationSnackbar = ({ handleClick, open, text, classes  }) => (    
-      <Snackbar 
+const ConfirmationSnackbar = ({ handleClick, open, text, classes  }) => (
+    <Snackbar
       classes={classes}
       anchorOrigin={{
         vertical: 'top',
@@ -22,11 +22,11 @@ const ConfirmationSnackbar = ({ handleClick, open, text, classes  }) => (
           onClick={handleClick}
         >
           <CloseIcon />
-        </IconButton>,
+        </IconButton>
       ]}
     >
-      
-    </Snackbar>
-  );
-  
-  export default ConfirmationSnackbar;
+
+  </Snackbar>
+);
+
+export default ConfirmationSnackbar;

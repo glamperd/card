@@ -60,7 +60,7 @@ npm start
 cp -rf ../indra/modules/client connext
 rm -rf node_modules/connext
 ln -s ../connext node_modules/connext
-# then restart local development according to the instructions above
+npm restart
 ```
 
 ## Integrating into your App

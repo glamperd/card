@@ -11,6 +11,10 @@ export async function createWallet(web3) {
   localStorage.setItem("delegateSigner", wallet.getAddressString())
   localStorage.setItem("mnemonic", mnemonic);
   localStorage.setItem("privateKey", wallet.getPrivateKeyString());
+
+  // update refunding variable on burn
+  localStorage.removeItem("refunding")
+  localStorage.removeItem("maxBalanceAfterRefund")
   return wallet
 }
 
@@ -39,6 +43,9 @@ export async function createWalletFromMnemonic(mnemonic) {
     localStorage.setItem("delegateSigner", wallet.getAddressString())
     localStorage.setItem("mnemonic", mnemonic);
     localStorage.setItem("privateKey", wallet.getPrivateKeyString());
+    // update refunding variable on import
+    localStorage.removeItem("refunding")
+    localStorage.removeItem("maxBalanceAfterRefund")
     return wallet;
   }catch(e){
     console.log(`error in WalletGen`)

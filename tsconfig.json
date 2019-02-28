@@ -10,7 +10,7 @@
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "jsx": "preserve",
-    "target": "es5",
+    "target": "es6",
     "module": "esnext",
     "lib": [
       "dom",
@@ -37,7 +37,8 @@
   ],
   "exclude": [
     "node_modules",
-    "src/**/*.test.*"
+    "src/**/*.test.*",
+    "src/**/*.js"
   ],
   "typeRoots": [
     "node_modules/@types",
