@@ -105,14 +105,14 @@ class Confirmations extends Component {
             vertical: 'top',
             horizontal: 'middle',
           }}
-          open={hasRefund}
+          open={!!hasRefund}
           autoHideDuration={4000}
           onClose={() => this.props.closeConfirmations()}
         >
           <MySnackbarContentWrapper
             onClose={this.handleClose}
             variant="warning"
-            message={hasRefund}
+            message={`Refunding ${!!hasRefund && hasRefund[0] ? hasRefund[0] : ""} finney to ${!!hasRefund && hasRefund[1] ? hasRefund[1].substr(0, 5).toLowerCase() + '...' : ""}.`}
           />
         </Snackbar>
         <Snackbar
