@@ -481,8 +481,6 @@ class App extends React.Component {
 
     console.log('tokens sold by hub', tokensSold.toString())
 
-    // channel max is the minimum of the ceiling that
-    // the hub would exchange, or a set deposit max
     let weiToRefund = new BigNumber(wei).minus(new BigNumber(weiReceived.toString()))
     
     if (weiToRefund.isNegative()) {
