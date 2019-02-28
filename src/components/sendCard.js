@@ -251,10 +251,10 @@ class PayCard extends Component {
           <TextField
             style={{ width: "100%" }}
             id="outlined"
-            label="Recipient Address"
+            label="Recipient Address (not required for link payment)"
             type="string"
             required
-            value={this.state.paymentVal.payments[0].recipient == emptyAddress ? "" : this.state.paymentVal.payments[0].recipient}
+            value={this.state.paymentVal.payments[0].recipient === emptyAddress ? "" : this.state.paymentVal.payments[0].recipient}
             onChange={evt => this.updateRecipientHandler(evt.target.value)}
             margin="normal"
             variant="outlined"
