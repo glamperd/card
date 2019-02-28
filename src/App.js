@@ -126,6 +126,7 @@ class App extends React.Component {
         deposit: "",
         withdraw: "",
         payment: "",
+        hasRefund: "",
       },
     };
 
@@ -318,7 +319,7 @@ class App extends React.Component {
     const balance = await web3.eth.getBalance(address);
 
     const refunding = localStorage.getItem('refunding')
-    if (refunding && refunding == 'true') {
+    if (refunding) {
       return
     }
 
@@ -406,7 +407,7 @@ class App extends React.Component {
 
   async returnWei(wei) {
     const { address, customWeb3 } = this.state;
-    localStorage.setItem('refunding', true)
+    localStorage.setItem('refunding', wei)
 
     if (!customWeb3) {
       return
@@ -506,6 +507,7 @@ class App extends React.Component {
 
   async checkStatus() {
     const { channelState, runtime } = this.state;
+    const hasRefund = localStorage.getItem('refunding')
     let deposit = null;
     let payment = null;
     let withdraw = null;
@@ -527,7 +529,7 @@ class App extends React.Component {
           withdraw = null;
           payment = null;
       }
-      await this.setState({ status: {deposit, withdraw, payment} });
+      await this.setState({ status: {deposit, withdraw, payment, hasRefund} });
     }
   }
 
@@ -596,11 +598,13 @@ class App extends React.Component {
     let deposit = null;
     let payment = null;
     let withdraw = null;
-    this.setState({status: {deposit, payment, withdraw}})
+    let hasRefund = null;
+    this.setState({status: {deposit, payment, withdraw, hasRefund}})
   }
 
   render() {
     const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState, runtime, } = this.state;
+    console.log('this.state.status', this.state.status)
     const { classes } = this.props;
     return (
       <Router>
