@@ -316,7 +316,6 @@ class App extends React.Component {
     }
     const web3 = new Web3(rpcUrl)
     const balance = await web3.eth.getBalance(address);
-    console.log('balance wallet:', balance.toString())
 
     const refunding = localStorage.getItem('refunding')
     if (refunding && refunding == 'true') {
@@ -348,15 +347,11 @@ class App extends React.Component {
     if (balance !== "0" || tokenBalance !== "0") {
       if (eth.utils.bigNumberify(balance).lte(DEPOSIT_MINIMUM_WEI)) {
         // don't autodeposit anything under the threshold
-        console.log('below min threshold')
         // update the refunding variable before returning
-        localStorage.removeItem("refunding")
-        localStorage.removeItem("maxBalanceAfterRefund")
         return;
       }
       // only proceed with deposit request if you can deposit
       if (!connextState || !connextState.runtime.canDeposit || exchangeRate == "0.00") {
-        console.log("Cannot deposit");
         return;
       }
 
@@ -384,7 +379,6 @@ class App extends React.Component {
       };
 
       if (channelDeposit.amountWei === "0" && channelDeposit.amountToken === "0") {
-        console.log(`Actual deposit is 0, not depositing.`);
         return;
       }
 
