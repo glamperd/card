@@ -7,7 +7,7 @@ import SendIcon from "@material-ui/icons/Send";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
 import Modal from "@material-ui/core/Modal";
 import Button from "@material-ui/core/Button";
-import { Fab, Grid, withStyles, Snackbar } from "@material-ui/core";
+import { Fab, Grid, withStyles } from "@material-ui/core";
 import { Link } from 'react-router-dom'
 
 const styles = {}
