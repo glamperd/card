@@ -57,7 +57,7 @@ class PayCard extends Component {
       scan: false,
       displayVal: this.props.scanArgs.amount ? this.props.scanArgs.amount : "0",
       showReceipt: false
-    };
+      };
   }
 
   async componentDidMount() {
@@ -127,12 +127,12 @@ class PayCard extends Component {
       secret: connext.generateSecret()
     };
 
-    console.log(`Updated paymentVal: ${JSON.stringify(payment, null, 2)}`);
-
     const updatedPaymentVal = {
       ...paymentVal,
       payments: [payment]
     };
+
+    console.log(`Updated paymentVal: ${JSON.stringify(updatedPaymentVal, null, 2)}`);
 
     this.setState({
       paymentVal: updatedPaymentVal
@@ -178,12 +178,12 @@ class PayCard extends Component {
 
     // otherwise make payment
     if (
-      Number(this.state.paymentVal.payments[0].amount.amountToken) <= Number(channelState.balanceTokenUser) &&
-      Number(this.state.paymentVal.payments[0].amount.amountWei) <= Number(channelState.balanceWeiUser)
+      Number(paymentVal.payments[0].amount.amountToken) <= Number(channelState.balanceTokenUser) &&
+      Number(paymentVal.payments[0].amount.amountWei) <= Number(channelState.balanceWeiUser)
     ) {
-      if (web3.utils.isAddress(this.state.paymentVal.payments[0].recipient)) {
+      if (web3.utils.isAddress(paymentVal.payments[0].recipient) && recipient !== emptyAddress) {
         try {
-          let paymentRes = await connext.buy(this.state.paymentVal);
+          let paymentRes = await connext.buy(paymentVal);
           console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
           if (paymentVal.payments[0].type === "PT_LINK") {
             const secret = paymentVal.payments[0].secret;
