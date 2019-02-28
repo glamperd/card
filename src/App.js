@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import "./App.css";
 import { setWallet } from "./utils/actions.js";
 import { createStore } from "redux";
@@ -10,7 +10,7 @@ import ProviderOptions from "./utils/ProviderOptions.ts";
 import clientProvider from "./utils/web3/clientProvider.ts";
 import { createWalletFromMnemonic } from "./walletGen";
 import axios from "axios";
-import { Paper, withStyles } from "@material-ui/core";
+import { Paper, withStyles, Button } from "@material-ui/core";
 import AppBarComponent from "./components/AppBar";
 import SettingsCard from "./components/settingsCard";
 import ReceiveCard from "./components/receiveCard";
@@ -412,7 +412,7 @@ class App extends React.Component {
   }
 
   async collateralHandler() {
-    console.log(`Requesting Collateral`);
+    console.log(`Requesting Collateral`, this.state.connext);
     let collateralRes = await this.state.connext.requestCollateral();
     console.log(`Collateral result: ${JSON.stringify(collateralRes, null, 2)}`);
   }
@@ -421,55 +421,60 @@ class App extends React.Component {
     const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState } = this.state;
     const { classes } = this.props;
     return (
-      <Router>
-        <div className={classes.app} container spacing={24} direction="row" justify="center" alignItems="center">
-          <Paper className={classes.paper}>
-            <AppBarComponent address={address} />
-            <Route
-              exact
-              path="/"
-              render={props => (
-                <Home {...props} address={address} channelState={channelState} publicUrl={publicUrl} scanURL={this.scanURL.bind(this)} />
-              )}
-            />
-            <Route
-              path="/deposit"
-              render={props => <DepositCard {...props} address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} exchangeRate={exchangeRate} />}
-            />
-            <Route path="/settings" render={props => <SettingsCard {...props} networkHandler={this.networkHandler} />} />
-            <Route path="/receive" render={props => <ReceiveCard {...props} address={address} channelState={channelState} publicUrl={publicUrl} />} />
-            <Route
-              path="/send"
-              render={props => (
-                <SendCard
-                  {...props}
-                  web3={customWeb3}
-                  connext={connext}
-                  address={address}
-                  channelState={channelState}
-                  publicUrl={publicUrl}
-                  scanArgs={sendScanArgs}
-                />
-              )}
-            />
-            <Route
-              path="/cashout"
-              render={props => (
-                <CashOutCard
-                  {...props}
-                  address={address}
-                  channelState={channelState}
-                  publicUrl={publicUrl}
-                  exchangeRate={exchangeRate}
-                  web3={customWeb3}
-                  connext={connext}
-                  connextState={connextState}
-                />
-              )}
-            />
-          </Paper>
-        </div>
-      </Router>
+      <Fragment>
+        <Router>
+          <div className={classes.app} container spacing={24} direction="row" justify="center" alignItems="center">
+            <Paper className={classes.paper}>
+              <AppBarComponent address={address} />
+              <Route
+                exact
+                path="/"
+                render={props => (
+                  <Home {...props} address={address} channelState={channelState} publicUrl={publicUrl} scanURL={this.scanURL.bind(this)} />
+                )}
+              />
+              <Route
+                path="/deposit"
+                render={props => <DepositCard {...props} address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} exchangeRate={exchangeRate} />}
+              />
+              <Route path="/settings" render={props => <SettingsCard {...props} networkHandler={this.networkHandler} />} />
+              <Route path="/receive" render={props => <ReceiveCard {...props} address={address} channelState={channelState} publicUrl={publicUrl} />} />
+              <Route
+                path="/send"
+                render={props => (
+                  <SendCard
+                    {...props}
+                    web3={customWeb3}
+                    connext={connext}
+                    address={address}
+                    channelState={channelState}
+                    publicUrl={publicUrl}
+                    scanArgs={sendScanArgs}
+                  />
+                )}
+              />
+              <Route
+                path="/cashout"
+                render={props => (
+                  <CashOutCard
+                    {...props}
+                    address={address}
+                    channelState={channelState}
+                    publicUrl={publicUrl}
+                    exchangeRate={exchangeRate}
+                    web3={customWeb3}
+                    connext={connext}
+                    connextState={connextState}
+                  />
+                )}
+              />
+              <Button variant="outlined" onClick={() => { this.collateralHandler(); }} >
+                Collateralize Channel
+              </Button>
+            </Paper>
+          </div>
+        </Router>
+      </Fragment>
     );
   }
 }

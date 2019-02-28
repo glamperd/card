@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import Card from "@material-ui/core/Card";
-import { Grid, Typography} from "@material-ui/core";
+import { Grid, Typography } from "@material-ui/core";
 import { withStyles } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
 import CircularProgress from "@material-ui/core/CircularProgress";
@@ -45,6 +45,7 @@ class ChannelCard extends Component {
 
   async checkState() {
     const { channelState } = this.props;
+    //console.log('checkState ', channelState);
     try{
       if (channelState.pendingDepositWeiUser !== "0" || channelState.pendingDepositTokenUser !== "0" ) {
         console.log(``)
@@ -71,22 +72,24 @@ class ChannelCard extends Component {
       }
     }, 1000);
   };
-  
+
 
 
   componentDidMount = async() => {
     this.poller();
   }
 
-
   render() {
     const { classes, channelState } = this.props
     const substr = channelState ? getDollarSubstring(channelState.balanceTokenUser) : ["0","00"]
+    const userWei = channelState ? getDollarSubstring(channelState.balanceWeiUser) : ["0","00"]
+    const hubToken = channelState ? getDollarSubstring(channelState.balanceTokenHub) : ["0","00"]
+    const hubWei = channelState ? getDollarSubstring(channelState.balanceWeiHub) : ["0","00"]
     return (
       <Card className={classes.card} container>
       <Grid container direction="column" alignItems="center">
       <Grid item alignItems="center">
-        {this.state.depositDetected ? 
+        {this.state.depositDetected ?
                 (
                   <Grid container direction="column" alignItems="center" style={{marginBottom:"10%"}}>
                   <Typography variant="h5" className={classes.pending}>Deposit Pending</Typography>
@@ -103,7 +106,7 @@ class ChannelCard extends Component {
        <Grid item>
         <span>
           <Typography inline={true} variant="h5" className={classes.row}>
-            {"$ "}
+            {"GZE "}
           </Typography>
           <Typography inline={true} variant="h1" className={classes.row}>
             <span>{substr[0]}</span>
@@ -112,6 +115,21 @@ class ChannelCard extends Component {
             <span>{"." + substr[1].substring(0, 2)}</span>
           </Typography>
         </span>
+        </Grid>
+        <Grid item>
+            <span>
+            {'User Eth:' + userWei[0] + '.' + userWei[1].substring(0, 2)}
+            </span>
+        </Grid>
+        <Grid item>
+            <span>
+            {'Hub Eth:' + hubWei[0] + '.' + hubWei[1].substring(0, 2)}
+            </span>
+        </Grid>
+        <Grid item>
+            <span>
+            {'Hub GZE:' + hubToken[0] + '.' + hubToken[1].substring(0, 2)}
+            </span>
         </Grid>
         </Grid>
       </Card>
