@@ -407,7 +407,7 @@ class App extends React.Component {
 
   async returnWei(wei) {
     const { address, customWeb3 } = this.state;
-    localStorage.setItem('refunding', wei)
+    localStorage.setItem('refunding', Web3.utils.fromWei(wei, 'finney'))
 
     if (!customWeb3) {
       return
@@ -436,6 +436,7 @@ class App extends React.Component {
       console.log('Browser wallet overfunded, but couldnt find most recent tx in last 100 blocks.')
       return
     }
+    localStorage.setItem('refunding', Web3.utils.fromWei(wei, 'finney') + ',' + mostRecent.from)
     console.log(`Refunding ${wei} to ${mostRecent.from} from ${address}`)
     const origBalance = new BigNumber(await customWeb3.eth.getBalance(address))
     const newMax = origBalance.minus(new BigNumber(wei))
@@ -507,7 +508,8 @@ class App extends React.Component {
 
   async checkStatus() {
     const { channelState, runtime } = this.state;
-    const hasRefund = localStorage.getItem('refunding')
+    const refundStr = localStorage.getItem('refunding')
+    const hasRefund = !!refundStr ? refundStr.split(',') : null
     let deposit = null;
     let payment = null;
     let withdraw = null;
@@ -529,8 +531,8 @@ class App extends React.Component {
           withdraw = null;
           payment = null;
       }
-      await this.setState({ status: {deposit, withdraw, payment, hasRefund} });
     }
+    this.setState({ status: {deposit, withdraw, payment, hasRefund} });
   }
 
   // ************************************************* //
