@@ -324,9 +324,8 @@ class App extends React.Component {
     }
 
     const maxBalanceAfterRefund = localStorage.getItem("maxBalanceAfterRefund")
-    console.log('maxBalanceAfterRefund:', maxBalanceAfterRefund)
     if (maxBalanceAfterRefund && new BigNumber(balance).gte(new BigNumber(maxBalanceAfterRefund))) {
-      console.log('wallet balance hasnt changed since submitting tx, returning')
+      // wallet balance hasnt changed since submitting tx, returning
       return
     } else {
       // tx has been submitted, delete the maxWalletBalance from storage
@@ -386,7 +385,6 @@ class App extends React.Component {
       // if amount to deposit into channel is over the channel max
       // then return excess deposit to the sending account
       const weiToReturn = this.calculateWeiToRefund(channelDeposit.amountWei, exchangeRate)
-      console.log('wei to return to user:', weiToReturn.toString())
 
       // return wei to sender
       if (!weiToReturn.isZero()) {
@@ -440,7 +438,6 @@ class App extends React.Component {
     console.log(`Refunding ${wei} to ${mostRecent.from} from ${address}`)
     const origBalance = new BigNumber(await customWeb3.eth.getBalance(address))
     const newMax = origBalance.minus(new BigNumber(wei))
-    console.log('maxBalanceAfterRefund:', newMax.toString())
 
     try {
       const res = await customWeb3.eth.sendTransaction({
@@ -449,14 +446,15 @@ class App extends React.Component {
         value: wei,
       })
       const tx = await customWeb3.eth.getTransaction(res.transactionHash)
-      console.log('tx', tx)
+      console.log('refundTx', tx)
       // calculate expected balance after transaction and set in local
       // storage. once the tx is submitted, the wallet balance should
       // always be lower than the expected balance, because of added
       // gas costs
       localStorage.setItem('maxBalanceAfterRefund', newMax.toString())
     } catch (e) {
-      console.log('Error with transaction:', e.message)
+      console.log('Error with refund transaction:', e.message)
+      localStorage.removeItem('maxBalanceAfterRefund')
     }
     localStorage.removeItem('refunding')
     await this.setWeb3(localStorage.getItem('rpc'))
@@ -480,8 +478,6 @@ class App extends React.Component {
 
     // see notes in src about tokensSold for "calculateExchange"
     const { weiReceived, tokensSold } = calculateExchange(convertExchange('bn', maxWeiExchanged))
-
-    console.log('tokens sold by hub', tokensSold.toString())
 
     let weiToRefund = new BigNumber(wei).minus(new BigNumber(weiReceived.toString()))
     
@@ -606,7 +602,6 @@ class App extends React.Component {
 
   render() {
     const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState, runtime, } = this.state;
-    console.log('this.state.status', this.state.status)
     const { classes } = this.props;
     return (
       <Router>
