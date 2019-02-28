@@ -41,10 +41,10 @@ class RedeemCard extends Component {
       // TODO: test what happens if not routed with isConfirm
       this.setState({ isConfirm: location.state.isConfirm });
     }
-  }
 
-  async componentWillReceiveProps() {
-    await this.redeemPayment();
+    setInterval(async () => {
+      await this.redeemPayment();
+    }, 1000);
   }
 
   generateQrUrl(secret) {
@@ -74,7 +74,11 @@ class RedeemCard extends Component {
     // user is not payor, can redeem payment
     try {
       if (!purchaseId && retryCount < 5) {
+        console.log('Redeeming linked payment with secret', secret)
         const updated = await connext.redeem(secret);
+        if (updated.purchaseId == null) {
+          this.setState({ retryCount: retryCount + 1})
+        }
         this.setState({ purchaseId: updated.purchaseId });
       }
       if (retryCount >= 5) {
@@ -82,7 +86,8 @@ class RedeemCard extends Component {
       }
     } catch (e) {
       this.setState({ retryCount: retryCount + 1 });
-      console.log("Error redeeming payment:", e.message);
+      console.log('retryCount', retryCount + 1)
+      console.log("Error redeeming payment:", e.body);
     }
   }
 
