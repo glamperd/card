@@ -67,7 +67,18 @@ class Home extends React.Component {
               id="qrscan"
               open={this.state.modals.scan}
               onClose={() => this.setState({ modals: { ...modals, scan: false } })}
-              style={{ width: "full", height: "full" }}
+              style={{
+                justifyContent: "center", 
+                alignItems: "center", 
+                textAlign: "center", 
+                position: "absolute", 
+                top: "10%", 
+                width: "375px",
+                marginLeft: "auto",
+                marginRight: "auto",
+                left: "0",
+                right: "0",
+              }}
             >
               <QRScan handleResult={this.scanQRCode} history={this.props.history} />
             </Modal>
