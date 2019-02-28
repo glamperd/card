@@ -172,7 +172,6 @@ class App extends React.Component {
       await createWallet(this.state.web3);
       // Then refresh the page
       window.location.reload();
-      localStorage.setItem("collateralize", true)
     }
   }
 
@@ -295,7 +294,6 @@ class App extends React.Component {
     setInterval(async () => {
       await this.autoDeposit();
       await this.autoSwap();
-      await this.autoCollateral();
     }, 1000);
 
     setInterval(async() => {
@@ -358,16 +356,6 @@ class App extends React.Component {
     if (channelState && weiBalance.gt(eth.utils.bigNumberify("0")) && tokenBalance.lte(HUB_EXCHANGE_CEILING)) {
       console.log(`Exchanging ${channelState.balanceWeiUser} wei`);
       await this.state.connext.exchange(channelState.balanceWeiUser, "wei");
-    }
-  }
-
-  async autoCollateral() {
-    const { connext } = this.state
-    let bool = localStorage.getItem("collateralize")
-    if ( bool === "true") {
-      console.log("Collateralized channel, res:")
-      await connext.requestCollateral()
-      localStorage.setItem("collateralize", false)
     }
   }
 
