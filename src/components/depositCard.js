@@ -4,12 +4,8 @@ import DepositIcon from "@material-ui/icons/AttachMoney";
 import Tooltip from "@material-ui/core/Tooltip";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import Typography from "@material-ui/core/Typography";
-import CopyIcon from "@material-ui/icons/FileCopy";
 import Grid from "@material-ui/core/Grid";
 import QRGenerate from "./qrGenerate";
-import IconButton from "@material-ui/core/IconButton";
-import HighlightOffIcon from "@material-ui/icons/HighlightOff";
-import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core";
 import Snackbar from "./snackBar";
 
