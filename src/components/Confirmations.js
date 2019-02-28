@@ -93,13 +93,28 @@ const styles2 = theme => ({
 
 class Confirmations extends Component {
   render() {
-    const { deposit, withdraw } = this.props.status;
+    const { deposit, withdraw, hasRefund } = this.props.status;
     return (
       <div>
         <Snackbar
           anchorOrigin={{
             vertical: 'top',
             horizontal: 'center',
+          }}
+          open={!!hasRefund}
+          autoHideDuration={4000}
+          onClose={() => this.props.closeConfirmations()}
+        >
+          <MySnackbarContentWrapper
+            onClose={this.handleClose}
+            variant="warning"
+            message={`Refunding ${!!hasRefund && hasRefund[0] ? hasRefund[0] : ""} finney to ${!!hasRefund && hasRefund[1] ? hasRefund[1].substr(0, 5).toLowerCase() + '...' : ""}.`}
+          />
+        </Snackbar>
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'middle',
           }}
           open={deposit === "PENDING"}
           autoHideDuration={30000}
