@@ -114,7 +114,7 @@ class Confirmations extends Component {
         <Snackbar
           anchorOrigin={{
             vertical: 'top',
-            horizontal: 'middle',
+            horizontal: 'center',
           }}
           open={deposit === "PENDING"}
           autoHideDuration={30000}
