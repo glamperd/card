@@ -57,7 +57,7 @@ class RedeemCard extends Component {
 
     setInterval(async () => {
       await this.redeemPayment();
-    }, 2500);
+    }, 2000);
   }
 
   generateQrUrl(secret, amount) {
@@ -81,13 +81,15 @@ class RedeemCard extends Component {
 
     // make sure you don't update the timer on a linked payment confirmation
     if (isConfirm) {
-      console.log("User is creator of linked payment, not automatically redeeming.");
       return;
+    }
+
+    if (purchaseId) {
+      return
     }
 
     // return if the payment has already been redeemed
     if (previouslyRedeemed) {
-      console.log("Link has been previously redeemed.");
       this.setState({ purchaseId: "failed", sendError: true, showReceipt: true });
       return
     }
@@ -100,16 +102,8 @@ class RedeemCard extends Component {
     }
     // check if the channel has collateral, otherwise display loading
     if (new BigNumber(channelState.balanceTokenHub).lt(new BigNumber(amount.amountToken))) {
-      // channel does not have collateral, hit redeem once to trigger auto
-      // collateral, return and try again
-      if (!requestedCollateral) {
-        try {
-          const updated = await connext.redeem(secret);
-        } catch (e) {
-          console.log('Hub is collateralizing')
-          this.setState({ requestedCollateral: true })
-        }
-      }
+      // channel does not have collateral
+      await connext.requestCollateral()
       // if you already requested collateral, return
       return
     }
