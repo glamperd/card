@@ -303,6 +303,9 @@ class App extends React.Component {
 
     setInterval(async () => {
       await this.autoDeposit();
+    }, 5000);
+
+    setInterval(async () => {
       await this.autoSwap();
     }, 1000);
 
