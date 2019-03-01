@@ -88,7 +88,7 @@ class RedeemCard extends Component {
         this.setState({ purchaseId: "failed", sendError: true, showReceipt: true });
       }
     } catch (e) {
-      if (e.message.indexOf("Payment has been redeemed") != -1) {
+      if (e.message.indexOf("Payment has been redeemed") !== -1) {
         this.setState({ retryCount: 5, previouslyRedeemed: true })
         return
       }
@@ -126,8 +126,8 @@ class RedeemCard extends Component {
         <Grid item xs={12}>
           <Typography noWrap variant="h5">
             {isConfirm && <span>{"Scan to Redeem"}</span>}
-            {purchaseId == "failed" && <span>{"Uh Oh! Payment Failed"}</span>}
-            {purchaseId && purchaseId != "failed" && <span>{"Payment Redeemed!"}</span>}
+            {purchaseId === "failed" && <span>{"Uh Oh! Payment Failed"}</span>}
+            {purchaseId && purchaseId !== "failed" && <span>{"Payment Redeemed!"}</span>}
             {!purchaseId && !isConfirm && <span>{"Redeeming Payment..."}</span>}
           </Typography>
         </Grid>
@@ -155,8 +155,8 @@ class RedeemCard extends Component {
             paddingBottom: "15%"
           }}
         >
-          {purchaseId == "failed" && <ErrorIcon className={classes.icon} />}
-          {purchaseId && purchaseId != "failed" && <DoneIcon className={classes.icon} />}
+          {purchaseId === "failed" && <ErrorIcon className={classes.icon} />}
+          {purchaseId && purchaseId !== "failed" && <DoneIcon className={classes.icon} />}
           {!purchaseId && !isConfirm && <CircularProgress />}
         </Grid>
 
