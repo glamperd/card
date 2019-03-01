@@ -108,7 +108,7 @@ class Confirmations extends Component {
           <MySnackbarContentWrapper
             onClose={this.handleClose}
             variant="warning"
-            message={`Refunding ${!!hasRefund && hasRefund[0] ? hasRefund[0] : ""} finney to ${!!hasRefund && hasRefund[1] ? hasRefund[1].substr(0, 5).toLowerCase() + '...' : ""}.`}
+            message={`Refunding ${!!hasRefund && hasRefund[0] ? hasRefund[0].substr(0, 6) : ""} finney to ${!!hasRefund && hasRefund[1] ? hasRefund[1].substr(0, 5).toLowerCase() + '...' : ""}.`}
           />
         </Snackbar>
         <Snackbar
