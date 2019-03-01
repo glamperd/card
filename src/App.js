@@ -17,6 +17,7 @@ import ReceiveCard from "./components/receiveCard";
 import SendCard from "./components/sendCard";
 import CashOutCard from "./components/cashOutCard";
 import { createWallet } from "./walletGen";
+import RedeemCard from "./components/redeemCard";
 import Confirmations from './components/Confirmations';
 import BigNumber from "bignumber.js";
 import { calculateExchange } from 'connext/dist/StateGenerator.js'
@@ -629,6 +630,18 @@ class App extends React.Component {
                   publicUrl={publicUrl}
                   scanArgs={sendScanArgs}
                 />
+              )}
+            />
+            <Route
+              path="/redeem"
+              render={props => (
+                <RedeemCard 
+                  {...props} 
+                  publicUrl={publicUrl}
+                  connext={connext}
+                  channelState={channelState}
+                  connextState={connextState}
+                  />
               )}
             />
             <Route
