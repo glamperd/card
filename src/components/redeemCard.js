@@ -9,6 +9,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import QRGenerate from "./qrGenerate";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
+import { BigNumber } from "ethers/utils";
 
 const queryString = require("query-string");
 
@@ -27,11 +28,11 @@ class RedeemCard extends Component {
       secret: null,
       isConfirm: false,
       purchaseId: null,
-      retryCount: 0,
       sendError: false,
       showReceipt: false,
       previouslyRedeemed: false,
       amount: null,
+      requestedCollateral: false,
     };
   }
 
@@ -39,7 +40,11 @@ class RedeemCard extends Component {
     const { location } = this.props;
     const query = queryString.parse(location.search);
     // uncondonditionally set secret from query
-    this.setState({ secret: query.secret });
+    console.log('query:', query)
+    this.setState({ secret: query.secret, amount: { 
+      amountToken: query.amountToken,
+      amountWei: query.amountWei,
+    } });
 
     // set state vars if they exist
     if (location.state && location.state.isConfirm) {
@@ -47,19 +52,22 @@ class RedeemCard extends Component {
       this.setState({ isConfirm: location.state.isConfirm });
     }
 
+    // set time component mounted
+    this.setState({ redeemStarted: Date.now() })
+
     setInterval(async () => {
       await this.redeemPayment();
     }, 2500);
   }
 
-  generateQrUrl(secret) {
+  generateQrUrl(secret, amount) {
     const { publicUrl } = this.props;
-    const url = `${publicUrl}/redeem?secret=${secret ? secret : ""}`;
+    const url = `${publicUrl}/redeem?secret=${secret ? secret : ""}&amountToken=${amount ? amount.amountToken : "0"}&amountWei=${amount ? amount.amountWei : "0"}`;
     return url;
   }
 
   async redeemPayment() {
-    const { secret, isConfirm, purchaseId, retryCount } = this.state;
+    const { secret, isConfirm, purchaseId, redeemStarted, amount, previouslyRedeemed, requestedCollateral } = this.state;
     const { connext, channelState, connextState } = this.props;
     if (!connext || !channelState || !connextState) {
       console.log("Connext or channel object not detected");
@@ -71,31 +79,60 @@ class RedeemCard extends Component {
       return;
     }
 
+    // make sure you don't update the timer on a linked payment confirmation
     if (isConfirm) {
       console.log("User is creator of linked payment, not automatically redeeming.");
       return;
     }
 
-    // user is not payor, can redeem payment
+    // return if the payment has already been redeemed
+    if (previouslyRedeemed) {
+      console.log("Link has been previously redeemed.");
+      this.setState({ purchaseId: "failed", sendError: true, showReceipt: true });
+      return
+    }
+
+    // check if the time has already elapsed based on time mounted
+    if (Date.now() - redeemStarted > 300 * 1000) {
+      // set the purchase to failed, show send error and receipt
+      this.setState({ purchaseId: "failed", sendError: true, showReceipt: true });
+      return
+    }
+    // check if the channel has collateral, otherwise display loading
+    if (new BigNumber(channelState.balanceTokenHub).lt(new BigNumber(amount.amountToken))) {
+      // channel does not have collateral, hit redeem once to trigger auto
+      // collateral, return and try again
+      if (!requestedCollateral) {
+        try {
+          const updated = await connext.redeem(secret);
+        } catch (e) {
+          console.log('Hub is collateralizing')
+          this.setState({ requestedCollateral: true })
+        }
+      }
+      // if you already requested collateral, return
+      return
+    }
+
+
+    // user is not payor, channel has collateral, can try to redeem payment
     try {
-      if (!purchaseId && retryCount < 5) {
+      if (!purchaseId) {
         console.log('Redeeming linked payment with secret', secret)
         const updated = await connext.redeem(secret);
-        if (updated.purchaseId == null) {
-          this.setState({ retryCount: retryCount + 1})
+        // make sure hub isnt silently failing by returning null purchase id
+        // as it processes collateral
+        if (!updated.purchaseId || !updated.amount) {
+          return
         }
+
         this.setState({ purchaseId: updated.purchaseId, amount: updated.amount, showReceipt: true });
-      }
-      if (retryCount >= 5) {
-        this.setState({ purchaseId: "failed", sendError: true, showReceipt: true });
       }
     } catch (e) {
       if (e.message.indexOf("Payment has been redeemed") !== -1) {
-        this.setState({ retryCount: 5, previouslyRedeemed: true })
+        this.setState({ previouslyRedeemed: true })
         return
       }
-      this.setState({ retryCount: retryCount + 1 });
-      console.log('retryCount', retryCount + 1)
     }
   }
 
@@ -103,7 +140,7 @@ class RedeemCard extends Component {
     let { secret, isConfirm, purchaseId, sendError, showReceipt, previouslyRedeemed, amount } = this.state;
 
     const { classes } = this.props;
-    const url = this.generateQrUrl(secret);
+    const url = this.generateQrUrl(secret, amount);
 
     // if you are not the sender, AND the purchase ID is not set
     // render a loading sign, then a check mark once the purchaseID
