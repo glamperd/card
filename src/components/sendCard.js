@@ -182,10 +182,11 @@ class PayCard extends Component {
       console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
       if (paymentVal.payments[0].type === "PT_LINK") {
         const secret = paymentVal.payments[0].secret;
+        const amount = paymentVal.payments[0].amount;
         this.props.history.push({
           pathname: "/redeem",
-          search: `?secret=${secret}`,
-          state: { isConfirm: true, secret }
+          search: `?secret=${secret}&amountToken=${amount.amountToken}&amountWei=${amount.amountWei}`,
+          state: { isConfirm: true, secret, amount }
         });
       }
       this.setState({ showReceipt: true });
