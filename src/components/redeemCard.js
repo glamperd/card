@@ -8,6 +8,7 @@ import Typography from "@material-ui/core/Typography";
 import Tooltip from "@material-ui/core/Tooltip";
 import QRGenerate from "./qrGenerate";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import { getDollarSubstring } from "../utils/getDollarSubstring";
 
 const queryString = require("query-string");
 
@@ -30,6 +31,7 @@ class RedeemCard extends Component {
       sendError: false,
       showReceipt: false,
       previouslyRedeemed: false,
+      amount: null,
     };
   }
 
@@ -47,7 +49,7 @@ class RedeemCard extends Component {
 
     setInterval(async () => {
       await this.redeemPayment();
-    }, 1000);
+    }, 2500);
   }
 
   generateQrUrl(secret) {
@@ -82,7 +84,7 @@ class RedeemCard extends Component {
         if (updated.purchaseId == null) {
           this.setState({ retryCount: retryCount + 1})
         }
-        this.setState({ purchaseId: updated.purchaseId, showReceipt: true });
+        this.setState({ purchaseId: updated.purchaseId, amount: updated.amount, showReceipt: true });
       }
       if (retryCount >= 5) {
         this.setState({ purchaseId: "failed", sendError: true, showReceipt: true });
@@ -98,7 +100,7 @@ class RedeemCard extends Component {
   }
 
   render() {
-    let { secret, isConfirm, purchaseId, sendError, showReceipt, previouslyRedeemed } = this.state;
+    let { secret, isConfirm, purchaseId, sendError, showReceipt, previouslyRedeemed, amount } = this.state;
 
     const { classes } = this.props;
     const url = this.generateQrUrl(secret);
@@ -233,7 +235,7 @@ class RedeemCard extends Component {
                 </Grid>
                 <Grid item style={{ margin: "1em" }}>
                   <Typography variant="body1" style={{ color: "#0F1012" }}>
-                    Amount: ${this.props.connextState ? this.props.connextState.persistent.channelUpdate.args.amountToken * Math.pow(10, -18) : ""}
+                    Amount: ${amount ? getDollarSubstring(amount.amountToken)[0] + "." + getDollarSubstring(amount.amountToken)[1].substr(0, 2): ""}
                   </Typography>
                 </Grid>
               </Grid>
