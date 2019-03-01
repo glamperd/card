@@ -101,7 +101,7 @@ class RedeemCard extends Component {
       return
     }
     // check if the channel has collateral, otherwise display loading
-    if (new BigNumber(channelState.balanceTokenHub).lt(new BigNumber(amount.amountToken))) {
+    if (new BigNumber(channelState.balanceTokenHub).lt(new BigNumber(amount.amountToken)) && !connextState.runtime.awaitingOnChainTransaction) {
       // channel does not have collateral
       await connext.requestCollateral()
       // if you already requested collateral, return
