@@ -92,7 +92,7 @@ builder:
 	docker build --file ops/builder.dockerfile --tag $(project)_builder:latest .
 	$(log_finish) && touch $(flags)/$@
 
-prod-env: ops/dev.env
+prod-env: ops/prod.env
 	$(log_start)
 	cp -f ops/prod.env .env
 	$(log_finish) && touch $(flags)/$@
