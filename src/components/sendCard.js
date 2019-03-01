@@ -13,8 +13,11 @@ import { getDollarSubstring } from "../utils/getDollarSubstring";
 import { emptyAddress } from "connext/dist/Utils";
 import { convertPayment } from "connext/dist/types";
 import BN from "bn.js";
+import BigNumber from "bignumber.js";
 
 const queryString = require("query-string");
+const eth = require("ethers");
+const LINK_LIMIT = eth.utils.parseEther("10"); // $10 capped linked payments
 
 const styles = theme => ({
   icon: {
@@ -117,6 +120,14 @@ class PayCard extends Component {
   async linkHandler() {
     const { connext } = this.props;
     const { paymentVal } = this.state;
+    this.setState({ balanceError: null });
+
+    // check that the payment is below the payment max
+    const amount = new BigNumber(paymentVal.payments[0].amount.amountToken)
+    if (amount.gt(LINK_LIMIT)) {
+      this.setState({ balanceError: "Linked payments are capped at $10." });
+      return;
+    }
 
     // generate secret, set type, and set
     // recipient to empty address
@@ -233,6 +244,13 @@ class PayCard extends Component {
               </span>
             </Typography>
           </Grid>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography
+            variant="body2"
+          >
+            <span>{"Linked payments are capped at $10."}</span>
+          </Typography>
         </Grid>
         <Grid item xs={12}>
           <TextField
