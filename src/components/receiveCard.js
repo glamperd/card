@@ -34,19 +34,18 @@ class ReceiveCard extends Component {
   }
 
   handleClick = async() => {
-    await this.setState({copied:false});
+    await this.setState({ copied:false });
   }
 
-  async updatePaymentHandler(evt) {
-    const qrUrl = this.generateQrUrl(evt.target.value);
-    this.setState({
-      value: evt.target.value,
-      qrUrl
-    });
-    console.log(`Updated value: ${this.state.value}`);
+  updatePaymentHandler = async (value) => {
+    await this.setState(oldState => {
+      const adjusted = +value * Math.pow(10, 18)
+      const qrUrl = this.generateQrUrl(adjusted);
+      return { ...oldState, value: adjusted }
+    })
   }
 
-  generateQrUrl(value) {
+  generateQrUrl = (value) => {
     const { publicUrl, address } = this.props;
     // function should take a payment value
     // and convert it to the url with
@@ -99,7 +98,7 @@ class ReceiveCard extends Component {
             type="number"
             margin="normal"
             variant="outlined"
-            onChange={evt => this.updatePaymentHandler(evt)}
+            onChange={evt => this.updatePaymentHandler(evt.target.value)}
             error={error != null}
             helperText={error}
           />
