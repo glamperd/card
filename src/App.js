@@ -582,13 +582,19 @@ class App extends React.Component {
     });
   }
 
-  async scanURL(amount, recipient) {
-    this.setState({
-      sendScanArgs: {
-        amount,
-        recipient
-      }
-    });
+  async scanURL(path, args) {
+    switch (path) {
+      case '/send': 
+        this.setState({
+          sendScanArgs: { ...args }
+        });
+      case '/redeem': 
+        this.setState({
+          redeemScanArgs: { ...args }
+        });
+      default: 
+        return
+    }
   }
 
   async closeConfirmations() {
