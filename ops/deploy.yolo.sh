@@ -2,7 +2,7 @@
 set -e
 
 user=ubuntu
-prod_server=card.connext.network
+prod_server=daicard.io
 ssh_key="$HOME/.ssh/connext-aws"
 
 if [[ ! -f "$ssh_key" ]]
