@@ -22,20 +22,40 @@ class Home extends React.Component {
 
   scanQRCode = async (data) => {
     const { publicUrl } = this.props;
-    console.log("PUBLIC URL")
-    console.log(publicUrl)
-
-    data = data.split("/send?");
-    console.log(data[0])
-    if (data[0] === publicUrl) {
-      let temp = data[1].split("&");
-      let amount = temp[0].split("=")[1];
-      let recipient = temp[1].split("=")[1];
-      await this.props.scanURL(amount, recipient)
-      this.props.history.push("/send")
-    } else {
-      console.log("incorrect site");
+    // potential URLs to scan and their params
+    const urls = {
+      "/send?": ["recipient", "amount"],
+      "/redeem?": ["secret", "amountToken", "amountWei"]
     }
+    let args = {}
+    let path = null
+    for (let [url, fields] of Object.entries(urls)) {
+      const strArr = data.split(url)
+      if (strArr.length == 1) {
+        // incorrect entry
+        continue
+      }
+
+      if (strArr[0] != publicUrl) {
+        throw new Error("incorrect site")
+      }
+
+      // add the chosen url to the path scanned
+      path = url + strArr[1]
+
+      // get the args
+      const params = strArr[1].split("&")
+      fields.forEach((field, i) => {
+        args[field] = params[i].split("=")[1]
+      })
+    }
+
+    if (args == {}) {
+      console.log("could not detect params")
+    }
+
+    await this.props.scanURL(path, args)
+    this.props.history.push(path)
     this.setState({
       modals: { scan: false }
     });
