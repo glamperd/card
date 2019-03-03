@@ -155,6 +155,14 @@ class PayCard extends Component {
   }
 
   async paymentHandler() {
+    // // check if the recipient needs collateral
+    // const needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment))
+    // if (needsCollateral) {
+    //   // check the payment amount here, and below
+    //   // otherwise 
+    // }
+
+    // otherwise make payment
     await this._paymentHandler(this.state.paymentVal);
   }
 
@@ -170,7 +178,6 @@ class PayCard extends Component {
     if (payment.amountToken.gt(new BN(channelState.balanceTokenUser))) {
       balanceError = "Insufficient balance in channel";
     }
-
     if (payment.amountToken.isZero()) {
       balanceError = "Please enter a payment amount above 0";
     }
@@ -185,6 +192,26 @@ class PayCard extends Component {
     if (balanceError || addressError) {
       this.setState({ balanceError, addressError });
       return;
+    }
+
+    // check if the recipient needs collateral
+    let needsCollateral = await connext.needsCollateral(recipient, convertPayment('str', payment))
+    // needs collateral can indicate that the recipient does
+    // not have a channel, or that it does not have current funds
+    // in either case, you need to send a failed payment
+    // to begin auto collateralization process
+    if (needsCollateral && recipient != emptyAddress) {
+      // before making payment, recipient needs collateral
+      // begin autocollateralization via failed hub
+      // and wait for collateral
+      try {
+        await connext.buy(paymentVal)
+      } catch (e) {}
+      while (needsCollateral) {
+        // sleep for one second, then reset request collateral
+        setTimeout(() => {}, 1000)
+        needsCollateral = await connext.needsCollateral(recipient, convertPayment('str', payment))
+      }
     }
 
     // otherwise make payment
@@ -202,7 +229,7 @@ class PayCard extends Component {
       }
       this.setState({ showReceipt: true });
     } catch (e) {
-      console.log("SEND ERROR, SETTING");
+      console.log("Error sending payment:", e);
       this.setState({ sendError: true, showReceipt: true });
     }
   }
@@ -210,7 +237,6 @@ class PayCard extends Component {
   render() {
     const { classes, channelState } = this.props;
     const { sendError, scan } = this.state;
-    console.log("scan: ", scan);
     return (
       <Grid
         container
