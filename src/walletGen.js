@@ -6,7 +6,11 @@ const hdkey = require('ethereumjs-wallet/hdkey')
 export async function createWallet(web3) {
   console.log("Creating new random wallet");
   const mnemonic = bip39.generateMnemonic()
-  const wallet = await hdkey.fromMasterSeed(mnemonic).getWallet()
+  const seed = bip39.mnemonicToSeed(mnemonic)
+  const wallet = await hdkey
+    .fromMasterSeed(seed)
+    .derivePath("m/44'/60'/0'/0/0")
+    .getWallet();
   // const wallet = await web3.eth.accounts.create()
   localStorage.setItem("delegateSigner", wallet.getAddressString())
   localStorage.setItem("mnemonic", mnemonic);
@@ -38,7 +42,11 @@ export async function createWallet(web3) {
 export async function createWalletFromMnemonic(mnemonic) {
   let wallet;
   try{
-    wallet = await hdkey.fromMasterSeed(mnemonic).getWallet()
+    const seed = bip39.mnemonicToSeed(mnemonic)
+    wallet = await hdkey
+    .fromMasterSeed(seed)
+    .derivePath("m/44'/60'/0'/0/0")
+    .getWallet();
     console.log(`Found wallet from mnemonic`)
     localStorage.setItem("delegateSigner", wallet.getAddressString())
     localStorage.setItem("mnemonic", mnemonic);
