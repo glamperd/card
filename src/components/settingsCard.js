@@ -9,7 +9,8 @@ import {
   TextField,
   InputAdornment,
   withStyles,
-  Modal
+  Modal,
+  CircularProgress
 } from "@material-ui/core";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import CopyIcon from "@material-ui/icons/FileCopy";
@@ -62,13 +63,31 @@ class SettingsCard extends Component {
   }
 
   generateNewAddress = async () => {
-    // NOTE: DelegateSigner is always recoveredwhic from browser storage.
-    //       It is ONLY set to state from within app on load.
+    this.setState({isBurning: true})
+    try{
+      await this.props.connext.withdraw({
+        withdrawalWeiUser: "0",
+        tokensToSell: "0",
+        withdrawalTokenUser: "0",
+        weiToSell: "0",
+        recipient: this.props.address,
+        exchangeRate: this.props.exchangeRate
+      })
+    } catch (e) {console.log(e)}
     await createWallet(this.state.web3);
-    localStorage.setItem("collateralize", true)
-    // Then refresh the page
-    this.props.history.push("/")
-    window.location.reload();
+    this.burnRefreshPoller()
+  }
+
+  burnRefreshPoller = async () => {
+    setInterval(async () => {
+      if(this.state.isBurning) {
+        if(this.props.runtime.syncResultsFromHub[0] && this.props.runtime.syncResultsFromHub[0].update.reason == "ConfirmPending"){
+          // Then refresh the page
+          this.props.history.push("/")
+          window.location.reload();
+        }
+      }
+    }, 400);
   }
 
   async recoverAddressFromMnemonic() {
@@ -259,38 +278,49 @@ class SettingsCard extends Component {
                   Are you sure you want to burn your Card? 
                 </Typography>
               </Grid>
-              <Grid item style={{margin: "1em"}}>
-                <Typography variant="body1" style={{color:"#F22424"}}>
-                  You will lose access to your funds unless you save your backup phrase!
-                </Typography>
-              </Grid>
-              <Grid item style={{margin: "1em"}}>
-                <Button
-                  style={{
-                    background: "#F22424",
-                    border: "1px solid #F22424",
-                    color: "#FFF",
-                  }}
-                  variant="contained"
-                  size="small"
-                  onClick={() => this.generateNewAddress()}
-                >
-                Burn
-                </Button>
-                <Button
-                  style={{
-                    background: "#FFF",
-                    border: "1px solid #F22424",
-                    color: "#F22424",
-                    marginLeft: "5%",
-                  }}
-                  variant="outlined"
-                  size="small"
-                  onClick={() => this.setState({ showWarning: false })}
-                >
-                Cancel
-                </Button>
-              </Grid>
+              {this.state.isBurning ? (
+                <Grid item style={{margin: "1em"}}>
+                  <Typography variant="body1">
+                    Burning. Please do not refresh or navigate away. This page with refresh automatically when it's done.
+                  </Typography>
+                  <CircularProgress style={{marginTop: "1em"}}/>
+                </Grid>
+              ): (
+                <div>
+                  <Grid item style={{margin: "1em"}}>
+                  <Typography variant="body1" style={{color:"#F22424"}}>
+                    You will lose access to your funds unless you save your backup phrase!
+                  </Typography>
+                  </Grid>
+                  <Grid item style={{margin: "1em"}}>
+                    <Button
+                      style={{
+                        background: "#F22424",
+                        border: "1px solid #F22424",
+                        color: "#FFF",
+                      }}
+                      variant="contained"
+                      size="small"
+                      onClick={() => this.generateNewAddress()}
+                    >
+                    Burn
+                    </Button>
+                    <Button
+                      style={{
+                        background: "#FFF",
+                        border: "1px solid #F22424",
+                        color: "#F22424",
+                        marginLeft: "5%",
+                      }}
+                      variant="outlined"
+                      size="small"
+                      onClick={() => this.setState({ showWarning: false })}
+                    >
+                    Cancel
+                    </Button>
+                  </Grid>
+                </div>
+              )}
             </Grid>
           </Modal>
         </Grid>

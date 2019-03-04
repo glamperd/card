@@ -625,7 +625,7 @@ class App extends React.Component {
               path="/deposit"
               render={props => <DepositCard {...props} address={address} minDepositWei={DEPOSIT_MINIMUM_WEI} exchangeRate={exchangeRate} maxTokenDeposit={CHANNEL_DEPOSIT_MAX} />}
             />
-            <Route path="/settings" render={props => <SettingsCard {...props} networkHandler={this.networkHandler} />} />
+            <Route path="/settings" render={props => <SettingsCard {...props} networkHandler={this.networkHandler} connext={connext} address={address} exchangeRate={exchangeRate} runtime={this.state.runtime}/>} />
             <Route path="/receive" render={props => <ReceiveCard {...props} address={address} channelState={channelState} publicUrl={publicUrl} />} />
             <Route
               path="/send"
