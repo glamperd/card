@@ -67,12 +67,12 @@ test: node-modules prod
 ########################################
 # Begin Real Rules
 
-proxy-prod: card-prod ops/proxy/prod.dockerfile
+proxy-prod: card-prod $(shell find ops/proxy $(find_options))
 	$(log_start)
 	docker build --file ops/proxy/prod.dockerfile --tag daicard:latest .
 	$(log_finish) && touch $(flags)/$@
 
-proxy: env node-modules ops/proxy/dev.dockerfile
+proxy: env node-modules $(shell find ops/proxy $(find_options))
 	$(log_start)
 	docker build --file ops/proxy/dev.dockerfile --tag $(project)_proxy:dev .
 	$(log_finish) && touch $(flags)/$@
