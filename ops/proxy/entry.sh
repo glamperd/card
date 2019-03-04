@@ -11,31 +11,57 @@ mkdir -p $devcerts
 mkdir -p /etc/certs
 mkdir -p /var/www/letsencrypt
 
+# Provide a message indicating that we're still waiting for everything to wake up
+function loading_msg {
+  while true # unix.stackexchange.com/a/37762
+  do echo 'Waiting for the rest of the app to wake up..' | nc -lk -p 80
+  done > /dev/null
+}
+loading_msg &
+loading_pid="$!"
+
 if [[ "$MODE" == "dev" ]]
 then
-  # Provide a message indicating that we're still waiting for everything to wake up
-  function loading_msg {
-    while true # unix.stackexchange.com/a/37762
-    do echo 'Waiting for the rest of the app to wake up..' | nc -lk -p 80
-    done > /dev/null
-  }
-  loading_msg &
-  loading_pid="$!"
 
-  server=server:3000
-
-  echo "Waiting for $server to wake up..." && bash wait_for.sh -t 60 $server 2> /dev/null
-  while true # Do a more thorough check to ensure the server is online
-  do
-    if curl -s http://$server > /dev/null
-    then break
-    else sleep 1
-    fi
+  provider=indra_ethprovider:8545
+  echo "Waiting for $provider to wake up... (have you run npm start in the indra repo yet?)"
+  bash wait_for.sh -t 60 $provider 2> /dev/null
+  while ! curl -s http://$provider > /dev/null
+  do sleep 1
   done
 
-  # Kill the loading message
-  kill "$loading_pid" && pkill nc
+  hub=indra_hub:8080
+  echo "Waiting for $hub to wake up... (have you run npm start in the indra repo yet?)"
+  bash wait_for.sh -t 60 $hub 2> /dev/null
+  while ! curl -s http://$hub > /dev/null
+  do sleep 1
+  done
+
+  server=server:3000
+  echo "Waiting for $server to wake up..."
+  bash wait_for.sh -t 60 $server 2> /dev/null
+  while ! curl -s http://$server > /dev/null
+  do sleep 1
+  done
+
+else
+
+  provider=hub.connext.network/api/eth
+  echo "Waiting for $provider to wake up... (have you deployed indra yet?)"
+  while ! curl -s https://$provider > /dev/null
+  do sleep 1
+  done
+
+  hub=hub.connext.network/api/hub
+  echo "Waiting for $hub to wake up... (have you deployed indra yet?)"
+  while ! curl -s https://$hub > /dev/null
+  do sleep 1
+  done
+
 fi
+
+# Kill the loading message
+kill "$loading_pid" && pkill nc
 
 if [[ "$domain" == "localhost" && ! -f "$devcerts/privkey.pem" ]]
 then

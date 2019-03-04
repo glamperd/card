@@ -5,9 +5,20 @@ number_of_services=2
 proxy_image="${project}_proxy:dev"
 server_image="${project}_builder"
 
+if [[ -z "`docker network ls -f name=$project | grep -w $project`" ]]
+then
+  id=`docker network create --attachable --driver overlay $project`
+  echo "Created ATTACHABLE network with id $id"
+fi
+
 mkdir -p /tmp/$project
 cat - > /tmp/$project/docker-compose.yml <<EOF
 version: '3.4'
+networks:
+  indra:
+    external: true
+  $project:
+    external: true
 volumes:
   certs:
 services:
@@ -15,6 +26,9 @@ services:
     image: $proxy_image
     environment:
       - "MODE=dev"
+    networks:
+      - $project
+      - indra
     ports:
       - "80:80"
     volumes:
@@ -22,6 +36,8 @@ services:
   server:
     image: $server_image
     entrypoint: npm start
+    networks:
+      - $project
     volumes:
       - `pwd`:/root
 EOF
