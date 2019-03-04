@@ -24,7 +24,7 @@ else
   docker pull $image
 fi
 
-echo "Deploying image: $image"
+echo "Deploying image: $image to domain $DOMAINNAME"
 
 mkdir -p /tmp/$project
 cat - > /tmp/$project/docker-compose.yml <<EOF
