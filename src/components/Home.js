@@ -31,12 +31,12 @@ class Home extends React.Component {
     let path = null
     for (let [url, fields] of Object.entries(urls)) {
       const strArr = data.split(url)
-      if (strArr.length == 1) {
+      if (strArr.length === 1) {
         // incorrect entry
         continue
       }
 
-      if (strArr[0] != publicUrl) {
+      if (strArr[0] !== publicUrl) {
         throw new Error("incorrect site")
       }
 
@@ -50,7 +50,7 @@ class Home extends React.Component {
       })
     }
 
-    if (args == {}) {
+    if (args === {}) {
       console.log("could not detect params")
     }
 

@@ -67,7 +67,7 @@ class RedeemCard extends Component {
   }
 
   async redeemPayment() {
-    const { secret, isConfirm, purchaseId, redeemStarted, amount, previouslyRedeemed, requestedCollateral } = this.state;
+    const { secret, isConfirm, purchaseId, redeemStarted, amount, previouslyRedeemed } = this.state;
     const { connext, channelState, connextState } = this.props;
     if (!connext || !channelState || !connextState) {
       console.log("Connext or channel object not detected");

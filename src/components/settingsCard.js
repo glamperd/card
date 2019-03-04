@@ -81,7 +81,7 @@ class SettingsCard extends Component {
   burnRefreshPoller = async () => {
     setInterval(async () => {
       if(this.state.isBurning) {
-        if(this.props.runtime.syncResultsFromHub[0] && this.props.runtime.syncResultsFromHub[0].update.reason == "ConfirmPending"){
+        if(this.props.runtime.syncResultsFromHub[0] && this.props.runtime.syncResultsFromHub[0].update.reason === "ConfirmPending"){
           // Then refresh the page
           this.props.history.push("/")
           window.location.reload();

@@ -588,10 +588,12 @@ class App extends React.Component {
         this.setState({
           sendScanArgs: { ...args }
         });
+        break;
       case '/redeem': 
         this.setState({
           redeemScanArgs: { ...args }
         });
+        break;
       default: 
         return
     }
