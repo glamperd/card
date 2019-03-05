@@ -40,7 +40,7 @@ class ReceiveCard extends Component {
   updatePaymentHandler = async (value) => {
     await this.setState(oldState => {
       const adjusted = +value * Math.pow(10, 18)
-      const qrUrl = this.generateQrUrl(adjusted);
+      //const qrUrl = this.generateQrUrl(adjusted);
       return { ...oldState, value: adjusted }
     })
   }

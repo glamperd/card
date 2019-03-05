@@ -294,7 +294,24 @@ async autoDeposit() {
   
 ### Making Payments 
   
-Making payments is the core functionality of Connext, and you have a great degree of flexibility in terms of implementing payments in your application. Much like the other Connext functions, you call it on the Connext object (likely passed down from App.js) and pass it parameters containing relevant Wei/Token and recipient values:
+Making payments is the core functionality of Connext, and you have a great degree of flexibility in terms of implementing payments in your application. 
+
+We facilitate 3 types of payments:
+1) Channel Payments
+
+*Channel payments involve state updates between the payee and the hub.*
+
+2) Thread Payments
+
+*Thread payments are sent directly from payer to payee in ephemeral "virtual channels". The payer passes a state update to the payee, and the hub decomposes that update into two channel payments (one from the payer to the hub, one from the hub to the payee). The hub never takes control of user funds; rather, it updates channel states to reflect the agreed-upon balances. In the case of disputes, users can go to chain with the latest double-signed state of their thread and recover funds.*
+
+3) Link Payments 
+
+*Link payments allow you to send payments to a user who has never opened a channel with a Connext hub.*
+[[NEED TO DESCRIBE PROCESS]]
+
+
+Much like the other Connext functions, you call it on the Connext object (likely passed down from App.js) and pass it parameters containing relevant Wei/Token and recipient values:
 
 ```
 paymentVal: {
@@ -345,10 +362,11 @@ Because the card is effectively a hot wallet, we've set our implementation of `c
 
 To receive payments, the recipient's channel must be collateralized. This presents a few practical challenges: hub operators must decide how to allocate their reserves to minimize (a) the number of payments that fail due to uncollateralized channels and (b) the amount of funds locked up in channels. Because this is new technology, we're still exploring the best ways to handle collateralization and hub reserve management. 
 
+Right now, submitting a withdrawal request with zero value will decollateralize a user's channel entirely.
+
 A few tips that we've found helpful:
-1. [[TODO]]
-2. [[TODO]]
-3. [[TODO]]
+1. Collateralize on auth instead of page load. This helps minimize unnecessary collateralization.
+2. If your wallet is intended to be ephemeral, decollateralize when a user burns their wallet.
 
 
 
