@@ -3,8 +3,6 @@ import requestJson from './request';
 
 export const Subprovider = require('web3-provider-engine/subproviders/subprovider')
 
-const hubUrl = process.env.REACT_APP_HUB_URL
-
 const GWEI = new BigNumber('1e9')
 const MAX_PRICE = GWEI.times(50)
 
@@ -13,6 +11,12 @@ interface Transaction {
 }
 
 export default class GaspriceSubprovider extends Subprovider {
+
+  constructor(hubUrl: string) {
+    super()
+    this.hubUrl = hubUrl
+  }
+
   handleRequest(payload: any, next: () => void, end: (err: any, res?: any) => void) {
     if (payload.method !== 'gas-estimate-latest') {
       return next()
@@ -35,7 +39,7 @@ export default class GaspriceSubprovider extends Subprovider {
   }
 
   private async estimateGasPriceFromHub (): Promise<BigNumber | null> {
-    const res = await requestJson<any>(`${hubUrl}/gasPrice/estimate`)
+    const res = await requestJson<any>(`${this.hubUrl}/gasPrice/estimate`)
     if (res && res.gasPrice) {
       return new BigNumber(res.gasPrice).times(GWEI)
     }

@@ -6,12 +6,6 @@ import { getStore } from "../walletGen";
 import store from '../App';
 require('dotenv').config()
 
-const DEFAULT_NETWORK = 'ropsten'
-export const DEFAULT_RPC_URL = process.env.NODE_ENV === "production" ? process.env.REACT_APP_RINKEBY_RPC_URL : process.env.REACT_APP_LOCAL_RPC_URL
-
-if (!DEFAULT_RPC_URL)
-  throw new Error('Missing default ethereum provider url')
-
 export type ApproveTransactionCallback = (error: string | null, isApproved?: boolean) => void
 export type ApproveSignCallback = (error: string | null, rawMsgSig?: string) => void
 
@@ -19,9 +13,9 @@ export default class ProviderOptions {
   store: any
   rpcUrl: string | undefined
 
-  constructor(store: any, rpcUrl?: string) {
+  constructor(store: any, rpcUrl: string) {
     this.store = store
-    this.rpcUrl = rpcUrl || DEFAULT_RPC_URL
+    this.rpcUrl = rpcUrl
   }
 
   getAccounts = (callback: (err: string | null, accounts?: string[]) => void) => {

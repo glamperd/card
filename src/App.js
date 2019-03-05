@@ -33,17 +33,6 @@ const env = process.env.NODE_ENV;
 const tokenAbi = humanTokenAbi;
 console.log(`starting app in env: ${JSON.stringify(process.env, null, 1)}`);
 
-// Provider info
-// local
-const hubUrlLocal = process.env.REACT_APP_LOCAL_HUB_URL.toLowerCase();
-const localProvider = process.env.REACT_APP_LOCAL_RPC_URL.toLowerCase();
-// rinkeby
-const hubUrlRinkeby = process.env.REACT_APP_RINKEBY_HUB_URL.toLowerCase();
-const rinkebyProvider = process.env.REACT_APP_RINKEBY_RPC_URL.toLowerCase();
-// mainnet
-const hubUrlMainnet = process.env.REACT_APP_MAINNET_HUB_URL.toLowerCase();
-const mainnetProvider = process.env.REACT_APP_MAINNET_RPC_URL.toLowerCase();
-
 const publicUrl = process.env.REACT_APP_PUBLIC_URL.toLowerCase();
 
 const HASH_PREAMBLE = "SpankWallet authentication message:";
@@ -204,16 +193,16 @@ class App extends React.Component {
     let rpcUrl, hubUrl;
     switch (rpc) {
       case "LOCALHOST":
-        rpcUrl = localProvider;
-        hubUrl = hubUrlLocal;
+        rpcUrl = `${publicUrl}/api/local/eth`;
+        hubUrl = `${publicUrl}/api/local/hub`;
         break;
       case "RINKEBY":
-        rpcUrl = rinkebyProvider;
-        hubUrl = hubUrlRinkeby;
+        rpcUrl = `${publicUrl}/api/rinkeby/eth`;
+        hubUrl = `${publicUrl}/api/rinkeby/hub`;
         break;
       case "MAINNET":
-        rpcUrl = mainnetProvider;
-        hubUrl = hubUrlMainnet;
+        rpcUrl = `${publicUrl}/api/mainnet/eth`;
+        hubUrl = `${publicUrl}/api/mainnet/hub`;
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
