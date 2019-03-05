@@ -35,6 +35,15 @@ console.log(`starting app in env: ${JSON.stringify(process.env, null, 1)}`);
 
 const publicUrl = process.env.REACT_APP_PUBLIC_URL.toLowerCase();
 
+const overrides = {
+  localHub: process.env.REACT_APP_LOCAL_HUB_OVERRIDE,
+  localEth: process.env.REACT_APP_LOCAL_ETH_OVERRIDE,
+  rinkebyHub: process.env.REACT_APP_RINKEBY_HUB_OVERRIDE,
+  rinkebyEth: process.env.REACT_APP_RINKEBY_ETH_OVERRIDE,
+  mainnetHub: process.env.REACT_APP_MAINNET_HUB_OVERRIDE,
+  mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE
+}
+
 const HASH_PREAMBLE = "SpankWallet authentication message:";
 const DEPOSIT_MINIMUM_WEI = eth.utils.parseEther("0.03"); // 30 FIN
 const HUB_EXCHANGE_CEILING = eth.utils.parseEther("69"); // 69 TST
@@ -193,16 +202,16 @@ class App extends React.Component {
     let rpcUrl, hubUrl;
     switch (rpc) {
       case "LOCALHOST":
-        rpcUrl = `${publicUrl}/api/local/eth`;
-        hubUrl = `${publicUrl}/api/local/hub`;
+        rpcUrl = overrides.localEth || `${publicUrl}/api/local/eth`;
+        hubUrl = overrides.localHub || `${publicUrl}/api/local/hub`;
         break;
       case "RINKEBY":
-        rpcUrl = `${publicUrl}/api/rinkeby/eth`;
-        hubUrl = `${publicUrl}/api/rinkeby/hub`;
+        rpcUrl = overrides.rinkebyEth || `${publicUrl}/api/rinkeby/eth`;
+        hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
         break;
       case "MAINNET":
-        rpcUrl = `${publicUrl}/api/mainnet/eth`;
-        hubUrl = `${publicUrl}/api/mainnet/hub`;
+        rpcUrl = overrides.mainnetEth || `${publicUrl}/api/mainnet/eth`;
+        hubUrl = overrides.mainnetHub || `${publicUrl}/api/mainnet/hub`;
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
