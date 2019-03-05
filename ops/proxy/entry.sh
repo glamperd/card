@@ -1,9 +1,19 @@
 #!/bin/bash
 
 # Set default email & domain name
-email=$EMAIL; [[ -n "$email" ]] || email=noreply@gmail.com
-domain=$DOMAINNAME; [[ -n "$domain" ]] || domain=localhost
+email="${EMAIL:-noreply@gmail.com}"
+domain="${DOMAINNAME:-localhost}"
+local_hub="${LOCAL_HUB_URL:-http://localhost:3000}"
+rinkeby_hub="${RINKEBY_HUB_URL:-$local_hub}"
+mainnet_hub="${MAINNET_HUB_URL:-$rinkeby_hub}"
 echo "domain=$domain email=$email"
+echo "local_hub=$local_hub rinkeby_hub=$rinkeby_hub mainnet_hub=$mainnet_hub"
+
+# Hacky way to implement variables in the nginx.conf file
+sed -i 's/$hostname/'"$domain"'/' /etc/nginx/nginx.conf
+sed -i 's|$LOCAL_HUB_URL|'"$local_hub"'|' /etc/nginx/nginx.conf
+sed -i 's|$RINKEBY_HUB_URL|'"$rinkeby_hub"'|' /etc/nginx/nginx.conf
+sed -i 's|$MAINNET_HUB_URL|'"$mainnet_hub"'|' /etc/nginx/nginx.conf
 
 letsencrypt=/etc/letsencrypt/live
 devcerts=$letsencrypt/localhost
@@ -23,14 +33,7 @@ loading_pid="$!"
 if [[ "$MODE" == "dev" ]]
 then
 
-  provider=indra_ethprovider:8545
-  echo "Waiting for $provider to wake up... (have you run npm start in the indra repo yet?)"
-  bash wait_for.sh -t 60 $provider 2> /dev/null
-  while ! curl -s http://$provider > /dev/null
-  do sleep 1
-  done
-
-  hub=indra_hub:8080
+  hub=${local_hub#*://}
   echo "Waiting for $hub to wake up... (have you run npm start in the indra repo yet?)"
   bash wait_for.sh -t 60 $hub 2> /dev/null
   while ! curl -s http://$hub > /dev/null
@@ -79,10 +82,6 @@ fi
 echo "Using certs for $domain"
 ln -sf $letsencrypt/$domain/privkey.pem /etc/certs/privkey.pem
 ln -sf $letsencrypt/$domain/fullchain.pem /etc/certs/fullchain.pem
-
-# Hack way to implement variables in the nginx.conf file
-sed -i 's/$hostname/'"$domain"'/' /etc/nginx/nginx.conf
-sed -i 's|$ethprovider|'"$ETH_RPC_URL"'|' /etc/nginx/nginx.conf
 
 # periodically fork off & see if our certs need to be renewed
 function renewcerts {

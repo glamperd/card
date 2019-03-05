@@ -25,7 +25,8 @@ services:
   proxy:
     image: $proxy_image
     environment:
-      - "MODE=dev"
+      MODE: dev
+      LOCAL_HUB_URL: http://indra_proxy
     networks:
       - $project
       - indra
