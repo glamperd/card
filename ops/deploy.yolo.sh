@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 set -e
 
+function makePrompt {
+  prompt=$1
+
+  read -p "$prompt (y/n) " -n 1 -r
+  echo    # (optional) move to a new line
+  if [[ ! $REPLY =~ ^[Yy]$ ]]
+  then
+      echo "Exiting."
+      exit # handle exits from shell or function but don't exit interactive shell
+  fi
+}
+
 user=ubuntu
 prod_server=daicard.io
 ssh_key="$HOME/.ssh/connext-aws"
@@ -9,7 +21,24 @@ if [[ ! -f "$ssh_key" ]]
 then echo "To deploy to $prod_server, you need to have an ssh key at: $ssh_key" && exit
 fi
 
-echo "Rebuilding a production-version of the app & pushing images to our container registry"
+echo "Before yolo deploying the card, let's go through a small checklist. Did you test all of the following flows:"
+
+makePrompt "User depositing eth?"
+makePrompt "User getting refunded eth deposit to browser wallet?"
+makePrompt "User depositing below the minimum eth?"
+makePrompt "User depositing tokens?"
+makePrompt "User making payments to collateralized and uncollateralized channels?"
+makePrompt "User redeeming payments?" 
+makePrompt "User receiving payments? (collateralized? near maximum? above maximum collateral? multiple?)"
+makePrompt "User withdrawing?"
+makePrompt "Did you try faulty inputs in these flows? (large payments, non-addresses, etc)"
+makePrompt "Did you test this on Brave, Firefox, Chrome, and Safari? Or at least more than one of them?"
+makePrompt "If these are big changes, did more than 1 person perform these tests?"
+
+echo
+makePrompt "Are you sure you want to deploy without any additional testing?"
+
+echo;echo "Rebuilding a production-version of the app & pushing images to our container registry"
 make prod
 make push
 if [[ "$?" != "0" ]]
