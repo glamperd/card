@@ -1,18 +1,21 @@
 #!/bin/bash
 
-project="`cat package.json | grep '"name":' | awk -F '"' '{print $4}' | tr -d '-'`"
+########################################
+## External Env Vars
+
+DOMAINNAME="${DOMAINNAME:-localhost}"
+EMAIL="${EMAIL:-noreply@gmail.com}"
+LOCAL_HUB_URL="" # Not used in prod, use env var overrides instead
+RINKEBY_HUB_URL="${RINKEBY_HUB_URL:-https://hub.connext.network}"
+MAINNET_HUB_URL="${MAINNET_HUB_URL:-$RINKEBY_HUB_URL}"
+
+########################################
+## Internal Config
+
 number_of_services=1
+
+project="`cat package.json | grep '"name":' | awk -F '"' '{print $4}' | tr -d '-'`"
 version="`cat package.json | grep '"version":' | egrep -o '[.0-9]+'`"
-
-if [[ -n "$DOMAINNAME" ]] 
-then DOMAINNAME=$DOMAINNAME
-else DOMAINNAME=localhost
-fi
-
-if [[ -n "$EMAIL" ]] 
-then EMAIL=$EMAIL
-else EMAIL=noreply@gmail.com
-fi
 
 if [[ "$DOMAINNAME" == "localhost" ]]
 then image=daicard:latest
@@ -24,7 +27,7 @@ else
   docker pull $image
 fi
 
-echo "Deploying image: $image to domain $DOMAINNAME"
+echo "Deploying image: $image to domain $DOMAINNAME linked to hub $HUB_URL"
 
 mkdir -p /tmp/$project
 cat - > /tmp/$project/docker-compose.yml <<EOF
@@ -37,6 +40,8 @@ services:
     environment:
       DOMAINNAME: $DOMAINNAME
       EMAIL: $EMAIL
+      RINKEBY_HUB_URL: $RINKEBY_HUB_URL
+      MAINNET_HUB_URL: $MAINNET_HUB_URL
     ports:
       - "80:80"
       - "443:443"

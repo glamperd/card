@@ -3,7 +3,7 @@
 # Set default email & domain name
 email="${EMAIL:-noreply@gmail.com}"
 domain="${DOMAINNAME:-localhost}"
-local_hub="${LOCAL_HUB_URL:-http://localhost:3000}"
+local_hub="${LOCAL_HUB_URL:-http://indra_proxy}"
 rinkeby_hub="${RINKEBY_HUB_URL:-$local_hub}"
 mainnet_hub="${MAINNET_HUB_URL:-$rinkeby_hub}"
 echo "domain=$domain email=$email"
@@ -49,17 +49,13 @@ then
 
 else
 
-  provider=hub.connext.network/api/eth
-  echo "Waiting for $provider to wake up... (have you deployed indra yet?)"
-  while ! curl -s https://$provider > /dev/null
+  hub=$rinkeby_hub
+  echo "Waiting for $hub to wake up... (have you deployed indra yet?)"
+  while ! curl -s $hub > /dev/null
   do sleep 1
   done
 
-  hub=hub.connext.network/api/hub
-  echo "Waiting for $hub to wake up... (have you deployed indra yet?)"
-  while ! curl -s https://$hub > /dev/null
-  do sleep 1
-  done
+  # TODO: After mainnet launch, ensure the mainnet hub is awake too
 
 fi
 

@@ -11,7 +11,6 @@ interface Transaction {
 }
 
 export default class GaspriceSubprovider extends Subprovider {
-
   constructor(hubUrl: string) {
     super()
     this.hubUrl = hubUrl
