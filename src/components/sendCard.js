@@ -8,12 +8,14 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
-import { withStyles, Grid, Typography } from "@material-ui/core";
+import { withStyles, Grid, Typography, CircularProgress } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
 import { emptyAddress } from "connext/dist/Utils";
 import { convertPayment } from "connext/dist/types";
 import BN from "bn.js";
 import BigNumber from "bignumber.js";
+import interval from "interval-promise";
+import Web3 from "web3";
 
 const queryString = require("query-string");
 const eth = require("ethers");
@@ -33,6 +35,150 @@ const styles = theme => ({
   }
 });
 
+const PaymentStates = {
+  None: 0,
+  Collateralizing: 1,
+  CollateralTimeout: 2,
+  OtherError: 3,
+  Success: 4
+};
+
+function ConfirmationModalText(paymentState, amountToken, recipient) {
+  switch (paymentState) {
+    case PaymentStates.Collateralizing:
+      return (
+        <Grid style={{ width: "80%" }}>
+          <Grid item style={{ margin: "1em" }}>
+            <Typography variant="h5" style={{ color: "#F22424" }}>
+              Payment In Process
+            </Typography>
+          </Grid>
+          <Grid item style={{ margin: "1em" }}>
+            <Typography variant="body1" style={{ color: "#0F1012" }}>
+              Recipient channel is being initialized, payment will be sent after.
+            </Typography>
+          </Grid>
+          <Grid item style={{ margin: "1em" }}>
+            <Typography variant="body1" style={{ color: "#0F1012" }}>
+              Do not refresh the page. If you refresh, you will have to send your payment again. If you have any questions, please contact support.
+              (Settings --> Support)
+            </Typography>
+          </Grid>
+          <CircularProgress style={{ marginTop: "1em" }} />
+        </Grid>
+      );
+    case PaymentStates.CollateralTimeout:
+      return (
+        <Grid style={{ width: "80%" }}>
+          <Grid item style={{ margin: "1em" }}>
+            <Typography variant="h5" style={{ color: "#F22424" }}>
+              Payment Failed
+            </Typography>
+          </Grid>
+          <Grid item style={{ margin: "1em" }}>
+            <Typography variant="body1" style={{ color: "#0F1012" }}>
+              After some time, recipient channel could not be initialized.
+            </Typography>
+          </Grid>
+          <Grid item style={{ margin: "1em" }}>
+            <Typography variant="body1" style={{ color: "#0F1012" }}>
+              Maybe they need to log in? Please try your payment again later. If you have any questions, please contact support. 
+              (Settings --> Support)
+            </Typography>
+          </Grid>
+        </Grid>
+      );
+    case PaymentStates.OtherError:
+      return (
+        <Grid style={{ width: "80%" }}>
+          <Grid item style={{ margin: "1em" }}>
+            <Typography variant="h5" style={{ color: "#F22424" }}>
+              Payment Failed
+            </Typography>
+          </Grid>
+          <Grid item style={{ margin: "1em" }}>
+            <Typography variant="body1" style={{ color: "#0F1012" }}>
+              An unknown error occured when making your payment.
+            </Typography>
+          </Grid>
+          <Grid item style={{ margin: "1em" }}>
+            <Typography variant="body1" style={{ color: "#0F1012" }}>
+              Please try again in 30s and contact support if you continue to experience issues. (Settings --> Support)
+            </Typography>
+          </Grid>
+        </Grid>
+      );
+    case PaymentStates.Success:
+      return (
+        <Grid style={{ width: "80%" }}>
+          <Grid item style={{ margin: "1em" }}>
+            <Typography variant="h5" style={{ color: "#009247" }}>
+              Payment Success!
+            </Typography>
+          </Grid>
+          <Grid item style={{ margin: "1em" }}>
+            <Typography variant="body1" style={{ color: "#0F1012" }}>
+              Amount: ${amountToken}
+            </Typography>
+          </Grid>
+          <Grid item style={{ margin: "1em" }}>
+            <Typography variant="body2" style={{ color: "#0F1012" }} noWrap>
+              To: {recipient}
+            </Typography>
+          </Grid>
+        </Grid>
+      );
+    case PaymentStates.None:
+    default:
+      return <div />;
+  }
+}
+
+const PaymentConfirmationModal = props => (
+  <Modal
+    open={props.showReceipt}
+    onBackdropClick={props.paymentState === PaymentStates.Collateralizing ? null : () => props.closeModal()}
+    style={{
+      justifyContent: "center",
+      alignItems: "center",
+      textAlign: "center",
+      position: "absolute",
+      top: "15%",
+      width: "375px",
+      marginLeft: "auto",
+      marginRight: "auto",
+      left: "0",
+      right: "0"
+    }}
+  >
+    <Grid container style={{ backgroundColor: "#FFF", paddingTop: "10%", paddingBottom: "10%" }} justify="center">
+      {ConfirmationModalText(props.paymentState, props.amountToken, props.recipient)}
+      {props.paymentState === PaymentStates.Collateralizing ? (
+        <></>
+      ) : (
+        <Grid item style={{ margin: "1em", flexDirection: "row", width: "80%" }}>
+          <Button color="primary" variant="outlined" size="small" onClick={() => props.closeModal()}>
+            Pay Again
+          </Button>
+          <Button
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              marginLeft: "5%"
+            }}
+            variant="outlined"
+            size="small"
+            onClick={() => props.history.push("/")}
+          >
+            Home
+          </Button>
+        </Grid>
+      )}
+    </Grid>
+  </Modal>
+);
+
 class PayCard extends Component {
   constructor(props) {
     super(props);
@@ -47,7 +193,7 @@ class PayCard extends Component {
           {
             recipient: this.props.scanArgs.recipient ? this.props.scanArgs.recipient : "",
             amount: {
-              amountToken: this.props.scanArgs.amount ? (this.props.scanArgs.amount * Math.pow(10, 18)).toString() : "0",
+              amountToken: this.props.scanArgs.amount ? Web3.utils.toWei(this.props.scanArgs.amount) : "0",
               amountWei: "0"
             },
             type: "PT_CHANNEL"
@@ -56,20 +202,21 @@ class PayCard extends Component {
       },
       addressError: null,
       balanceError: null,
-      sendError: false,
+      paymentState: PaymentStates.None,
       scan: false,
       displayVal: this.props.scanArgs.amount ? this.props.scanArgs.amount : "0",
       showReceipt: false
-      };
+    };
   }
 
   async componentDidMount() {
     const { location } = this.props;
     const query = queryString.parse(location.search);
+    console.log("query: ", query);
     if (query.amountToken) {
       await this.setState(oldState => {
-        oldState.paymentVal.payments[0].amount.amountToken = (query.amounttoken * Math.pow(10, 18)).toString();
-        oldState.displayVal = query.amounToken;
+        oldState.paymentVal.payments[0].amount.amountToken = Web3.utils.toWei(query.amountToken);
+        oldState.displayVal = query.amountToken;
         return oldState;
       });
     }
@@ -83,7 +230,7 @@ class PayCard extends Component {
 
   async updatePaymentHandler(value) {
     await this.setState(oldState => {
-      oldState.paymentVal.payments[0].amount.amountToken = (value * Math.pow(10, 18)).toString();
+      oldState.paymentVal.payments[0].amount.amountToken = value ? Web3.utils.toWei(`${value}`) : "0";
       return oldState;
     });
     this.setState({ displayVal: value });
@@ -110,11 +257,12 @@ class PayCard extends Component {
   };
 
   async updateRecipientHandler(value) {
-    await this.setState(oldState => {
+    this.setState(async oldState => {
       oldState.paymentVal.payments[0].recipient = value;
+      console.log(`Updated recipient: ${oldState.paymentVal.payments[0].recipient}`);
+
       return oldState;
     });
-    console.log(`Updated recipient: ${JSON.stringify(this.state.paymentVal.payments[0].recipient, null, 2)}`);
   }
 
   async linkHandler() {
@@ -123,7 +271,7 @@ class PayCard extends Component {
     this.setState({ balanceError: null });
 
     // check that the payment is below the payment max
-    const amount = new BigNumber(paymentVal.payments[0].amount.amountToken)
+    const amount = new BigNumber(paymentVal.payments[0].amount.amountToken);
     if (amount.gt(LINK_LIMIT)) {
       this.setState({ balanceError: "Linked payments are capped at $10." });
       return;
@@ -155,6 +303,14 @@ class PayCard extends Component {
   }
 
   async paymentHandler() {
+    // // check if the recipient needs collateral
+    // const needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment))
+    // if (needsCollateral) {
+    //   // check the payment amount here, and below
+    //   // otherwise
+    // }
+
+    // otherwise make payment
     await this._paymentHandler(this.state.paymentVal);
   }
 
@@ -170,7 +326,6 @@ class PayCard extends Component {
     if (payment.amountToken.gt(new BN(channelState.balanceTokenUser))) {
       balanceError = "Insufficient balance in channel";
     }
-
     if (payment.amountToken.isZero()) {
       balanceError = "Please enter a payment amount above 0";
     }
@@ -187,7 +342,54 @@ class PayCard extends Component {
       return;
     }
 
-    // otherwise make payment
+    // check if the recipient needs collateral
+    let needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment));
+    // needs collateral can indicate that the recipient does
+    // not have a channel, or that it does not have current funds
+    // in either case, you need to send a failed payment
+    // to begin auto collateralization process
+    if (needsCollateral && recipient !== emptyAddress && paymentVal.payments[0].type !== "PT_LINK") {
+      // before making payment, recipient needs collateral
+      // begin autocollateralization via failed hub
+      // and wait for collateral
+      this.setState({ paymentState: PaymentStates.Collateralizing, showReceipt: true });
+      try {
+        await connext.buy(paymentVal);
+        // somehow it worked???
+        console.log('Expected payment to fail but it succeeded.');
+        this.setState({ showReceipt: true, paymentState: PaymentStates.Success });
+      } catch (e) {
+        console.log(`Caught payment error after needs collateral, error: ${e.message}, will monitor collateral and try again later`);
+        const self = this;
+        interval(
+          async (iteration, stop) => {
+            console.log("iteration: ", iteration);
+            needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment));
+            console.log("needsCollateral: ", needsCollateral);
+            if (!needsCollateral) {
+              await self.sendPayment(paymentVal);
+              stop();
+            }
+            if (iteration === 20 && needsCollateral) {
+              console.log(`Polled for ${5000 * 20} seconds, did not see collateralization go through.`);
+              this.setState({ paymentState: PaymentStates.CollateralTimeout, showReceipt: true });
+              return;
+            }
+          },
+          5000,
+          { iterations: 20 }
+        );
+        return;
+      }
+    }
+
+    // if no collateral needed or link payment, just send payment
+    await this.sendPayment(paymentVal);
+  }
+
+  async sendPayment(paymentVal) {
+    const { connext } = this.props;
+
     try {
       let paymentRes = await connext.buy(paymentVal);
       console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
@@ -199,18 +401,22 @@ class PayCard extends Component {
           search: `?secret=${secret}&amountToken=${amount.amountToken}&amountWei=${amount.amountWei}`,
           state: { isConfirm: true, secret, amount }
         });
+      } else {
+        this.setState({ showReceipt: true, paymentState: PaymentStates.Success });
       }
-      this.setState({ showReceipt: true });
     } catch (e) {
-      console.log("SEND ERROR, SETTING");
-      this.setState({ sendError: true, showReceipt: true });
+      console.log("Error sending payment:", e);
+      this.setState({ paymentState: PaymentStates.OtherError, showReceipt: true });
     }
   }
 
+  closeModal = () => {
+    this.setState({ showReceipt: false, paymentState: PaymentStates.None });
+  };
+
   render() {
     const { classes, channelState } = this.props;
-    const { sendError, scan } = this.state;
-    console.log("scan: ", scan);
+    const { paymentState } = this.state;
     return (
       <Grid
         container
@@ -246,9 +452,7 @@ class PayCard extends Component {
           </Grid>
         </Grid>
         <Grid item xs={12}>
-          <Typography
-            variant="body2"
-          >
+          <Typography variant="body2">
             <span>{"Linked payments are capped at $10."}</span>
           </Typography>
         </Grid>
@@ -341,80 +545,17 @@ class PayCard extends Component {
             Back
           </Button>
         </Grid>
-        <Modal
-          open={this.state.showReceipt}
-          onBackdropClick={() => this.setState({ showReceipt: false, sendError: false })}
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-            position: "absolute",
-            top: "25%",
-            width: "375px",
-            marginLeft: "auto",
-            marginRight: "auto",
-            left: "0",
-            right: "0"
-          }}
-        >
-          <Grid container style={{ backgroundColor: "#FFF", paddingTop: "10%", paddingBottom: "10%" }} justify="center">
-            {sendError ? (
-              <Grid style={{ width: "80%" }}>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="h5" style={{ color: "#F22424" }}>
-                    Payment Failed
-                  </Typography>
-                </Grid>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="body1" style={{ color: "#0F1012" }}>
-                    This is most likely because the recipient's Card is being set up.
-                  </Typography>
-                </Grid>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="body1" style={{ color: "#0F1012" }}>
-                    Please try again in 30s and contact support if you continue to experience issues. (Settings --> Support)
-                  </Typography>
-                </Grid>
-              </Grid>
-            ) : (
-              <Grid style={{ width: "80%" }}>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="h5" style={{ color: "#009247" }}>
-                    Payment Success!
-                  </Typography>
-                </Grid>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="body1" style={{ color: "#0F1012" }}>
-                    Amount: ${this.state.paymentVal.payments[0].amount.amountToken * Math.pow(10, -18)}
-                  </Typography>
-                </Grid>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="body2" style={{ color: "#0F1012" }} noWrap>
-                    To: {this.state.paymentVal.payments[0].recipient}
-                  </Typography>
-                </Grid>
-              </Grid>
-            )}
-            <Grid item style={{ margin: "1em", flexDirection: "row", width: "80%" }}>
-              <Button color="primary" variant="outlined" size="small" onClick={() => this.setState({ showReceipt: false, sendError: false })}>
-                Pay Again
-              </Button>
-              <Button
-                style={{
-                  background: "#FFF",
-                  border: "1px solid #F22424",
-                  color: "#F22424",
-                  marginLeft: "5%"
-                }}
-                variant="outlined"
-                size="small"
-                onClick={() => this.props.history.push("/")}
-              >
-                Home
-              </Button>
-            </Grid>
-          </Grid>
-        </Modal>
+        <PaymentConfirmationModal
+          showReceipt={this.state.showReceipt}
+          sendError={this.state.sendError}
+          amountToken={
+            this.state.paymentVal.payments[0].amount.amountToken ? Web3.utils.fromWei(this.state.paymentVal.payments[0].amount.amountToken) : "0"
+          }
+          recipient={this.state.paymentVal.payments[0].recipient}
+          history={this.props.history}
+          closeModal={this.closeModal}
+          paymentState={paymentState}
+        />
       </Grid>
     );
   }

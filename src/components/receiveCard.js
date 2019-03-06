@@ -34,14 +34,14 @@ class ReceiveCard extends Component {
   }
 
   handleClick = async() => {
-    await this.setState({ copied:false });
+    this.setState({ copied:false });
   }
 
   updatePaymentHandler = async (value) => {
-    await this.setState(oldState => {
-      const adjusted = +value * Math.pow(10, 18)
-      //const qrUrl = this.generateQrUrl(adjusted);
-      return { ...oldState, value: adjusted }
+    // appears to be just value
+    // const adjusted = Web3.utils.toWei(value)
+    this.setState({
+      qrUrl: this.generateQrUrl(value)
     })
   }
 
