@@ -8,14 +8,14 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
-import { withStyles, Grid, Typography } from "@material-ui/core";
+import { withStyles, Grid, Typography, CircularProgress } from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
 import { emptyAddress } from "connext/dist/Utils";
 import { convertPayment } from "connext/dist/types";
 import BN from "bn.js";
 import BigNumber from "bignumber.js";
 import interval from "interval-promise";
-import Web3 from "web3"
+import Web3 from "web3";
 
 const queryString = require("query-string");
 const eth = require("ethers");
@@ -60,9 +60,11 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Do not refresh the page. If you refresh, you will have to send your payment again. (Settings --> Support)
+              Do not refresh the page. If you refresh, you will have to send your payment again. If you have any questions, please contact support.
+              (Settings --> Support)
             </Typography>
           </Grid>
+          <CircularProgress style={{ marginTop: "1em" }} />
         </Grid>
       );
     case PaymentStates.CollateralTimeout:
@@ -70,17 +72,18 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
         <Grid style={{ width: "80%" }}>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="h5" style={{ color: "#F22424" }}>
-              Payment In Process
+              Payment Failed
             </Typography>
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              After some time, collateralization still hasn't happened. Try your payment again later.
+              After some time, recipient channel could not be initialized.
             </Typography>
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              If you have any questions, please contact support. (Settings --> Support)
+              Maybe they need to log in? Please try your payment again later. If you have any questions, please contact support. 
+              (Settings --> Support)
             </Typography>
           </Grid>
         </Grid>
@@ -95,7 +98,7 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              This is most likely because the recipient's Card is being set up.
+              An unknown error occured when making your payment.
             </Typography>
           </Grid>
           <Grid item style={{ margin: "1em" }}>
@@ -134,13 +137,13 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
 const PaymentConfirmationModal = props => (
   <Modal
     open={props.showReceipt}
-    onBackdropClick={() => props.closeModal()}
+    onBackdropClick={props.paymentState === PaymentStates.Collateralizing ? null : () => props.closeModal()}
     style={{
       justifyContent: "center",
       alignItems: "center",
       textAlign: "center",
       position: "absolute",
-      top: "25%",
+      top: "15%",
       width: "375px",
       marginLeft: "auto",
       marginRight: "auto",
@@ -150,24 +153,28 @@ const PaymentConfirmationModal = props => (
   >
     <Grid container style={{ backgroundColor: "#FFF", paddingTop: "10%", paddingBottom: "10%" }} justify="center">
       {ConfirmationModalText(props.paymentState, props.amountToken, props.recipient)}
-      <Grid item style={{ margin: "1em", flexDirection: "row", width: "80%" }}>
-        <Button color="primary" variant="outlined" size="small" onClick={() => props.closeModal()}>
-          Pay Again
-        </Button>
-        <Button
-          style={{
-            background: "#FFF",
-            border: "1px solid #F22424",
-            color: "#F22424",
-            marginLeft: "5%"
-          }}
-          variant="outlined"
-          size="small"
-          onClick={() => props.history.push("/")}
-        >
-          Home
-        </Button>
-      </Grid>
+      {props.paymentState === PaymentStates.Collateralizing ? (
+        <></>
+      ) : (
+        <Grid item style={{ margin: "1em", flexDirection: "row", width: "80%" }}>
+          <Button color="primary" variant="outlined" size="small" onClick={() => props.closeModal()}>
+            Pay Again
+          </Button>
+          <Button
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              marginLeft: "5%"
+            }}
+            variant="outlined"
+            size="small"
+            onClick={() => props.history.push("/")}
+          >
+            Home
+          </Button>
+        </Grid>
+      )}
     </Grid>
   </Modal>
 );
@@ -205,7 +212,7 @@ class PayCard extends Component {
   async componentDidMount() {
     const { location } = this.props;
     const query = queryString.parse(location.search);
-    console.log('query: ', query);
+    console.log("query: ", query);
     if (query.amountToken) {
       await this.setState(oldState => {
         oldState.paymentVal.payments[0].amount.amountToken = Web3.utils.toWei(query.amountToken);
@@ -348,45 +355,40 @@ class PayCard extends Component {
       this.setState({ paymentState: PaymentStates.Collateralizing, showReceipt: true });
       try {
         await connext.buy(paymentVal);
+        // somehow it worked???
+        console.log('Expected payment to fail but it succeeded.');
+        this.setState({ showReceipt: true, paymentState: PaymentStates.Success });
       } catch (e) {
-        console.log(`Caught payment error after needs collateral, error: ${e.toString()}, will monitor collateral and try again later`);
-      }
-
-      interval(
-        async (iteration, stop) => {
-          console.log('iteration: ', iteration);
-          needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment));
-          console.log('needsCollateral: ', needsCollateral);
-          if (!needsCollateral) {
-            try {
-              let paymentRes = await connext.buy(paymentVal);
-              console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
-              if (paymentVal.payments[0].type === "PT_LINK") {
-                const secret = paymentVal.payments[0].secret;
-                const amount = paymentVal.payments[0].amount;
-                this.props.history.push({
-                  pathname: "/redeem",
-                  search: `?secret=${secret}&amountToken=${amount.amountToken}&amountWei=${amount.amountWei}`,
-                  state: { isConfirm: true, secret, amount }
-                });
-              }
-              this.setState({ showReceipt: true, paymentState: PaymentStates.Success });
-            } catch (e) {
-              console.log("Error sending payment:", e);
-              this.setState({ paymentState: PaymentStates.OtherError, showReceipt: true });
+        console.log(`Caught payment error after needs collateral, error: ${e.message}, will monitor collateral and try again later`);
+        const self = this;
+        interval(
+          async (iteration, stop) => {
+            console.log("iteration: ", iteration);
+            needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment));
+            console.log("needsCollateral: ", needsCollateral);
+            if (!needsCollateral) {
+              await self.sendPayment(paymentVal);
+              stop();
             }
-          }
-          stop();
-        },
-        5000,
-        {iterations: 20}
-      );
-      if (!needsCollateral) {
-        console.log(`Polled for 50 seconds, did not see collateralization go through.`);
-        this.setState({ paymentState: PaymentStates.CollateralTimeout, showReceipt: true });
+            if (iteration === 20 && needsCollateral) {
+              console.log(`Polled for ${5000 * 20} seconds, did not see collateralization go through.`);
+              this.setState({ paymentState: PaymentStates.CollateralTimeout, showReceipt: true });
+              return;
+            }
+          },
+          5000,
+          { iterations: 20 }
+        );
         return;
       }
     }
+
+    // if no collateral needed or link payment, just send payment
+    await this.sendPayment(paymentVal);
+  }
+
+  async sendPayment(paymentVal) {
+    const { connext } = this.props;
 
     try {
       let paymentRes = await connext.buy(paymentVal);
@@ -399,8 +401,9 @@ class PayCard extends Component {
           search: `?secret=${secret}&amountToken=${amount.amountToken}&amountWei=${amount.amountWei}`,
           state: { isConfirm: true, secret, amount }
         });
+      } else {
+        this.setState({ showReceipt: true, paymentState: PaymentStates.Success });
       }
-      this.setState({ showReceipt: true, paymentState: PaymentStates.Success });
     } catch (e) {
       console.log("Error sending payment:", e);
       this.setState({ paymentState: PaymentStates.OtherError, showReceipt: true });
@@ -545,7 +548,9 @@ class PayCard extends Component {
         <PaymentConfirmationModal
           showReceipt={this.state.showReceipt}
           sendError={this.state.sendError}
-          amountToken={this.state.paymentVal.payments[0].amount.amountToken ? Web3.utils.fromWei(this.state.paymentVal.payments[0].amount.amountToken) : "0"}
+          amountToken={
+            this.state.paymentVal.payments[0].amount.amountToken ? Web3.utils.fromWei(this.state.paymentVal.payments[0].amount.amountToken) : "0"
+          }
           recipient={this.state.paymentVal.payments[0].recipient}
           history={this.props.history}
           closeModal={this.closeModal}
