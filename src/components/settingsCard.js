@@ -159,8 +159,8 @@ class SettingsCard extends Component {
             }}
             onClick={() => {window.open('https://discord.gg/q2cakRc','_blank');window.close();return false}}
             size="large"
-          >
-            Discord
+          > 
+            Support
           </Button>
         </Grid>
         <Grid item xs={12} className={classes.button}>
