@@ -14,7 +14,6 @@ Mainnet implementation: https://daicard.io (coming soon!)
     - [NPM Package](#npm-package)
     - [Autosigner vs. Metamask](#autosigner-vs-metamask)
     - [Instantiating the Connext Client](#instantiating-the-connext-client)
-    - [User Authentication](#user-authentication)
     - [Making Deposits to Channels](#making-deposits-to-channels)
     - [Making ETH <-> Token Swaps](#making-eth-to-token-swaps)
     - [Making Payments](#making-payments)
@@ -195,10 +194,6 @@ async setConnext() {
     await connext.start();
   }
   ```
-  
- ### User Authentication
- 
- [[Under Construction]]
   
  ### Making Deposits to Channels
  
