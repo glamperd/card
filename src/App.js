@@ -672,7 +672,7 @@ class App extends React.Component {
               )}
             />
             <Route
-              path="/status-err"
+              path="/support"
               render={props => (
                 <SupportCard
                   {...props}
