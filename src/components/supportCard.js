@@ -33,19 +33,14 @@ class SupportCard extends Component {
 
   render() {
     const {
-      classes,
-      connext,
-      web3,
       channelState,
-      connextState,
-      channelManagerAddress
     } = this.props;
     const { error, exitableBalance } = this.state;
 
     const exitableState =
       channelState &&
       channelState.sigUser &&
-      channelState.sigHub &&
+      channelState.sigHub && 
       channelState.sigUser != "0x0" &&
       channelState.sigHub != "0x0";
 
@@ -55,8 +50,8 @@ class SupportCard extends Component {
         spacing={24}
         direction="column"
         style={{
-          paddingLeft: 12,
-          paddingRight: 12,
+          paddingLeft: "5%",
+          paddingRight: "5%",
           paddingTop: "10%",
           paddingBottom: "10%",
           textAlign: "center",
@@ -64,30 +59,32 @@ class SupportCard extends Component {
         }}
       >
         <Grid item xs={12}>
-          <Typography variant="h2">
+          <Typography variant="h3">
             <span>{`Uh oh!`}</span>
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography paragraph variant="h6">
-            <span>{`There appears to be an error with your channel. Please contact us on discord, for help resolve this gaslessly!`}</span>
+            <span>{`There seems to be an error with your channel. Contact us on discord to resolve this gaslessly!`}</span>
           </Typography>
         </Grid>
-        <Grid item xs={12}>
-          {exitableState && (
-            <Typography paragraph variant="body1">
-              <span>{`If you need your funds now, use this update to call 'startExitWithUpdate' on the contract at ${
-                channelState.contractAddress
-              }.`}</span>
-            </Typography>
-          )}
-        </Grid>
-        <Grid item xs={12}>
-          {exitableState && (
-            <Typography paragraph variant="body2">
-              {`${JSON.stringify(channelState, null, 2)}.`}
-            </Typography>
-          )}
+        <Grid container>
+          <Grid item xs={12}>
+            {exitableState && (
+              <Typography paragraph variant="subtitle2">
+                <span>{`If you need your funds now, use this state to call 'startExitWithUpdate' onchain at ${
+                  channelState.contractAddress
+                }.`}</span>
+              </Typography>
+            )}
+          </Grid>
+          <Grid item xs={12}>
+            {exitableState && (
+              <Typography variant="caption" style={{ fontSize: "10px" }}>
+                {channelRender(channelState)}
+              </Typography>
+            )}
+          </Grid>
         </Grid>
         
         <Grid item xs={12}>
@@ -126,3 +123,13 @@ class SupportCard extends Component {
 }
 
 export default withStyles(styles)(SupportCard);
+
+function channelRender (channelState) {
+  return Object.entries(channelState).map(([key, value], i) => {
+    return (
+      <div>
+        <span>{key}: {value} </span>
+      </div>
+    )
+  })
+}
