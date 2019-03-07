@@ -15,8 +15,8 @@ function makePrompt {
 
 MODE="${1:-staging}"
 if [[ "$MODE" == "prod" ]]
-then prod_url="daicard.io"
-else prod_url="staging.connext.network"
+then prod_server="daicard.io"
+else prod_server="staging.connext.network"
 fi
 
 user=ubuntu
@@ -26,6 +26,7 @@ if [[ ! -f "$ssh_key" ]]
 then echo "To deploy to $prod_server, you need to have an ssh key at: $ssh_key" && exit
 fi
 
+echo "Deploying to server at: $prod_server"
 echo "Before yolo deploying the card, let's go through a small checklist. Did you test all of the following flows:"
 
 makePrompt "User depositing eth?"
