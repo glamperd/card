@@ -8,7 +8,12 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
-import { withStyles, Grid, Typography, CircularProgress } from "@material-ui/core";
+import {
+  withStyles,
+  Grid,
+  Typography,
+  CircularProgress
+} from "@material-ui/core";
 import { getDollarSubstring } from "../utils/getDollarSubstring";
 import { emptyAddress } from "connext/dist/Utils";
 import { convertPayment } from "connext/dist/types";
@@ -55,13 +60,15 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Recipient channel is being initialized, payment will be sent after.
+              Recipient channel is being initialized, payment will be sent
+              after.
             </Typography>
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Do not refresh the page. If you refresh, you will have to send your payment again. If you have any questions, please contact support.
-              (Settings --> Support)
+              Do not refresh the page. If you refresh, you will have to send
+              your payment again. If you have any questions, please contact
+              support. (Settings --> Support)
             </Typography>
           </Grid>
           <CircularProgress style={{ marginTop: "1em" }} />
@@ -82,8 +89,9 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Maybe they need to log in? Please try your payment again later. If you have any questions, please contact support. 
-              (Settings --> Support)
+              Maybe they need to log in? Please try your payment again later. If
+              you have any questions, please contact support. (Settings -->
+              Support)
             </Typography>
           </Grid>
         </Grid>
@@ -103,7 +111,8 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Please try again in 30s and contact support if you continue to experience issues. (Settings --> Support)
+              Please try again in 30s and contact support if you continue to
+              experience issues. (Settings --> Support)
             </Typography>
           </Grid>
         </Grid>
@@ -137,7 +146,11 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
 const PaymentConfirmationModal = props => (
   <Modal
     open={props.showReceipt}
-    onBackdropClick={props.paymentState === PaymentStates.Collateralizing ? null : () => props.closeModal()}
+    onBackdropClick={
+      props.paymentState === PaymentStates.Collateralizing
+        ? null
+        : () => props.closeModal()
+    }
     style={{
       justifyContent: "center",
       alignItems: "center",
@@ -151,13 +164,33 @@ const PaymentConfirmationModal = props => (
       right: "0"
     }}
   >
-    <Grid container style={{ backgroundColor: "#FFF", paddingTop: "10%", paddingBottom: "10%" }} justify="center">
-      {ConfirmationModalText(props.paymentState, props.amountToken, props.recipient)}
+    <Grid
+      container
+      style={{
+        backgroundColor: "#FFF",
+        paddingTop: "10%",
+        paddingBottom: "10%"
+      }}
+      justify="center"
+    >
+      {ConfirmationModalText(
+        props.paymentState,
+        props.amountToken,
+        props.recipient
+      )}
       {props.paymentState === PaymentStates.Collateralizing ? (
         <></>
       ) : (
-        <Grid item style={{ margin: "1em", flexDirection: "row", width: "80%" }}>
-          <Button color="primary" variant="outlined" size="small" onClick={() => props.closeModal()}>
+        <Grid
+          item
+          style={{ margin: "1em", flexDirection: "row", width: "80%" }}
+        >
+          <Button
+            color="primary"
+            variant="outlined"
+            size="small"
+            onClick={() => props.closeModal()}
+          >
             Pay Again
           </Button>
           <Button
@@ -191,9 +224,13 @@ class PayCard extends Component {
         },
         payments: [
           {
-            recipient: this.props.scanArgs.recipient ? this.props.scanArgs.recipient : "",
+            recipient: this.props.scanArgs.recipient
+              ? this.props.scanArgs.recipient
+              : "",
             amount: {
-              amountToken: this.props.scanArgs.amount ? Web3.utils.toWei(this.props.scanArgs.amount) : "0",
+              amountToken: this.props.scanArgs.amount
+                ? Web3.utils.toWei(this.props.scanArgs.amount)
+                : "0",
               amountWei: "0"
             },
             type: "PT_CHANNEL"
@@ -214,7 +251,9 @@ class PayCard extends Component {
     const query = queryString.parse(location.search);
     if (query.amountToken) {
       await this.setState(oldState => {
-        oldState.paymentVal.payments[0].amount.amountToken = Web3.utils.toWei(query.amountToken);
+        oldState.paymentVal.payments[0].amount.amountToken = Web3.utils.toWei(
+          query.amountToken
+        );
         oldState.displayVal = query.amountToken;
         return oldState;
       });
@@ -229,7 +268,9 @@ class PayCard extends Component {
 
   async updatePaymentHandler(value) {
     await this.setState(oldState => {
-      oldState.paymentVal.payments[0].amount.amountToken = value ? Web3.utils.toWei(`${value}`) : "0";
+      oldState.paymentVal.payments[0].amount.amountToken = value
+        ? Web3.utils.toWei(`${value}`)
+        : "0";
       return oldState;
     });
     this.setState({ displayVal: value });
@@ -337,9 +378,12 @@ class PayCard extends Component {
       return;
     }
 
-    if(paymentVal.payments[0].type !== "PT_LINK") {
+    if (paymentVal.payments[0].type !== "PT_LINK") {
       // check if the recipient needs collateral
-      let needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment));
+      let needsCollateral = await connext.recipientNeedsCollateral(
+        recipient,
+        convertPayment("str", payment)
+      );
       // needs collateral can indicate that the recipient does
       // not have a channel, or that it does not have current funds
       // in either case, you need to send a failed payment
@@ -348,27 +392,46 @@ class PayCard extends Component {
         // before making payment, recipient needs collateral
         // begin autocollateralization via failed hub
         // and wait for collateral
-        this.setState({ paymentState: PaymentStates.Collateralizing, showReceipt: true });
+        this.setState({
+          paymentState: PaymentStates.Collateralizing,
+          showReceipt: true
+        });
         try {
           await connext.buy(paymentVal);
           // somehow it worked???
-          console.log('Expected payment to fail but it succeeded.');
-          this.setState({ showReceipt: true, paymentState: PaymentStates.Success });
+          console.log("Expected payment to fail but it succeeded.");
+          this.setState({
+            showReceipt: true,
+            paymentState: PaymentStates.Success
+          });
         } catch (e) {
-          console.log(`Caught payment error after needs collateral, error: ${e.message}, will monitor collateral and try again later`);
+          console.log(
+            `Caught payment error after needs collateral, error: ${
+              e.message
+            }, will monitor collateral and try again later`
+          );
           const self = this;
           interval(
             async (iteration, stop) => {
               console.log("iteration: ", iteration);
-              needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment));
+              needsCollateral = await connext.recipientNeedsCollateral(
+                recipient,
+                convertPayment("str", payment)
+              );
               console.log("needsCollateral: ", needsCollateral);
               if (!needsCollateral) {
                 await self.sendPayment(paymentVal);
                 stop();
               }
               if (iteration === 20 && needsCollateral) {
-                console.log(`Polled for ${5000 * 20} seconds, did not see collateralization go through.`);
-                this.setState({ paymentState: PaymentStates.CollateralTimeout, showReceipt: true });
+                console.log(
+                  `Polled for ${5000 *
+                    20} seconds, did not see collateralization go through.`
+                );
+                this.setState({
+                  paymentState: PaymentStates.CollateralTimeout,
+                  showReceipt: true
+                });
                 return;
               }
             },
@@ -394,15 +457,23 @@ class PayCard extends Component {
         const amount = paymentVal.payments[0].amount;
         this.props.history.push({
           pathname: "/redeem",
-          search: `?secret=${secret}&amountToken=${amount.amountToken}&amountWei=${amount.amountWei}`,
+          search: `?secret=${secret}&amountToken=${
+            amount.amountToken
+          }&amountWei=${amount.amountWei}`,
           state: { isConfirm: true, secret, amount }
         });
       } else {
-        this.setState({ showReceipt: true, paymentState: PaymentStates.Success });
+        this.setState({
+          showReceipt: true,
+          paymentState: PaymentStates.Success
+        });
       }
     } catch (e) {
       console.log("Error sending payment:", e);
-      this.setState({ paymentState: PaymentStates.OtherError, showReceipt: true });
+      this.setState({
+        paymentState: PaymentStates.OtherError,
+        showReceipt: true
+      });
     }
   }
 
@@ -428,7 +499,13 @@ class PayCard extends Component {
           justify: "center"
         }}
       >
-        <Grid container wrap="nowrap" direction="row" justify="center" alignItems="center">
+        <Grid
+          container
+          wrap="nowrap"
+          direction="row"
+          justify="center"
+          alignItems="center"
+        >
           <Grid item xs={12}>
             <SendIcon className={classes.icon} />
           </Grid>
@@ -441,7 +518,10 @@ class PayCard extends Component {
                   ? "$" +
                     getDollarSubstring(channelState.balanceTokenUser)[0] +
                     "." +
-                    getDollarSubstring(channelState.balanceTokenUser)[1].substr(0, 2)
+                    getDollarSubstring(channelState.balanceTokenUser)[1].substr(
+                      0,
+                      2
+                    )
                   : "$0.00"}
               </span>
             </Typography>
@@ -472,17 +552,34 @@ class PayCard extends Component {
             id="outlined"
             label="Recipient Address"
             type="string"
-            value={this.state.paymentVal.payments[0].recipient === emptyAddress ? "" : this.state.paymentVal.payments[0].recipient}
+            value={
+              this.state.paymentVal.payments[0].recipient === emptyAddress
+                ? ""
+                : this.state.paymentVal.payments[0].recipient
+            }
             onChange={evt => this.updateRecipientHandler(evt.target.value)}
             margin="normal"
             variant="outlined"
-            helperText={this.state.addressError ? this.state.addressError : "Optional for linked payments"}
+            helperText={
+              this.state.addressError
+                ? this.state.addressError
+                : "Optional for linked payments"
+            }
             error={this.state.addressError != null}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <Tooltip disableFocusListener disableTouchListener title="Scan with QR code">
-                    <Button variant="contained" color="primary" style={{ color: "#FFF" }} onClick={() => this.setState({ scan: true })}>
+                  <Tooltip
+                    disableFocusListener
+                    disableTouchListener
+                    title="Scan with QR code"
+                  >
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      style={{ color: "#FFF" }}
+                      onClick={() => this.setState({ scan: true })}
+                    >
                       <QRIcon />
                     </Button>
                   </Tooltip>
@@ -508,18 +605,39 @@ class PayCard extends Component {
             right: "0"
           }}
         >
-          <QRScan handleResult={this.handleQRData} history={this.props.history} />
+          <QRScan
+            handleResult={this.handleQRData}
+            history={this.props.history}
+          />
         </Modal>
         <Grid item xs={12}>
-          <Grid container direction="row" alignItems="center" justify="center" spacing={16}>
+          <Grid
+            container
+            direction="row"
+            alignItems="center"
+            justify="center"
+            spacing={16}
+          >
             <Grid item xs={6}>
-              <Button fullWidth className={classes.button} variant="contained" size="large" onClick={() => this.linkHandler()}>
+              <Button
+                fullWidth
+                className={classes.button}
+                variant="contained"
+                size="large"
+                onClick={() => this.linkHandler()}
+              >
                 Link
                 <LinkIcon style={{ marginLeft: "5px" }} />
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button fullWidth className={classes.button} variant="contained" size="large" onClick={() => this.paymentHandler()}>
+              <Button
+                fullWidth
+                className={classes.button}
+                variant="contained"
+                size="large"
+                onClick={() => this.paymentHandler()}
+              >
                 Send
                 <SendIcon style={{ marginLeft: "5px" }} />
               </Button>
@@ -545,7 +663,11 @@ class PayCard extends Component {
           showReceipt={this.state.showReceipt}
           sendError={this.state.sendError}
           amountToken={
-            this.state.paymentVal.payments[0].amount.amountToken ? Web3.utils.fromWei(this.state.paymentVal.payments[0].amount.amountToken) : "0"
+            this.state.paymentVal.payments[0].amount.amountToken
+              ? Web3.utils.fromWei(
+                  this.state.paymentVal.payments[0].amount.amountToken
+                )
+              : "0"
           }
           recipient={this.state.paymentVal.payments[0].recipient}
           history={this.props.history}

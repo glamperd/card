@@ -32,15 +32,13 @@ class SupportCard extends Component {
   };
 
   render() {
-    const {
-      channelState,
-    } = this.props;
+    const { channelState } = this.props;
     const { error, exitableBalance } = this.state;
 
     const exitableState =
       channelState &&
       channelState.sigUser &&
-      channelState.sigHub && 
+      channelState.sigHub &&
       channelState.sigUser != "0x0" &&
       channelState.sigHub != "0x0";
 
@@ -86,7 +84,7 @@ class SupportCard extends Component {
             )}
           </Grid>
         </Grid>
-        
+
         <Grid item xs={12}>
           <Button
             variant="outlined"
@@ -109,12 +107,14 @@ class SupportCard extends Component {
 
 export default withStyles(styles)(SupportCard);
 
-function channelRender (channelState) {
+function channelRender(channelState) {
   return Object.entries(channelState).map(([key, value], i) => {
     return (
       <div>
-        <span>{key}: {value} </span>
+        <span>
+          {key}: {value}{" "}
+        </span>
       </div>
-    )
-  })
+    );
+  });
 }

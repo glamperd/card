@@ -32,7 +32,7 @@ class RedeemCard extends Component {
       showReceipt: false,
       previouslyRedeemed: false,
       amount: null,
-      requestedCollateral: false,
+      requestedCollateral: false
     };
   }
 
@@ -40,10 +40,13 @@ class RedeemCard extends Component {
     const { location } = this.props;
     const query = queryString.parse(location.search);
     // uncondonditionally set secret from query
-    this.setState({ secret: query.secret, amount: { 
-      amountToken: query.amountToken,
-      amountWei: query.amountWei,
-    } });
+    this.setState({
+      secret: query.secret,
+      amount: {
+        amountToken: query.amountToken,
+        amountWei: query.amountWei
+      }
+    });
 
     // set state vars if they exist
     if (location.state && location.state.isConfirm) {
@@ -52,7 +55,7 @@ class RedeemCard extends Component {
     }
 
     // set time component mounted
-    this.setState({ redeemStarted: Date.now() })
+    this.setState({ redeemStarted: Date.now() });
 
     setInterval(async () => {
       await this.redeemPayment();
@@ -61,12 +64,23 @@ class RedeemCard extends Component {
 
   generateQrUrl(secret, amount) {
     const { publicUrl } = this.props;
-    const url = `${publicUrl}/redeem?secret=${secret ? secret : ""}&amountToken=${amount ? amount.amountToken : "0"}&amountWei=${amount ? amount.amountWei : "0"}`;
+    const url = `${publicUrl}/redeem?secret=${
+      secret ? secret : ""
+    }&amountToken=${amount ? amount.amountToken : "0"}&amountWei=${
+      amount ? amount.amountWei : "0"
+    }`;
     return url;
   }
 
   async redeemPayment() {
-    const { secret, isConfirm, purchaseId, redeemStarted, amount, previouslyRedeemed } = this.state;
+    const {
+      secret,
+      isConfirm,
+      purchaseId,
+      redeemStarted,
+      amount,
+      previouslyRedeemed
+    } = this.state;
     const { connext, channelState, connextState } = this.props;
     if (!connext || !channelState || !connextState) {
       return;
@@ -83,29 +97,41 @@ class RedeemCard extends Component {
     }
 
     if (purchaseId) {
-      return
+      return;
     }
 
     // return if the payment has already been redeemed
     if (previouslyRedeemed) {
-      this.setState({ purchaseId: "failed", sendError: true, showReceipt: true });
-      return
+      this.setState({
+        purchaseId: "failed",
+        sendError: true,
+        showReceipt: true
+      });
+      return;
     }
 
     // check if the time has already elapsed based on time mounted
     if (Date.now() - redeemStarted > 300 * 1000) {
       // set the purchase to failed, show send error and receipt
-      this.setState({ purchaseId: "failed", sendError: true, showReceipt: true });
-      return
+      this.setState({
+        purchaseId: "failed",
+        sendError: true,
+        showReceipt: true
+      });
+      return;
     }
     // check if the channel has collateral, otherwise display loading
-    if (new BigNumber(channelState.balanceTokenHub).lt(new BigNumber(amount.amountToken)) && !connextState.runtime.awaitingOnChainTransaction) {
+    if (
+      new BigNumber(channelState.balanceTokenHub).lt(
+        new BigNumber(amount.amountToken)
+      ) &&
+      !connextState.runtime.awaitingOnChainTransaction
+    ) {
       // channel does not have collateral
-      await connext.requestCollateral()
+      await connext.requestCollateral();
       // if you already requested collateral, return
-      return
+      return;
     }
-
 
     // user is not payor, channel has collateral, can try to redeem payment
     try {
@@ -114,21 +140,33 @@ class RedeemCard extends Component {
         // make sure hub isnt silently failing by returning null purchase id
         // as it processes collateral
         if (!updated.purchaseId || !updated.amount) {
-          return
+          return;
         }
 
-        this.setState({ purchaseId: updated.purchaseId, amount: updated.amount, showReceipt: true });
+        this.setState({
+          purchaseId: updated.purchaseId,
+          amount: updated.amount,
+          showReceipt: true
+        });
       }
     } catch (e) {
       if (e.message.indexOf("Payment has been redeemed") !== -1) {
-        this.setState({ previouslyRedeemed: true })
-        return
+        this.setState({ previouslyRedeemed: true });
+        return;
       }
     }
   }
 
   render() {
-    let { secret, isConfirm, purchaseId, sendError, showReceipt, previouslyRedeemed, amount } = this.state;
+    let {
+      secret,
+      isConfirm,
+      purchaseId,
+      sendError,
+      showReceipt,
+      previouslyRedeemed,
+      amount
+    } = this.state;
 
     const { classes } = this.props;
     const url = this.generateQrUrl(secret, amount);
@@ -157,7 +195,9 @@ class RedeemCard extends Component {
           <Typography noWrap variant="h5">
             {isConfirm && <span>{"Scan to Redeem"}</span>}
             {purchaseId === "failed" && <span>{"Uh Oh! Payment Failed"}</span>}
-            {purchaseId && purchaseId !== "failed" && <span>{"Payment Redeemed!"}</span>}
+            {purchaseId && purchaseId !== "failed" && (
+              <span>{"Payment Redeemed!"}</span>
+            )}
             {!purchaseId && !isConfirm && <span>{"Redeeming Payment..."}</span>}
           </Typography>
         </Grid>
@@ -169,7 +209,11 @@ class RedeemCard extends Component {
             <CopyToClipboard text={url}>
               <Button variant="outlined" fullWidth>
                 <Typography noWrap variant="body1">
-                  <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
+                  <Tooltip
+                    disableFocusListener
+                    disableTouchListener
+                    title="Click to Copy"
+                  >
                     <span>{url}</span>
                   </Tooltip>
                 </Typography>
@@ -186,7 +230,9 @@ class RedeemCard extends Component {
           }}
         >
           {purchaseId === "failed" && <ErrorIcon className={classes.icon} />}
-          {purchaseId && purchaseId !== "failed" && <DoneIcon className={classes.icon} />}
+          {purchaseId && purchaseId !== "failed" && (
+            <DoneIcon className={classes.icon} />
+          )}
           {!purchaseId && !isConfirm && <CircularProgress />}
         </Grid>
 
@@ -207,7 +253,9 @@ class RedeemCard extends Component {
         </Grid>
         <Modal
           open={showReceipt && !isConfirm}
-          onBackdropClick={() => this.setState({ showReceipt: false, sendError: false })}
+          onBackdropClick={() =>
+            this.setState({ showReceipt: false, sendError: false })
+          }
           style={{
             justifyContent: "center",
             alignItems: "center",
@@ -221,40 +269,50 @@ class RedeemCard extends Component {
             right: "0"
           }}
         >
-          <Grid container style={{ backgroundColor: "#FFF", paddingTop: "10%", paddingBottom: "10%" }} justify="center">
-            {sendError ? ((
-              previouslyRedeemed ? 
-              <Grid style={{ width: "80%" }}>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="h5" style={{ color: "#F22424" }}>
-                    Payment Failed
-                  </Typography>
+          <Grid
+            container
+            style={{
+              backgroundColor: "#FFF",
+              paddingTop: "10%",
+              paddingBottom: "10%"
+            }}
+            justify="center"
+          >
+            {sendError ? (
+              previouslyRedeemed ? (
+                <Grid style={{ width: "80%" }}>
+                  <Grid item style={{ margin: "1em" }}>
+                    <Typography variant="h5" style={{ color: "#F22424" }}>
+                      Payment Failed
+                    </Typography>
+                  </Grid>
+                  <Grid item style={{ margin: "1em" }}>
+                    <Typography variant="body1" style={{ color: "#0F1012" }}>
+                      It appears this payment has already been redeemed.
+                    </Typography>
+                  </Grid>
                 </Grid>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="body1" style={{ color: "#0F1012" }}>
-                    It appears this payment has already been redeemed.
-                  </Typography>
+              ) : (
+                <Grid style={{ width: "80%" }}>
+                  <Grid item style={{ margin: "1em" }}>
+                    <Typography variant="h5" style={{ color: "#F22424" }}>
+                      Payment Failed
+                    </Typography>
+                  </Grid>
+                  <Grid item style={{ margin: "1em" }}>
+                    <Typography variant="body1" style={{ color: "#0F1012" }}>
+                      This is most likely because your Card is being set up.
+                    </Typography>
+                  </Grid>
+                  <Grid item style={{ margin: "1em" }}>
+                    <Typography variant="body1" style={{ color: "#0F1012" }}>
+                      Please try again in 30s and contact support if you
+                      continue to experience issues. (Settings --> Support)
+                    </Typography>
+                  </Grid>
                 </Grid>
-              </Grid>
-              :
-              <Grid style={{ width: "80%" }}>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="h5" style={{ color: "#F22424" }}>
-                    Payment Failed
-                  </Typography>
-                </Grid>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="body1" style={{ color: "#0F1012" }}>
-                    This is most likely because your Card is being set up.
-                  </Typography>
-                </Grid>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="body1" style={{ color: "#0F1012" }}>
-                    Please try again in 30s and contact support if you continue to experience issues. (Settings --> Support)
-                  </Typography>
-                </Grid>
-              </Grid>
-            )) : (
+              )
+            ) : (
               <Grid style={{ width: "80%" }}>
                 <Grid item style={{ margin: "1em" }}>
                   <Typography variant="h5" style={{ color: "#009247" }}>
@@ -263,12 +321,20 @@ class RedeemCard extends Component {
                 </Grid>
                 <Grid item style={{ margin: "1em" }}>
                   <Typography variant="body1" style={{ color: "#0F1012" }}>
-                    Amount: ${amount ? getDollarSubstring(amount.amountToken)[0] + "." + getDollarSubstring(amount.amountToken)[1].substr(0, 2): ""}
+                    Amount: $
+                    {amount
+                      ? getDollarSubstring(amount.amountToken)[0] +
+                        "." +
+                        getDollarSubstring(amount.amountToken)[1].substr(0, 2)
+                      : ""}
                   </Typography>
                 </Grid>
               </Grid>
             )}
-            <Grid item style={{ margin: "1em", flexDirection: "row", width: "80%" }}>
+            <Grid
+              item
+              style={{ margin: "1em", flexDirection: "row", width: "80%" }}
+            >
               <Button
                 style={{
                   background: "#FFF",

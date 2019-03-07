@@ -111,10 +111,15 @@ class DepositCard extends Component {
         </Grid>
         <Grid item xs={12}>
           <Typography variant="h6">
-              <span>{`Deposits over ${((this.props.maxTokenDeposit / Math.pow(10, 18)) /
-                this.props.exchangeRate).toString().substring(0, 4)} Eth 
+            <span>{`Deposits over ${(
+              this.props.maxTokenDeposit /
+              Math.pow(10, 18) /
+              this.props.exchangeRate
+            )
+              .toString()
+              .substring(0, 4)} Eth 
                       or ${this.props.maxTokenDeposit /
-                Math.pow(10, 18)} Dai will be refunded.`}</span>
+                        Math.pow(10, 18)} Dai will be refunded.`}</span>
           </Typography>
         </Grid>
         <Grid item xs={12}>

@@ -11,8 +11,7 @@ import QRGenerate from "./qrGenerate";
 //import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 //import { withRouter } from "react-router-dom";
 import { withStyles, Grid } from "@material-ui/core";
-import Snackbar from './snackBar';
-
+import Snackbar from "./snackBar";
 
 const styles = theme => ({
   icon: {
@@ -33,19 +32,19 @@ class ReceiveCard extends Component {
     };
   }
 
-  handleClick = async() => {
-    this.setState({ copied:false });
-  }
+  handleClick = async () => {
+    this.setState({ copied: false });
+  };
 
-  updatePaymentHandler = async (value) => {
+  updatePaymentHandler = async value => {
     // appears to be just value
     // const adjusted = Web3.utils.toWei(value)
     this.setState({
       qrUrl: this.generateQrUrl(value)
-    })
-  }
+    });
+  };
 
-  generateQrUrl = (value) => {
+  generateQrUrl = value => {
     const { publicUrl, address } = this.props;
     // function should take a payment value
     // and convert it to the url with
@@ -53,7 +52,7 @@ class ReceiveCard extends Component {
     // modal state (recipient, amountToken)
     const url = `${publicUrl}/send?amountToken=${value}&recipient=${address}`;
     return url;
-  }
+  };
 
   render() {
     const { classes } = this.props;
@@ -72,11 +71,12 @@ class ReceiveCard extends Component {
           justifyContent: "center"
         }}
       >
-      <Snackbar 
-            handleClick={() => this.handleClick()}
-            onClose={() => this.handleClick()}
-            open={copied}
-            text="Copied!"/>
+        <Snackbar
+          handleClick={() => this.handleClick()}
+          onClose={() => this.handleClick()}
+          open={copied}
+          text="Copied!"
+        />
         <Grid
           container
           wrap="nowrap"
@@ -107,12 +107,17 @@ class ReceiveCard extends Component {
         </Grid>
         <Grid item xs={12}>
           {/* <CopyIcon style={{marginBottom: "2px"}}/> */}
-          <CopyToClipboard 
-            onCopy={() => this.setState({copied: true})}
-            text={qrUrl}>
+          <CopyToClipboard
+            onCopy={() => this.setState({ copied: true })}
+            text={qrUrl}
+          >
             <Button variant="outlined" fullWidth>
               <Typography noWrap variant="body1">
-                <Tooltip disableFocusListener disableTouchListener title="Click to Copy">
+                <Tooltip
+                  disableFocusListener
+                  disableTouchListener
+                  title="Click to Copy"
+                >
                   <span>{qrUrl}</span>
                 </Tooltip>
               </Typography>
@@ -120,16 +125,16 @@ class ReceiveCard extends Component {
           </CopyToClipboard>
         </Grid>
         <Grid item xs={12}>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             style={{
               background: "#FFF",
               border: "1px solid #F22424",
               color: "#F22424",
-              width: "15%",
+              width: "15%"
             }}
-            size="medium" 
-            onClick={()=>this.props.history.push("/")}
+            size="medium"
+            onClick={() => this.props.history.push("/")}
           >
             Back
           </Button>
