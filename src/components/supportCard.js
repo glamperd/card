@@ -21,19 +21,33 @@ class SupportCard extends Component {
     super(props);
 
     this.state = {
-      error: null,
+      error: null
     };
   }
 
-  handleClick = async () => {
-    
+  handleClick = () => {
+    window.open("https://discord.gg/q2cakRc", "_blank");
+    window.close();
+    return false;
   };
 
   render() {
-    const { classes, connext, web3,  channelState, connextState } = this.props;
-    const { error } = this.state;
+    const {
+      classes,
+      connext,
+      web3,
+      channelState,
+      connextState,
+      channelManagerAddress
+    } = this.props;
+    const { error, exitableBalance } = this.state;
 
-    console.log('rendering...,?')
+    const exitableState =
+      channelState &&
+      channelState.sigUser &&
+      channelState.sigHub &&
+      channelState.sigUser != "0x0" &&
+      channelState.sigHub != "0x0";
 
     return (
       <Grid
@@ -50,17 +64,47 @@ class SupportCard extends Component {
         }}
       >
         <Grid item xs={12}>
-          <Typography variant="h6">
-              <span>{`Text 1`}</span>
+          <Typography variant="h2">
+            <span>{`Uh oh!`}</span>
           </Typography>
         </Grid>
-
         <Grid item xs={12}>
-          <Typography variant="h6">
-              <span>{`Text 2`}</span>
+          <Typography paragraph variant="h6">
+            <span>{`There appears to be an error with your channel. Please contact us on discord, for help resolve this gaslessly!`}</span>
           </Typography>
         </Grid>
-
+        <Grid item xs={12}>
+          {exitableState && (
+            <Typography paragraph variant="body1">
+              <span>{`If you need your funds now, use this update to call 'startExitWithUpdate' on the contract at ${
+                channelState.contractAddress
+              }.`}</span>
+            </Typography>
+          )}
+        </Grid>
+        <Grid item xs={12}>
+          {exitableState && (
+            <Typography paragraph variant="body2">
+              {`${JSON.stringify(channelState, null, 2)}.`}
+            </Typography>
+          )}
+        </Grid>
+        
+        <Grid item xs={12}>
+          <Button
+            variant="outlined"
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              width: "15%"
+            }}
+            size="medium"
+            onClick={() => this.handleClick()}
+          >
+            Support
+          </Button>
+        </Grid>
         <Grid item xs={12}>
           <Button
             variant="outlined"
