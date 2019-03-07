@@ -9,7 +9,6 @@ import { getConnextClient } from "connext/dist/Connext.js";
 import ProviderOptions from "./utils/ProviderOptions.ts";
 import clientProvider from "./utils/web3/clientProvider.ts";
 import { createWalletFromMnemonic } from "./walletGen";
-import axios from "axios";
 import { Paper, withStyles } from "@material-ui/core";
 import AppBarComponent from "./components/AppBar";
 import SettingsCard from "./components/settingsCard";
@@ -26,6 +25,8 @@ import { convertExchange } from "connext/dist/types";
 
 export const store = createStore(setWallet, null);
 
+let publicUrl;
+
 const Web3 = require("web3");
 const eth = require("ethers");
 const humanTokenAbi = require("./abi/humanToken.json");
@@ -33,8 +34,6 @@ const humanTokenAbi = require("./abi/humanToken.json");
 const env = process.env.NODE_ENV;
 const tokenAbi = humanTokenAbi;
 console.log(`starting app in env: ${JSON.stringify(process.env, null, 1)}`);
-
-const publicUrl = process.env.REACT_APP_PUBLIC_URL.toLowerCase();
 
 const overrides = {
   localHub: process.env.REACT_APP_LOCAL_HUB_OVERRIDE,
@@ -45,18 +44,9 @@ const overrides = {
   mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE
 }
 
-const HASH_PREAMBLE = "SpankWallet authentication message:";
 const DEPOSIT_MINIMUM_WEI = eth.utils.parseEther("0.03"); // 30 FIN
 const HUB_EXCHANGE_CEILING = eth.utils.parseEther("69"); // 69 TST
 const CHANNEL_DEPOSIT_MAX = eth.utils.parseEther("30"); // 30 TST
-
-const opts = {
-  headers: {
-    "Content-Type": "application/json; charset=utf-8",
-    Authorization: "Bearer foo"
-  },
-  withCredentials: true
-};
 
 const styles = theme => ({
   paper: {
@@ -138,6 +128,9 @@ class App extends React.Component {
   // ************************************************* //
 
   async componentDidMount() {
+    // set public url
+    publicUrl = window.location.origin.toLowerCase();
+
     // Set up state
     const mnemonic = localStorage.getItem("mnemonic")
     // on mount, check if you need to refund by removing maxBalance
