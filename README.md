@@ -26,9 +26,12 @@ Developer note: for branch `get-hub-config` to be functional in production, the 
 
 ### Local development
 
-1. Make sure you have indra running locally. Check out the instructions at https://github.com/ConnextProject/indra
+#### Prerequisites
+- Node 9+
+- Docker 
+- Make
 
-TL;DR:
+1. Make sure you have indra running locally. Check out the instructions at https://github.com/ConnextProject/indra
 
 ```
 git clone https://github.com/ConnextProject/indra.git
@@ -40,8 +43,8 @@ npm start
 
 ```
 git clone https://github.com/ConnextProject/card.git
-cd card
 npm i
+
 ```
 
 3. Start the app in developer-mode
@@ -50,7 +53,13 @@ npm i
 npm start
 ```
 
-4. Browse to localhost:3000
+If you have trouble connecting the card to your local Indra, you can also launch with Make:
+
+```
+make start
+```
+
+4. If you started with `npm start`, browse to `localhost:3000` or the port specified by npm; if you started with `make start`, browse to `localhost`
 
 ### Developing Connext Client Alongside 
 
@@ -355,7 +364,7 @@ Because the card is effectively a hot wallet, we've set our implementation of `c
 
 ### Collateralization
 
-To receive payments, the recipient's channel must be collateralized. This presents a few practical challenges: hub operators must decide how to allocate their reserves to minimize (a) the number of payments that fail due to uncollateralized channels and (b) the amount of funds locked up in channels. Because this is new technology, we're still exploring the best ways to handle collateralization and hub reserve management. 
+To receive payments, the recipient's channel must be collateralized. This presents a few practical challenges: hub operators must decide how to allocate their reserves to minimize (a) the number of payments that fail due to uncollateralized channels and (b) the amount of funds locked up in channels. In addition, implementers should adhere to some best practices to reduce loads on the hub and minimize the chance of payment delays. Because this is new technology, we're still exploring the best ways to handle collateralization and hub reserve management. 
 
 Right now, submitting a withdrawal request with zero value will decollateralize a user's channel entirely.
 
