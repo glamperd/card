@@ -384,7 +384,6 @@ class PayCard extends Component {
         }
       }
     }
-    console.log("HERE")
     // if no collateral needed or link payment, just send payment
     await this.sendPayment(paymentVal);
   }
