@@ -342,47 +342,49 @@ class PayCard extends Component {
       return;
     }
 
-    // check if the recipient needs collateral
-    let needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment));
-    // needs collateral can indicate that the recipient does
-    // not have a channel, or that it does not have current funds
-    // in either case, you need to send a failed payment
-    // to begin auto collateralization process
-    if (needsCollateral && recipient !== emptyAddress && paymentVal.payments[0].type !== "PT_LINK") {
-      // before making payment, recipient needs collateral
-      // begin autocollateralization via failed hub
-      // and wait for collateral
-      this.setState({ paymentState: PaymentStates.Collateralizing, showReceipt: true });
-      try {
-        await connext.buy(paymentVal);
-        // somehow it worked???
-        console.log('Expected payment to fail but it succeeded.');
-        this.setState({ showReceipt: true, paymentState: PaymentStates.Success });
-      } catch (e) {
-        console.log(`Caught payment error after needs collateral, error: ${e.message}, will monitor collateral and try again later`);
-        const self = this;
-        interval(
-          async (iteration, stop) => {
-            console.log("iteration: ", iteration);
-            needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment));
-            console.log("needsCollateral: ", needsCollateral);
-            if (!needsCollateral) {
-              await self.sendPayment(paymentVal);
-              stop();
-            }
-            if (iteration === 20 && needsCollateral) {
-              console.log(`Polled for ${5000 * 20} seconds, did not see collateralization go through.`);
-              this.setState({ paymentState: PaymentStates.CollateralTimeout, showReceipt: true });
-              return;
-            }
-          },
-          5000,
-          { iterations: 20 }
-        );
-        return;
+    if(paymentVal.payments[0].type !== "PT_LINK") {
+      // check if the recipient needs collateral
+      let needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment));
+      // needs collateral can indicate that the recipient does
+      // not have a channel, or that it does not have current funds
+      // in either case, you need to send a failed payment
+      // to begin auto collateralization process
+      if (needsCollateral && recipient !== emptyAddress) {
+        // before making payment, recipient needs collateral
+        // begin autocollateralization via failed hub
+        // and wait for collateral
+        this.setState({ paymentState: PaymentStates.Collateralizing, showReceipt: true });
+        try {
+          await connext.buy(paymentVal);
+          // somehow it worked???
+          console.log('Expected payment to fail but it succeeded.');
+          this.setState({ showReceipt: true, paymentState: PaymentStates.Success });
+        } catch (e) {
+          console.log(`Caught payment error after needs collateral, error: ${e.message}, will monitor collateral and try again later`);
+          const self = this;
+          interval(
+            async (iteration, stop) => {
+              console.log("iteration: ", iteration);
+              needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment));
+              console.log("needsCollateral: ", needsCollateral);
+              if (!needsCollateral) {
+                await self.sendPayment(paymentVal);
+                stop();
+              }
+              if (iteration === 20 && needsCollateral) {
+                console.log(`Polled for ${5000 * 20} seconds, did not see collateralization go through.`);
+                this.setState({ paymentState: PaymentStates.CollateralTimeout, showReceipt: true });
+                return;
+              }
+            },
+            5000,
+            { iterations: 20 }
+          );
+          return;
+        }
       }
     }
-
+    console.log("HERE")
     // if no collateral needed or link payment, just send payment
     await this.sendPayment(paymentVal);
   }
