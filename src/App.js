@@ -2,7 +2,7 @@ import React from "react";
 import "./App.css";
 import { setWallet } from "./utils/actions.js";
 import { createStore } from "redux";
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
 import Home from "./components/Home";
 import DepositCard from "./components/depositCard";
 import { getConnextClient } from "connext/dist/Connext.js";
@@ -16,6 +16,7 @@ import SettingsCard from "./components/settingsCard";
 import ReceiveCard from "./components/receiveCard";
 import SendCard from "./components/sendCard";
 import CashOutCard from "./components/cashOutCard";
+import SupportCard from "./components/supportCard";
 import { createWallet } from "./walletGen";
 import RedeemCard from "./components/redeemCard";
 import Confirmations from './components/Confirmations';
@@ -606,7 +607,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState } = this.state;
+    const { address, channelState, sendScanArgs, exchangeRate, customWeb3, connext, connextState, runtime } = this.state;
     const { classes } = this.props;
     return (
       <Router>
@@ -617,7 +618,9 @@ class App extends React.Component {
             <Route
               exact
               path="/"
-              render={props => (
+              render={props => runtime && runtime.channelStatus != 'CS_OPEN' ? (
+                <Redirect to="/support" />
+              ) : (
                 <Home {...props} address={address} connextState={connextState} channelState={channelState} publicUrl={publicUrl} scanURL={this.scanURL.bind(this)} />
               )}
             />
@@ -662,6 +665,18 @@ class App extends React.Component {
                   channelState={channelState}
                   publicUrl={publicUrl}
                   exchangeRate={exchangeRate}
+                  web3={customWeb3}
+                  connext={connext}
+                  connextState={connextState}
+                />
+              )}
+            />
+            <Route
+              path="/status-err"
+              render={props => (
+                <SupportCard
+                  {...props}
+                  channelState={channelState}
                   web3={customWeb3}
                   connext={connext}
                   connextState={connextState}
