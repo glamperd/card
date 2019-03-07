@@ -641,9 +641,6 @@ class App extends React.Component {
                 <SupportCard
                   {...props}
                   channelState={channelState}
-                  web3={customWeb3}
-                  connext={connext}
-                  connextState={connextState}
                 />
               )}
             />
