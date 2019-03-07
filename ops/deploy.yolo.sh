@@ -13,8 +13,13 @@ function makePrompt {
   fi
 }
 
+MODE="${1:-staging}"
+if [[ "$MODE" == "prod" ]]
+then prod_url="daicard.io"
+else prod_url="staging.connext.network"
+fi
+
 user=ubuntu
-prod_server=daicard.io
 ssh_key="$HOME/.ssh/connext-aws"
 
 if [[ ! -f "$ssh_key" ]]
