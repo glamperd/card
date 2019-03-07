@@ -52,7 +52,6 @@ class ReceiveCard extends Component {
     // appropriate strings to prefill a send
     // modal state (recipient, amountToken)
     const url = `${publicUrl}/send?amountToken=${value}&recipient=${address}`;
-    console.log("QR code url:", url);
     return url;
   }
 

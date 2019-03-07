@@ -212,7 +212,6 @@ class PayCard extends Component {
   async componentDidMount() {
     const { location } = this.props;
     const query = queryString.parse(location.search);
-    console.log("query: ", query);
     if (query.amountToken) {
       await this.setState(oldState => {
         oldState.paymentVal.payments[0].amount.amountToken = Web3.utils.toWei(query.amountToken);
@@ -234,7 +233,6 @@ class PayCard extends Component {
       return oldState;
     });
     this.setState({ displayVal: value });
-    console.log(`Updated paymentVal: ${JSON.stringify(this.state.paymentVal, null, 2)}`);
   }
 
   handleQRData = async scanResult => {
@@ -259,7 +257,6 @@ class PayCard extends Component {
   async updateRecipientHandler(value) {
     this.setState(async oldState => {
       oldState.paymentVal.payments[0].recipient = value;
-      console.log(`Updated recipient: ${oldState.paymentVal.payments[0].recipient}`);
 
       return oldState;
     });
@@ -290,8 +287,6 @@ class PayCard extends Component {
       ...paymentVal,
       payments: [payment]
     };
-
-    console.log(`Updated paymentVal: ${JSON.stringify(updatedPaymentVal, null, 2)}`);
 
     this.setState({
       paymentVal: updatedPaymentVal

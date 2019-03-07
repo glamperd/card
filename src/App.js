@@ -33,7 +33,6 @@ const humanTokenAbi = require("./abi/humanToken.json");
 
 const env = process.env.NODE_ENV;
 const tokenAbi = humanTokenAbi;
-console.log(`starting app in env: ${JSON.stringify(process.env, null, 1)}`);
 
 const overrides = {
   localHub: process.env.REACT_APP_LOCAL_HUB_OVERRIDE,
@@ -146,7 +145,6 @@ class App extends React.Component {
     if (mnemonic) {
       const delegateSigner = await createWalletFromMnemonic(mnemonic);
       const address = await delegateSigner.getAddressString();
-      console.log("Autosigner address: ", address);
       this.setState({ delegateSigner, address });
       store.dispatch({
         type: "SET_WALLET",
@@ -209,7 +207,6 @@ class App extends React.Component {
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
     }
-    console.log("Custom provider with rpc:", rpcUrl);
 
     // Ask permission to view accounts
     let windowId;
@@ -235,7 +232,6 @@ class App extends React.Component {
       let { customWeb3, tokenAddress } = this.state;
       const tokenContract = new customWeb3.eth.Contract(tokenAbi, tokenAddress);
       this.setState({ tokenContract });
-      console.log("Set up token contract details");
     } catch (e) {
       console.log("Error setting token contract");
       console.log(e);
@@ -251,7 +247,6 @@ class App extends React.Component {
       user: address,
       origin: "localhost", // TODO: what should this be
     };
-    console.log("Setting up connext with opts:", opts);
 
     // *** Instantiate the connext client ***
     const connext = await getConnextClient(opts);
@@ -355,7 +350,6 @@ class App extends React.Component {
       // do not deposit any more eth to be swapped
       // TODO: figure out rounding error
       if (eth.utils.bigNumberify(channelState.balanceTokenUser).gte(eth.utils.parseEther("29.8"))) {
-        console.log('Channel state token balance at max, refunding browser balance')
         // refund any wei that is in the browser wallet 
         // above the minimum
         const refundWei = BigNumber.max(
@@ -393,9 +387,7 @@ class App extends React.Component {
       )
       channelDeposit.amountWei = weiDeposit.toString()
 
-      console.log(`Depositing: ${JSON.stringify(channelDeposit, null, 2)}`);
-      let depositRes = await this.state.connext.deposit(channelDeposit);
-      console.log(`Deposit Result: ${JSON.stringify(depositRes, null, 2)}`);
+      await this.state.connext.deposit(channelDeposit);
     }
   }
 
@@ -427,7 +419,7 @@ class App extends React.Component {
     const filteredTxs = txs.filter(t => t.to && t.to.toLowerCase() === address.toLowerCase())
     const mostRecent = (filteredTxs.sort((a, b) => b.nonce - a.nonce))[0]
     if (!mostRecent) {
-      console.log('Browser wallet overfunded, but couldnt find most recent tx in last 100 blocks.')
+      // Browser wallet overfunded, but couldnt find most recent tx in last 100 blocks
       return
     }
     localStorage.setItem('refunding', Web3.utils.fromWei(wei, 'finney') + ',' + mostRecent.from)
@@ -442,7 +434,6 @@ class App extends React.Component {
         value: wei,
       })
       const tx = await customWeb3.eth.getTransaction(res.transactionHash)
-      console.log('refundTx', tx)
       // calculate expected balance after transaction and set in local
       // storage. once the tx is submitted, the wallet balance should
       // always be lower than the expected balance, because of added
@@ -487,13 +478,11 @@ class App extends React.Component {
   async autoSwap() {
     const { channelState, connextState } = this.state;
     if (!connextState || !connextState.runtime.canExchange) {
-      // console.log("Cannot exchange");
       return;
     }
     const weiBalance = eth.utils.bigNumberify(channelState.balanceWeiUser);
     const tokenBalance = eth.utils.bigNumberify(channelState.balanceTokenUser);
     if (channelState && weiBalance.gt(eth.utils.bigNumberify("0")) && tokenBalance.lte(HUB_EXCHANGE_CEILING)) {
-      console.log(`Exchanging ${channelState.balanceWeiUser} wei`);
       await this.state.connext.exchange(channelState.balanceWeiUser, "wei");
     }
   }

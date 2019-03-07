@@ -40,7 +40,6 @@ class RedeemCard extends Component {
     const { location } = this.props;
     const query = queryString.parse(location.search);
     // uncondonditionally set secret from query
-    console.log('query:', query)
     this.setState({ secret: query.secret, amount: { 
       amountToken: query.amountToken,
       amountWei: query.amountWei,
@@ -70,7 +69,6 @@ class RedeemCard extends Component {
     const { secret, isConfirm, purchaseId, redeemStarted, amount, previouslyRedeemed } = this.state;
     const { connext, channelState, connextState } = this.props;
     if (!connext || !channelState || !connextState) {
-      console.log("Connext or channel object not detected");
       return;
     }
 
@@ -112,7 +110,6 @@ class RedeemCard extends Component {
     // user is not payor, channel has collateral, can try to redeem payment
     try {
       if (!purchaseId) {
-        console.log('Redeeming linked payment with secret', secret)
         const updated = await connext.redeem(secret);
         // make sure hub isnt silently failing by returning null purchase id
         // as it processes collateral

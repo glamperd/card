@@ -4,7 +4,6 @@ const bip39 = require('bip39')
 const hdkey = require('ethereumjs-wallet/hdkey')
 
 export async function createWallet(web3) {
-  console.log("Creating new random wallet");
   const mnemonic = bip39.generateMnemonic()
   const seed = bip39.mnemonicToSeed(mnemonic)
   const wallet = await hdkey
@@ -22,23 +21,6 @@ export async function createWallet(web3) {
   return wallet
 }
 
-// export async function findOrCreateWallet(web3) {
-//   //let privateKey = localStorage.getItem("privateKey");
-//   let mnemonic = localStorage.getItem("mnemonic")
-//   let wallet;
-//   if (mnemonic) {
-//     wallet = await hdkey.fromMasterSeed(mnemonic).getWallet()
-//     console.log("found existing wallet:", wallet.getAddressString());
-//   } else {
-//     wallet = await createWallet(web3);
-//   }
-//   store.dispatch({
-//     type: "SET_WALLET",
-//     text: wallet //Buffer.from(String(privKey.private),'hex')
-//   });
-//   return wallet;
-// }
-
 export async function createWalletFromMnemonic(mnemonic) {
   let wallet;
   try{
@@ -47,7 +29,6 @@ export async function createWalletFromMnemonic(mnemonic) {
     .fromMasterSeed(seed)
     .derivePath("m/44'/60'/0'/0/0")
     .getWallet();
-    console.log(`Found wallet from mnemonic`)
     localStorage.setItem("delegateSigner", wallet.getAddressString())
     localStorage.setItem("mnemonic", mnemonic);
     localStorage.setItem("privateKey", wallet.getPrivateKeyString());

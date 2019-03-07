@@ -89,8 +89,6 @@ class CashOutCard extends Component {
     }
 
     this.setState({ withdrawalVal });
-
-    console.log(`Updated withdrawalVal: ${JSON.stringify(withdrawalVal, null, 2)}`);
     return withdrawalVal;
   }
 
@@ -130,7 +128,6 @@ class CashOutCard extends Component {
       oldState.withdrawalVal.recipient = value;
       return oldState;
     });
-    console.log(`Updated recipient: ${JSON.stringify(this.state.withdrawalVal.recipient, null, 2)}`);
   }
 
   async checkState() {
@@ -173,8 +170,7 @@ class CashOutCard extends Component {
     this.setState({ withdrawing: true });
 
     console.log(`Withdrawing: ${JSON.stringify(withdrawalVal, null, 2)}`);
-    let withdrawalRes = await connext.withdraw(withdrawalVal);
-    console.log(`Withdrawal result: ${JSON.stringify(withdrawalRes, null, 2)}`);
+    await connext.withdraw(withdrawalVal);
 
     this.poller();
   }

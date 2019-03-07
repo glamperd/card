@@ -73,9 +73,12 @@ class SettingsCard extends Component {
         recipient: this.props.address,
         exchangeRate: this.props.exchangeRate
       })
-    } catch (e) {console.log(e)}
-    await createWallet(this.state.web3);
-    this.burnRefreshPoller()
+    } catch (e) {
+      console.log('Error withdrawing, creating new address anyway', e.message)
+    } finally {
+      await createWallet(this.state.web3);
+      this.burnRefreshPoller()
+    } 
   }
 
   burnRefreshPoller = async () => {
