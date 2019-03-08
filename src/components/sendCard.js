@@ -508,7 +508,7 @@ class PayCard extends Component {
     // by either payment or link handler
     // you can call the appropriate type here
     try {
-      const paymentRes = await connext.buy(paymentVal);
+      await connext.buy(paymentVal);
       if (paymentVal.payments[0].type == "PT_LINK") {
         // automatically route to redeem card
         const secret = paymentVal.payments[0].secret;
