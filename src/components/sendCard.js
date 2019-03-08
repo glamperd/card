@@ -322,8 +322,6 @@ class PayCard extends Component {
     const { channelState } = this.props;
     this.setState({ addressError: null, balanceError: null });
 
-    console.log("validating paymentVal:", paymentVal);
-
     let balanceError, addressError;
     // validate that the token amount is within bounds
     if (payment.amountToken.gt(new BN(channelState.balanceTokenUser))) {
@@ -339,16 +337,6 @@ class PayCard extends Component {
     const isValidRecipient =
       Web3.utils.isAddress(address) &&
       (isLink ? address == emptyAddress : address != emptyAddress);
-
-    console.log("isLink:", isLink);
-    console.log(
-      "Web3.utils.isAddress(address):",
-      Web3.utils.isAddress(address)
-    );
-    console.log(
-      "isLink ? address == emptyAddress : address != emptyAddress:",
-      isLink ? address == emptyAddress : address != emptyAddress
-    );
 
     if (!isValidRecipient) {
       addressError = "Please choose a valid address";
@@ -462,19 +450,12 @@ class PayCard extends Component {
     const err = await this._sendPayment(paymentVal, true);
     // somehow it worked???
     if (!err) {
-      console.log("Expected payment to fail but it succeeded.");
       this.setState({
         showReceipt: true,
         paymentState: PaymentStates.Success
       });
       return CollateralStates.PaymentMade;
     }
-
-    console.log(
-      `Caught payment error after needs collateral, error: ${
-        err
-      }, will monitor collateral and try again later`
-    );
 
     // call to send payment failed, monitor collateral
     // watch for confirmation on the recipients side
@@ -522,14 +503,12 @@ class PayCard extends Component {
     if (balanceError || addressError) {
       return;
     }
-    console.log(`Submitting payment: ${JSON.stringify(paymentVal, null, 2)}`);
 
     // collateralizing is handled before calling this send payment fn
     // by either payment or link handler
     // you can call the appropriate type here
     try {
       const paymentRes = await connext.buy(paymentVal);
-      console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
       if (paymentVal.payments[0].type == "PT_LINK") {
         // automatically route to redeem card
         const secret = paymentVal.payments[0].secret;
