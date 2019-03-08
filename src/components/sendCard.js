@@ -23,8 +23,8 @@ import interval from "interval-promise";
 import Web3 from "web3";
 
 const queryString = require("query-string");
-const eth = require("ethers");
-const LINK_LIMIT = eth.utils.parseEther("10"); // $10 capped linked payments
+// $10 capped linked payments
+const LINK_LIMIT = Web3.utils.toBN(Web3.utils.toWei("10", "ether"));
 
 const styles = theme => ({
   icon: {
@@ -46,6 +46,16 @@ const PaymentStates = {
   CollateralTimeout: 2,
   OtherError: 3,
   Success: 4
+};
+
+// possible returns of requesting collateral
+// payment succeeded
+// monitoring requests timed out, still no collateral
+// appropriately collateralized
+const CollateralStates = {
+  PaymentMade: 0,
+  Timeout: 1,
+  Success: 2
 };
 
 function ConfirmationModalText(paymentState, amountToken, recipient) {
@@ -303,17 +313,61 @@ class PayCard extends Component {
     });
   }
 
+  // validates recipient and payment amount
+  // also sets the variables of these values in the state
+  // returns the values it sets, to prevent async weirdness
+  validatePaymentInput(paymentVal) {
+    const address = paymentVal.payments[0].recipient;
+    const payment = convertPayment("bn", paymentVal.payments[0].amount);
+    const { channelState } = this.props;
+    this.setState({ addressError: null, balanceError: null });
+
+    console.log("validating paymentVal:", paymentVal);
+
+    let balanceError, addressError;
+    // validate that the token amount is within bounds
+    if (payment.amountToken.gt(new BN(channelState.balanceTokenUser))) {
+      balanceError = "Insufficient balance in channel";
+    }
+    if (payment.amountToken.isZero()) {
+      balanceError = "Please enter a payment amount above 0";
+    }
+
+    // validate recipient is valid address OR the empty address
+    // recipient address can be empty
+    const isLink = paymentVal.payments[0].type == "PT_LINK";
+    const isValidRecipient =
+      Web3.utils.isAddress(address) &&
+      (isLink ? address == emptyAddress : address != emptyAddress);
+
+    console.log("isLink:", isLink);
+    console.log(
+      "Web3.utils.isAddress(address):",
+      Web3.utils.isAddress(address)
+    );
+    console.log(
+      "isLink ? address == emptyAddress : address != emptyAddress:",
+      isLink ? address == emptyAddress : address != emptyAddress
+    );
+
+    if (!isValidRecipient) {
+      addressError = "Please choose a valid address";
+    }
+
+    // linked payments also have a maximum enforced
+    if (isLink && payment.amountToken.gt(LINK_LIMIT)) {
+      // balance error here takes lower precendence than preceding
+      // balance errors, only reset if undefined
+      balanceError = balanceError || "Linked payments are capped at $10.";
+    }
+    this.setState({ balanceError, addressError });
+
+    return { balanceError, addressError };
+  }
+
   async linkHandler() {
     const { connext } = this.props;
     const { paymentVal } = this.state;
-    this.setState({ balanceError: null });
-
-    // check that the payment is below the payment max
-    const amount = new BigNumber(paymentVal.payments[0].amount.amountToken);
-    if (amount.gt(LINK_LIMIT)) {
-      this.setState({ balanceError: "Linked payments are capped at $10." });
-      return;
-    }
 
     // generate secret, set type, and set
     // recipient to empty address
@@ -329,130 +383,155 @@ class PayCard extends Component {
       payments: [payment]
     };
 
+    // unconditionally set state
     this.setState({
       paymentVal: updatedPaymentVal
     });
 
-    // refactored to avoid race conditions around
-    // setting state
-    await this._paymentHandler(updatedPaymentVal);
-  }
+    // check for validity of input fields
+    const { balanceError, addressError } = this.validatePaymentInput(
+      updatedPaymentVal
+    );
 
-  async paymentHandler() {
-    // // check if the recipient needs collateral
-    // const needsCollateral = await connext.recipientNeedsCollateral(recipient, convertPayment("str", payment))
-    // if (needsCollateral) {
-    //   // check the payment amount here, and below
-    //   // otherwise
-    // }
-
-    // otherwise make payment
-    await this._paymentHandler(this.state.paymentVal);
-  }
-
-  async _paymentHandler(paymentVal) {
-    const { connext, web3, channelState } = this.props;
-
-    console.log(`Submitting payment: ${JSON.stringify(paymentVal, null, 2)}`);
-    this.setState({ addressError: null, balanceError: null });
-    let balanceError, addressError;
-
-    // validate that the token amount is within bounds
-    const payment = convertPayment("bn", paymentVal.payments[0].amount);
-    if (payment.amountToken.gt(new BN(channelState.balanceTokenUser))) {
-      balanceError = "Insufficient balance in channel";
-    }
-    if (payment.amountToken.isZero()) {
-      balanceError = "Please enter a payment amount above 0";
-    }
-
-    // validate recipient is valid address OR the empty address
-    const recipient = paymentVal.payments[0].recipient;
-    if (!web3.utils.isAddress(recipient) && recipient !== emptyAddress) {
-      addressError = "Please choose a valid address";
-    }
-
-    // return if either errors exist
-    if (balanceError || addressError) {
-      this.setState({ balanceError, addressError });
+    if (addressError || balanceError) {
       return;
     }
 
-    if (paymentVal.payments[0].type !== "PT_LINK") {
-      // check if the recipient needs collateral
-      let needsCollateral = await connext.recipientNeedsCollateral(
-        recipient,
-        convertPayment("str", payment)
-      );
-      // needs collateral can indicate that the recipient does
-      // not have a channel, or that it does not have current funds
-      // in either case, you need to send a failed payment
-      // to begin auto collateralization process
-      if (needsCollateral && recipient !== emptyAddress) {
-        // before making payment, recipient needs collateral
-        // begin autocollateralization via failed hub
-        // and wait for collateral
-        this.setState({
-          paymentState: PaymentStates.Collateralizing,
-          showReceipt: true
-        });
-        try {
-          await connext.buy(paymentVal);
-          // somehow it worked???
-          console.log("Expected payment to fail but it succeeded.");
-          this.setState({
-            showReceipt: true,
-            paymentState: PaymentStates.Success
-          });
-        } catch (e) {
-          console.log(
-            `Caught payment error after needs collateral, error: ${
-              e.message
-            }, will monitor collateral and try again later`
-          );
-          const self = this;
-          interval(
-            async (iteration, stop) => {
-              console.log("iteration: ", iteration);
-              needsCollateral = await connext.recipientNeedsCollateral(
-                recipient,
-                convertPayment("str", payment)
-              );
-              console.log("needsCollateral: ", needsCollateral);
-              if (!needsCollateral) {
-                await self.sendPayment(paymentVal);
-                stop();
-              }
-              if (iteration === 20 && needsCollateral) {
-                console.log(
-                  `Polled for ${5000 *
-                    20} seconds, did not see collateralization go through.`
-                );
-                this.setState({
-                  paymentState: PaymentStates.CollateralTimeout,
-                  showReceipt: true
-                });
-                return;
-              }
-            },
-            5000,
-            { iterations: 20 }
-          );
-          return;
-        }
-      }
-    }
-    // if no collateral needed or link payment, just send payment
-    await this.sendPayment(paymentVal);
+    // send payment
+    await this._sendPayment(updatedPaymentVal);
   }
 
-  async sendPayment(paymentVal) {
+  async paymentHandler() {
+    const { connext } = this.props;
+    const { paymentVal } = this.state;
+    // check if the recipient needs collateral
+    const needsCollateral = await connext.recipientNeedsCollateral(
+      paymentVal.payments[0].recipient,
+      convertPayment("str", paymentVal.payments[0].amount)
+    );
+    // do not send collateral request if it is not valid
+    // check if the values are reasonable
+    // before beginning the request for collateral
+    const { balanceError, addressError } = this.validatePaymentInput(
+      paymentVal
+    );
+    if (addressError || balanceError) {
+      return;
+    }
+
+    // needs collateral can indicate that the recipient does
+    // not have a channel, or that it does not have current funds
+    // in either case, you need to send a failed payment
+    // to begin auto collateralization process
+    if (needsCollateral) {
+      // this can have 3 potential outcomes:
+      // - collateralization failed (return)
+      // - payment succeeded (return)
+      // - channel collateralized
+      const collateralizationStatus = await this.collateralizeRecipient(
+        paymentVal
+      );
+      switch (collateralizationStatus) {
+        // setting state for these cases done in collateralize
+        case CollateralStates.PaymentMade:
+        case CollateralStates.Timeout:
+          return;
+        case CollateralStates.Success:
+        // send payment via fall through
+      }
+    }
+
+    // send payment
+    await this._sendPayment(paymentVal);
+  }
+
+  async collateralizeRecipient(paymentVal) {
+    const { connext } = this.props;
+    // do not collateralize on pt link payments
+    if (paymentVal.payments[0].type == "PT_LINK") {
+      return;
+    }
+
+    // collateralize otherwise
+    this.setState({
+      paymentState: PaymentStates.Collateralizing,
+      showReceipt: true
+    });
+
+    let needsCollateral = true;
+    // collateralize by sending payment
+    const err = await this._sendPayment(paymentVal, true);
+    // somehow it worked???
+    if (!err) {
+      console.log("Expected payment to fail but it succeeded.");
+      this.setState({
+        showReceipt: true,
+        paymentState: PaymentStates.Success
+      });
+      return CollateralStates.PaymentMade;
+    }
+
+    console.log(
+      `Caught payment error after needs collateral, error: ${
+        err
+      }, will monitor collateral and try again later`
+    );
+
+    // call to send payment failed, monitor collateral
+    // watch for confirmation on the recipients side
+    // of the channel for 20s
+    const self = this;
+    await interval(
+      async (iteration, stop) => {
+        needsCollateral = await connext.recipientNeedsCollateral(
+          paymentVal.payments[0].recipient,
+          convertPayment("str", paymentVal.payments[0].amount)
+        );
+        console.log("needsCollateral: ", needsCollateral);
+        if (!needsCollateral || iteration > 20) {
+          stop();
+        }
+      },
+      5000,
+      { iterations: 20 }
+    );
+
+    if (needsCollateral) {
+      this.setState({
+        showReceipt: true,
+        paymentState: PaymentStates.CollateralTimeout
+      });
+      return CollateralStates.Timeout;
+    }
+
+    return CollateralStates.Success;
+  }
+
+  // returns a string if there was an error, null
+  // if successful
+  async _sendPayment(paymentVal, isCollateralizing = false) {
     const { connext } = this.props;
 
+    const { balanceError, addressError } = this.validatePaymentInput(
+      paymentVal
+    );
+    // return if either errors exist
+    // state is set by validator
+    // mostly a sanity check, this should be done before calling
+    // this function
+    if (balanceError || addressError) {
+      return;
+    }
+    console.log(`Submitting payment: ${JSON.stringify(paymentVal, null, 2)}`);
+
+    // collateralizing is handled before calling this send payment fn
+    // by either payment or link handler
+    // you can call the appropriate type here
     try {
-      let paymentRes = await connext.buy(paymentVal);
+      const paymentRes = await connext.buy(paymentVal);
       console.log(`Payment result: ${JSON.stringify(paymentRes, null, 2)}`);
-      if (paymentVal.payments[0].type === "PT_LINK") {
+      if (paymentVal.payments[0].type == "PT_LINK") {
+        // automatically route to redeem card
         const secret = paymentVal.payments[0].secret;
         const amount = paymentVal.payments[0].amount;
         this.props.history.push({
@@ -463,17 +542,24 @@ class PayCard extends Component {
           state: { isConfirm: true, secret, amount }
         });
       } else {
+        // display receipts
         this.setState({
           showReceipt: true,
           paymentState: PaymentStates.Success
         });
       }
+      return null;
     } catch (e) {
-      console.log("Error sending payment:", e);
-      this.setState({
-        paymentState: PaymentStates.OtherError,
-        showReceipt: true
-      });
+      if (!isCollateralizing) {
+        // only assume errors if collateralizing
+        console.log("Unexpected error sending payment:", e);
+        this.setState({
+          paymentState: PaymentStates.OtherError,
+          showReceipt: true
+        });
+      }
+      // setting state for collateralize handled in 'collateralizeRecipient'
+      return e.message;
     }
   }
 
