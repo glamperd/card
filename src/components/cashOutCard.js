@@ -14,8 +14,7 @@ import Modal from "@material-ui/core/Modal";
 //import CircularProgress from "@material-ui/core/CircularProgress";
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
-import { getDollarSubstring } from "../utils/getDollarSubstring";
-import { getAggregateChannelBalance } from "../utils/getAggregateChannelBalance";
+import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
 
 const styles = theme => ({
   icon: {
@@ -94,8 +93,11 @@ class CashOutCard extends Component {
 
   // examines if the display value should be updated
   // when the component is mounting, or when the props change
+
+  // NOTE: the amount to cashout != channel card amount if there is 
+  // wei in the channel
   async updateDisplayValue() {
-    const { channelState, exchangeRate } = this.props;
+    const { channelState, connextState } = this.props;
     if (
       !channelState ||
       (channelState.balanceWeiUser === "0" &&
@@ -105,12 +107,9 @@ class CashOutCard extends Component {
       return;
     }
 
-    const aggUSD = getAggregateChannelBalance(channelState, exchangeRate);
+    const usd = getChannelBalanceInUSD(channelState, connextState, false);
 
-    const substr = getDollarSubstring(aggUSD);
-    const aggregateBalance = "$" + substr[0] + "." + substr[1].substr(0, 2);
-
-    this.setState({ aggregateBalance });
+    this.setState({ aggregateBalance: usd });
   }
 
   // update display value with the exchange rate/

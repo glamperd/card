@@ -63,7 +63,7 @@ class Home extends React.Component {
 
   render() {
     const { modals } = this.state;
-    const { address, channelState } = this.props;
+    const { address, channelState, connextState } = this.props;
     return (
       <>
         <div className="row" style={{ marginBottom: "-7.5%" }}>
@@ -71,7 +71,7 @@ class Home extends React.Component {
             className="column"
             style={{ justifyContent: "space-between", flexGrow: 1 }}
           >
-            <ChannelCard channelState={channelState} address={address} />
+            <ChannelCard channelState={channelState} address={address} connextState = {connextState}/>
           </div>
         </div>
         <div className="row">

@@ -14,13 +14,12 @@ import {
   Typography,
   CircularProgress
 } from "@material-ui/core";
-import { getDollarSubstring } from "../utils/getDollarSubstring";
 import { emptyAddress } from "connext/dist/Utils";
 import { convertPayment } from "connext/dist/types";
 import BN from "bn.js";
-import BigNumber from "bignumber.js";
 import interval from "interval-promise";
 import Web3 from "web3";
+import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
 
 const queryString = require("query-string");
 // $10 capped linked payments
@@ -547,7 +546,7 @@ class PayCard extends Component {
   };
 
   render() {
-    const { classes, channelState } = this.props;
+    const { classes, channelState, connextState } = this.props;
     const { paymentState } = this.state;
     return (
       <Grid
@@ -579,15 +578,7 @@ class PayCard extends Component {
           <Grid container direction="row" justify="center" alignItems="center">
             <Typography variant="h2">
               <span>
-                {channelState
-                  ? "$" +
-                    getDollarSubstring(channelState.balanceTokenUser)[0] +
-                    "." +
-                    getDollarSubstring(channelState.balanceTokenUser)[1].substr(
-                      0,
-                      2
-                    )
-                  : "$0.00"}
+                {getChannelBalanceInUSD(channelState, connextState)}
               </span>
             </Typography>
           </Grid>

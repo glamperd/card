@@ -382,14 +382,14 @@ class App extends React.Component {
           new BigNumber(balance).minus(DEPOSIT_MINIMUM_WEI),
           0
         );
-        await this.returnWei(refundWei.toFixed());
+        await this.returnWei(refundWei.toFixed(0));
         return;
       }
 
       let channelDeposit = {
         amountWei: new BigNumber(balance)
           .minus(DEPOSIT_MINIMUM_WEI)
-          .toFixed(),
+          .toFixed(0),
         amountToken: tokenBalance
       };
 
@@ -416,7 +416,7 @@ class App extends React.Component {
       const weiDeposit = new BigNumber(channelDeposit.amountWei).minus(
         new BigNumber(weiToReturn)
       );
-      channelDeposit.amountWei = weiDeposit.toFixed();
+      channelDeposit.amountWei = weiDeposit.toFixed(0);
 
       await this.state.connext.deposit(channelDeposit);
     }
@@ -474,7 +474,7 @@ class App extends React.Component {
       // storage. once the tx is submitted, the wallet balance should
       // always be lower than the expected balance, because of added
       // gas costs
-      localStorage.setItem("maxBalanceAfterRefund", newMax.toFixed());
+      localStorage.setItem("maxBalanceAfterRefund", newMax.toFixed(0));
     } catch (e) {
       console.log("Error with refund transaction:", e.message);
       localStorage.removeItem("maxBalanceAfterRefund");
@@ -487,20 +487,18 @@ class App extends React.Component {
   calculateWeiToRefund(wei, connextState) {
     // channel max tokens is minimum of the ceiling that
     // the hub would exchange, or a set deposit max
-    const convertableWeiInBei = new CurrencyConvertable(
-      CurrencyType.WEI,
-      wei,
+    const ceilingWei = new CurrencyConvertable(
+      CurrencyType.BEI,
+      BigNumber.min(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX),
       () => getExchangeRates(connextState)
-    ).toBEI().amountBigNumber;
+    ).toWEI().amountBigNumber
 
     const weiToRefund = BigNumber.max(
-      convertableWeiInBei.minus(
-        BigNumber.min(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX)
-      ),
+      new BigNumber(wei).minus(ceilingWei),
       new BigNumber(0)
     );
 
-    return weiToRefund.toFixed();
+    return weiToRefund.toFixed(0);
   }
 
   async autoSwap() {
@@ -670,6 +668,7 @@ class App extends React.Component {
                   channelState={channelState}
                   publicUrl={publicUrl}
                   scanArgs={sendScanArgs}
+                  connextState={connextState}
                 />
               )}
             />

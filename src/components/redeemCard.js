@@ -8,8 +8,8 @@ import Typography from "@material-ui/core/Typography";
 import Tooltip from "@material-ui/core/Tooltip";
 import QRGenerate from "./qrGenerate";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import { getDollarSubstring } from "../utils/getDollarSubstring";
 import { BigNumber } from "ethers/utils";
+import { getAmountInUSD } from "../utils/currencyFormatting";
 
 const queryString = require("query-string");
 
@@ -168,7 +168,7 @@ class RedeemCard extends Component {
       amount
     } = this.state;
 
-    const { classes } = this.props;
+    const { classes, connextState } = this.props;
     const url = this.generateQrUrl(secret, amount);
 
     // if you are not the sender, AND the purchase ID is not set
@@ -321,12 +321,7 @@ class RedeemCard extends Component {
                 </Grid>
                 <Grid item style={{ margin: "1em" }}>
                   <Typography variant="body1" style={{ color: "#0F1012" }}>
-                    Amount: $
-                    {amount
-                      ? getDollarSubstring(amount.amountToken)[0] +
-                        "." +
-                        getDollarSubstring(amount.amountToken)[1].substr(0, 2)
-                      : ""}
+                    Amount: {getAmountInUSD(amount, connextState)}
                   </Typography>
                 </Grid>
               </Grid>

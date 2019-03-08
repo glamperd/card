@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import Card from "@material-ui/core/Card";
 import { Grid, Typography } from "@material-ui/core";
 import { withStyles } from "@material-ui/core";
-import { getDollarSubstring } from "../utils/getDollarSubstring";
+import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
 
 const styles = theme => ({
   card: {
@@ -34,10 +34,9 @@ const styles = theme => ({
 
 class ChannelCard extends Component {
   render() {
-    const { classes, channelState } = this.props;
-    const substr = channelState
-      ? getDollarSubstring(channelState.balanceTokenUser)
-      : ["0", "00"];
+    const { classes, channelState, connextState } = this.props;
+    // only displays token value by default
+    const display = getChannelBalanceInUSD(channelState, connextState)
     return (
       <Card className={classes.card}>
         <Grid container direction="column" alignItems="center">
@@ -47,10 +46,10 @@ class ChannelCard extends Component {
                 {"$ "}
               </Typography>
               <Typography inline={true} variant="h1" className={classes.row}>
-                <span>{substr[0]}</span>
+                <span>{display.substring(1, display.length - 2)}</span>
               </Typography>
               <Typography inline={true} variant="h3" className={classes.row}>
-                <span>{"." + substr[1].substring(0, 2)}</span>
+                <span>{display.substr(display.length - 2)}</span>
               </Typography>
             </span>
           </Grid>
