@@ -381,7 +381,7 @@ class App extends React.Component {
           new BigNumber(balance).minus(DEPOSIT_MINIMUM_WEI),
           0
         );
-        await this.returnWei(refundWei.toString());
+        await this.returnWei(refundWei.toFixed());
         return;
       }
 
@@ -389,7 +389,7 @@ class App extends React.Component {
         amountWei: eth.utils
           .bigNumberify(balance)
           .sub(DEPOSIT_MINIMUM_WEI)
-          .toString(),
+          .toFixed(),
         amountToken: tokenBalance
       };
 
@@ -409,14 +409,14 @@ class App extends React.Component {
 
       // return wei to sender
       if (!weiToReturn.isZero()) {
-        await this.returnWei(weiToReturn.toString());
+        await this.returnWei(weiToReturn.toFixed());
         return;
       }
       // update channel deposit
       const weiDeposit = new BigNumber(channelDeposit.amountWei).minus(
         weiToReturn
       );
-      channelDeposit.amountWei = weiDeposit.toString();
+      channelDeposit.amountWei = weiDeposit.toFixed();
 
       await this.state.connext.deposit(channelDeposit);
     }
@@ -474,7 +474,7 @@ class App extends React.Component {
       // storage. once the tx is submitted, the wallet balance should
       // always be lower than the expected balance, because of added
       // gas costs
-      localStorage.setItem("maxBalanceAfterRefund", newMax.toString());
+      localStorage.setItem("maxBalanceAfterRefund", newMax.toFixed());
     } catch (e) {
       console.log("Error with refund transaction:", e.message);
       localStorage.removeItem("maxBalanceAfterRefund");
@@ -492,7 +492,7 @@ class App extends React.Component {
     const maxWeiExchanged = {
       exchangeRate,
       seller: "user",
-      tokensToSell: maxTokens.toString(),
+      tokensToSell: maxTokens.toFixed(),
       weiToSell: "0"
     };
 
@@ -502,7 +502,7 @@ class App extends React.Component {
     );
 
     let weiToRefund = new BigNumber(wei).minus(
-      new BigNumber(weiReceived.toString())
+      new BigNumber(weiReceived.toFixed())
     );
 
     if (weiToRefund.isNegative()) {
