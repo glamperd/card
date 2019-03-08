@@ -44,9 +44,9 @@ const overrides = {
   mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE
 };
 
-const DEPOSIT_MINIMUM_WEI = eth.utils.parseEther("0.03"); // 30 FIN
-const HUB_EXCHANGE_CEILING = eth.utils.parseEther("69"); // 69 TST
-const CHANNEL_DEPOSIT_MAX = eth.utils.parseEther("30"); // 30 TST
+const DEPOSIT_MINIMUM_WEI = new BigNumber(Web3.utils.toWei("0.02", "ether")); // 30 FIN
+const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 69 TST
+const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
 
 const styles = theme => ({
   paper: {
@@ -159,7 +159,7 @@ class App extends React.Component {
       await this.setConnext();
       await this.setTokenContract();
 
-      await this.pollConnextState();
+       await this.pollConnextState();
       await this.poller();
     } else {
       // Else, we wait for user to finish selecting through modal which will refresh page when done
@@ -354,7 +354,7 @@ class App extends React.Component {
     }
 
     if (balance !== "0" || tokenBalance !== "0") {
-      if (eth.utils.bigNumberify(balance).lte(DEPOSIT_MINIMUM_WEI)) {
+      if (new BigNumber(balance).lte(DEPOSIT_MINIMUM_WEI)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
         return;
@@ -506,11 +506,11 @@ class App extends React.Component {
     if (!connextState || !connextState.runtime.canExchange) {
       return;
     }
-    const weiBalance = eth.utils.bigNumberify(channelState.balanceWeiUser);
-    const tokenBalance = eth.utils.bigNumberify(channelState.balanceTokenUser);
+    const weiBalance = new BigNumber(channelState.balanceWeiUser);
+    const tokenBalance = new BigNumber(channelState.balanceTokenUser);
     if (
       channelState &&
-      weiBalance.gt(eth.utils.bigNumberify("0")) &&
+      weiBalance.gt(new BigNumber("0")) &&
       tokenBalance.lte(HUB_EXCHANGE_CEILING)
     ) {
       await this.state.connext.exchange(channelState.balanceWeiUser, "wei");
@@ -627,9 +627,10 @@ class App extends React.Component {
                 <DepositCard
                   {...props}
                   address={address}
-                  minDepositWei={DEPOSIT_MINIMUM_WEI}
+                  minDepositWei={DEPOSIT_MINIMUM_WEI.toString()}
                   exchangeRate={exchangeRate}
-                  maxTokenDeposit={CHANNEL_DEPOSIT_MAX}
+                  maxTokenDeposit={CHANNEL_DEPOSIT_MAX.toString()}
+                  connextState={connextState}
                 />
               )}
             />
