@@ -20,8 +20,9 @@ import { createWallet } from "./walletGen";
 import RedeemCard from "./components/redeemCard";
 import Confirmations from "./components/Confirmations";
 import BigNumber from "bignumber.js";
-import { calculateExchange } from "connext/dist/StateGenerator.js";
-import { convertExchange } from "connext/dist/types";
+import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
+import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
+import getExchangeRates from "connext/dist/lib/getExchangeRates";
 
 export const store = createStore(setWallet, null);
 
@@ -386,9 +387,8 @@ class App extends React.Component {
       }
 
       let channelDeposit = {
-        amountWei: eth.utils
-          .bigNumberify(balance)
-          .sub(DEPOSIT_MINIMUM_WEI)
+        amountWei: new BigNumber(balance)
+          .minus(DEPOSIT_MINIMUM_WEI)
           .toFixed(),
         amountToken: tokenBalance
       };
@@ -404,17 +404,17 @@ class App extends React.Component {
       // then return excess deposit to the sending account
       const weiToReturn = this.calculateWeiToRefund(
         channelDeposit.amountWei,
-        exchangeRate
+        connextState
       );
 
       // return wei to sender
-      if (!weiToReturn.isZero()) {
-        await this.returnWei(weiToReturn.toFixed());
+      if (weiToReturn != "0") {
+        await this.returnWei(weiToReturn);
         return;
       }
       // update channel deposit
       const weiDeposit = new BigNumber(channelDeposit.amountWei).minus(
-        weiToReturn
+        new BigNumber(weiToReturn)
       );
       channelDeposit.amountWei = weiDeposit.toFixed();
 
@@ -484,32 +484,23 @@ class App extends React.Component {
   }
 
   // returns a BigNumber
-  calculateWeiToRefund(wei, exchangeRate) {
+  calculateWeiToRefund(wei, connextState) {
     // channel max tokens is minimum of the ceiling that
     // the hub would exchange, or a set deposit max
-    const maxTokens = BigNumber.min(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX);
-    // calculate the max wei the hub is willing to exchange
-    const maxWeiExchanged = {
-      exchangeRate,
-      seller: "user",
-      tokensToSell: maxTokens.toFixed(),
-      weiToSell: "0"
-    };
+    const convertableWeiInBei = new CurrencyConvertable(
+      CurrencyType.WEI,
+      wei,
+      () => getExchangeRates(connextState)
+    ).toBEI().amountBigNumber;
 
-    // see notes in src about tokensSold for "calculateExchange"
-    const { weiReceived } = calculateExchange(
-      convertExchange("bn", maxWeiExchanged)
+    const weiToRefund = BigNumber.max(
+      convertableWeiInBei.minus(
+        BigNumber.min(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX)
+      ),
+      new BigNumber(0)
     );
 
-    let weiToRefund = new BigNumber(wei).minus(
-      new BigNumber(weiReceived.toFixed())
-    );
-
-    if (weiToRefund.isNegative()) {
-      return new BigNumber(0);
-    }
-
-    return weiToRefund;
+    return weiToRefund.toFixed();
   }
 
   async autoSwap() {
