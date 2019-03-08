@@ -8,6 +8,11 @@ import Grid from "@material-ui/core/Grid";
 import QRGenerate from "./qrGenerate";
 import Snackbar from "./snackBar";
 import { withStyles } from "@material-ui/core";
+import { CurrencyType } from "connext/dist/state/ConnextState/CurrencyTypes";
+import getExchangeRates from "connext/dist/lib/getExchangeRates";
+import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
+import Currency from "connext/dist/lib/currency/Currency";
+
 
 const styles = theme => ({
   icon: {
@@ -32,8 +37,29 @@ class DepositCard extends Component {
   };
 
   render() {
-    const { classes, address } = this.props;
-    const { copied } = this.state;
+    const { classes, address, connextState, minDepositWei, maxTokenDeposit } = this.props;
+    const { copied, } = this.state;
+
+    let minDai, minEth
+    let maxDai, maxEth
+    if (connextState && connextState.runtime.canDeposit) {
+      const minConvertable = new CurrencyConvertable(
+        CurrencyType.WEI,
+        minDepositWei,
+        () => getExchangeRates(connextState)
+      )
+
+      const maxConvertable = new CurrencyConvertable(
+        CurrencyType.BEI,
+        maxTokenDeposit,
+        () => getExchangeRates(connextState)
+      )
+
+      minEth = minConvertable.toETH().amountBigNumber.toFixed()
+      minDai = Currency.USD(minConvertable.toUSD().amountBigNumber).format({})
+      maxEth = maxConvertable.toETH().amountBigNumber.toFixed()
+      maxDai = Currency.USD(maxConvertable.toUSD().amountBigNumber).format({})
+    }
 
     return (
       <Grid
@@ -73,14 +99,8 @@ class DepositCard extends Component {
               disableTouchListener
               title="Because gas"
             >
-              <span>{`Deposit minimum of: ${this.props.minDepositWei /
-                Math.pow(10, 18)} Eth 
-                      or ${(
-                        (this.props.minDepositWei / Math.pow(10, 18)) *
-                        this.props.exchangeRate
-                      )
-                        .toString()
-                        .substring(0, 4)} Dai.`}</span>
+              <span>{`Deposit minimum of: ${minEth || ""} Eth 
+                      or ${minDai ? minDai.substr(1) : ""} Dai.`}</span>
             </Tooltip>
           </Typography>
           <Typography variant="body2">
@@ -111,10 +131,8 @@ class DepositCard extends Component {
         </Grid>
         <Grid item xs={12}>
           <Typography variant="h6">
-              <span>{`Deposits over ${((this.props.maxTokenDeposit / Math.pow(10, 18)) /
-                this.props.exchangeRate).toString().substring(0, 4)} Eth 
-                      or ${this.props.maxTokenDeposit /
-                Math.pow(10, 18)} Dai will be refunded.`}</span>
+            <span>{`Deposits over ${maxEth ? maxEth.substring(0, 4) : ""} Eth 
+                      or ${maxDai ? maxDai.substring(1, 3) : ""} Dai will be refunded.`}</span>
           </Typography>
         </Grid>
         <Grid item xs={12}>

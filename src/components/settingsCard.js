@@ -17,8 +17,7 @@ import CopyIcon from "@material-ui/icons/FileCopy";
 import SubmitIcon from "@material-ui/icons/ArrowRight";
 import { createWallet, createWalletFromMnemonic } from "../walletGen";
 import SettingsIcon from "@material-ui/icons/Settings";
-import Snackbar from './snackBar';
-
+import Snackbar from "./snackBar";
 
 const styles = {
   card: {
@@ -38,10 +37,9 @@ const styles = {
   input: {
     width: "100%"
   },
-  button:{
-    marginBottom:"0px"
+  button: {
+    marginBottom: "0px"
   }
-
 };
 
 class SettingsCard extends Component {
@@ -58,13 +56,13 @@ class SettingsCard extends Component {
     };
   }
 
-  handleClick = async() => {
-    await this.setState({copied:false});
-  }
+  handleClick = async () => {
+    await this.setState({ copied: false });
+  };
 
   generateNewAddress = async () => {
-    this.setState({isBurning: true})
-    try{
+    this.setState({ isBurning: true });
+    try {
       await this.props.connext.withdraw({
         withdrawalWeiUser: "0",
         tokensToSell: "0",
@@ -72,23 +70,30 @@ class SettingsCard extends Component {
         weiToSell: "0",
         recipient: this.props.address,
         exchangeRate: this.props.exchangeRate
-      })
-    } catch (e) {console.log(e)}
-    await createWallet(this.state.web3);
-    this.burnRefreshPoller()
-  }
+      });
+    } catch (e) {
+      console.log("Error withdrawing, creating new address anyway", e.message);
+    } finally {
+      await createWallet(this.state.web3);
+      this.burnRefreshPoller();
+    }
+  };
 
   burnRefreshPoller = async () => {
     setInterval(async () => {
-      if(this.state.isBurning) {
-        if(this.props.runtime.syncResultsFromHub[0] && this.props.runtime.syncResultsFromHub[0].update.reason === "ConfirmPending"){
+      if (this.state.isBurning) {
+        if (
+          this.props.runtime.syncResultsFromHub[0] &&
+          this.props.runtime.syncResultsFromHub[0].update.reason ===
+            "ConfirmPending"
+        ) {
           // Then refresh the page
-          this.props.history.push("/")
+          this.props.history.push("/");
           window.location.reload();
         }
       }
     }, 400);
-  }
+  };
 
   async recoverAddressFromMnemonic() {
     await createWalletFromMnemonic(this.state.mnemonic);
@@ -119,12 +124,13 @@ class SettingsCard extends Component {
           justifyContent: "center"
         }}
       >
-      <Snackbar 
-            handleClick={() => this.handleClick()}
-            onClose={() => this.handleClick()}
-            open={copied}
-            text="Copied!"/>
-        <Grid item xs={12} style={{justifyContent: "center"}}>
+        <Snackbar
+          handleClick={() => this.handleClick()}
+          onClose={() => this.handleClick()}
+          open={copied}
+          text="Copied!"
+        />
+        <Grid item xs={12} style={{ justifyContent: "center" }}>
           <SettingsIcon className={classes.icon} />
         </Grid>
         <Grid item xs={12}>
@@ -142,9 +148,7 @@ class SettingsCard extends Component {
             disableUnderline
             IconComponent={() => null}
           >
-            <MenuItem disabled={true} value={"MAINNET"}>
-              MAINNET
-            </MenuItem>
+            <MenuItem value={"MAINNET"}>MAINNET</MenuItem>
             <MenuItem value={"RINKEBY"}>RINKEBY</MenuItem>
             <MenuItem value={"LOCALHOST"}>LOCALHOST</MenuItem>
           </Select>
@@ -157,10 +161,14 @@ class SettingsCard extends Component {
               border: "1px solid #7289da",
               color: "#7289da"
             }}
-            onClick={() => {window.open('https://discord.gg/q2cakRc','_blank');window.close();return false}}
+            onClick={() => {
+              window.open("https://discord.gg/q2cakRc", "_blank");
+              window.close();
+              return false;
+            }}
             size="large"
           >
-            Discord
+            Support
           </Button>
         </Grid>
         <Grid item xs={12} className={classes.button}>
@@ -177,8 +185,8 @@ class SettingsCard extends Component {
             </Button>
           ) : (
             <CopyToClipboard
-            text={localStorage.getItem("mnemonic")}
-            color="primary"
+              text={localStorage.getItem("mnemonic")}
+              color="primary"
             >
               <Button
                 fullWidth
@@ -189,15 +197,15 @@ class SettingsCard extends Component {
                 onClick={() => this.setState({ showRecovery: true })}
               >
                 <CopyIcon style={{ marginRight: "5px" }} />
-                  <Typography noWrap variant="body1" color="primary">
-                    <Tooltip
-                      disableFocusListener
-                      disableTouchListener
-                      title="Click to Copy"
-                    >
-                      <span>{localStorage.getItem("mnemonic")}</span>
-                    </Tooltip>
-                  </Typography>
+                <Typography noWrap variant="body1" color="primary">
+                  <Tooltip
+                    disableFocusListener
+                    disableTouchListener
+                    title="Click to Copy"
+                  >
+                    <span>{localStorage.getItem("mnemonic")}</span>
+                  </Tooltip>
+                </Typography>
               </Button>
             </CopyToClipboard>
           )}
@@ -245,78 +253,87 @@ class SettingsCard extends Component {
         </Grid>
         <Grid item xs={12} className={classes.button}>
           <Button
-          fullWidth
-          style={{
-            background: "#FFF",
-            border: "1px solid #F22424",
-            color: "#F22424"
-          }}
-          size="large"
-          onClick={() => this.setState({ showWarning: true })}
+            fullWidth
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424"
+            }}
+            size="large"
+            onClick={() => this.setState({ showWarning: true })}
           >
             Burn Card
           </Button>
           <Modal
             open={this.state.showWarning}
-            onBackdropClick={() => this.setState({showWarning: false})}
+            onBackdropClick={() => this.setState({ showWarning: false })}
             style={{
-              justifyContent: "center", 
-              alignItems: "center", 
-              textAlign: "center", 
-              position: "absolute", 
-              top: "25%", 
+              justifyContent: "center",
+              alignItems: "center",
+              textAlign: "center",
+              position: "absolute",
+              top: "25%",
               width: "375px",
               marginLeft: "auto",
               marginRight: "auto",
               left: "0",
-              right: "0",
+              right: "0"
             }}
           >
-            <Grid container style={{backgroundColor: "#FFF", padding: "3% 3% 3% 3%", flexDirection: "column"}}>
-              <Grid item style={{margin: "1em"}}>
-                <Typography variant="h5" style={{color:"#F22424"}}>
-                  Are you sure you want to burn your Card? 
+            <Grid
+              container
+              style={{
+                backgroundColor: "#FFF",
+                padding: "3% 3% 3% 3%",
+                flexDirection: "column"
+              }}
+            >
+              <Grid item style={{ margin: "1em" }}>
+                <Typography variant="h5" style={{ color: "#F22424" }}>
+                  Are you sure you want to burn your Card?
                 </Typography>
               </Grid>
               {this.state.isBurning ? (
-                <Grid item style={{margin: "1em"}}>
+                <Grid item style={{ margin: "1em" }}>
                   <Typography variant="body1">
-                    Burning. Please do not refresh or navigate away. This page with refresh automatically when it's done.
+                    Burning. Please do not refresh or navigate away. This page
+                    with refresh automatically when it's done.
                   </Typography>
-                  <CircularProgress style={{marginTop: "1em"}}/>
+                  <CircularProgress style={{ marginTop: "1em" }} />
                 </Grid>
-              ): (
+              ) : (
                 <div>
-                  <Grid item style={{margin: "1em"}}>
-                  <Typography variant="body1" style={{color:"#F22424"}}>
-                    You will lose access to your funds unless you save your backup phrase!
-                  </Typography>
+                  <Grid item style={{ margin: "1em" }}>
+                    <Typography variant="body1" style={{ color: "#F22424" }}>
+                      You will lose access to your funds unless you save your
+                      backup phrase!
+                    </Typography>
                   </Grid>
-                  <Grid item style={{margin: "1em"}}>
+                  <Grid item style={{ margin: "1em" }}>
                     <Button
                       style={{
                         background: "#F22424",
                         border: "1px solid #F22424",
-                        color: "#FFF",
+                        color: "#FFF"
                       }}
                       variant="contained"
                       size="small"
                       onClick={() => this.generateNewAddress()}
                     >
-                    Burn
+                      Burn
                     </Button>
                     <Button
                       style={{
                         background: "#FFF",
                         border: "1px solid #F22424",
                         color: "#F22424",
-                        marginLeft: "5%",
+                        marginLeft: "5%"
                       }}
                       variant="outlined"
                       size="small"
                       onClick={() => this.setState({ showWarning: false })}
                     >
-                    Cancel
+                      Cancel
                     </Button>
                   </Grid>
                 </div>
@@ -325,16 +342,16 @@ class SettingsCard extends Component {
           </Modal>
         </Grid>
         <Grid item xs={12}>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             style={{
               background: "#FFF",
               border: "1px solid #F22424",
               color: "#F22424",
-              width: "15%",
+              width: "15%"
             }}
-            size="medium" 
-            onClick={()=>this.props.history.push("/")}
+            size="medium"
+            onClick={() => this.props.history.push("/")}
           >
             Back
           </Button>

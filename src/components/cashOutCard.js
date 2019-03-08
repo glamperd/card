@@ -14,13 +14,12 @@ import Modal from "@material-ui/core/Modal";
 //import CircularProgress from "@material-ui/core/CircularProgress";
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography } from "@material-ui/core";
-import { getDollarSubstring } from "../utils/getDollarSubstring";
-import { getAggregateChannelBalance } from "../utils/getAggregateChannelBalance";
+import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
 
 const styles = theme => ({
   icon: {
     width: "40px",
-    height: "40px",
+    height: "40px"
   },
   button: {
     backgroundColor: "#FCA311",
@@ -89,26 +88,28 @@ class CashOutCard extends Component {
     }
 
     this.setState({ withdrawalVal });
-
-    console.log(`Updated withdrawalVal: ${JSON.stringify(withdrawalVal, null, 2)}`);
     return withdrawalVal;
   }
 
   // examines if the display value should be updated
   // when the component is mounting, or when the props change
+
+  // NOTE: the amount to cashout != channel card amount if there is 
+  // wei in the channel
   async updateDisplayValue() {
-    const { channelState, exchangeRate } = this.props;
-    if (!channelState || (channelState.balanceWeiUser === "0" && channelState.balanceTokenUser === "0")) {
+    const { channelState, connextState } = this.props;
+    if (
+      !channelState ||
+      (channelState.balanceWeiUser === "0" &&
+        channelState.balanceTokenUser === "0")
+    ) {
       this.setState({ aggregateBalance: "$0.00" });
       return;
     }
 
-    const aggUSD = getAggregateChannelBalance(channelState, exchangeRate);
+    const usd = getChannelBalanceInUSD(channelState, connextState, false);
 
-    const substr = getDollarSubstring(aggUSD);
-    const aggregateBalance = "$" + substr[0] + "." + substr[1].substr(0, 2);
-
-    this.setState({ aggregateBalance });
+    this.setState({ aggregateBalance: usd });
   }
 
   // update display value with the exchange rate/
@@ -130,7 +131,6 @@ class CashOutCard extends Component {
       oldState.withdrawalVal.recipient = value;
       return oldState;
     });
-    console.log(`Updated recipient: ${JSON.stringify(this.state.withdrawalVal.recipient, null, 2)}`);
   }
 
   async checkState() {
@@ -163,7 +163,11 @@ class CashOutCard extends Component {
     // let addressError = null
     // let balanceError = null
     if (!web3.utils.isAddress(withdrawalVal.recipient)) {
-      const addressError = `${withdrawalVal.recipient === "0x0..." ? "Must provide address." : withdrawalVal.recipient + " is not a valid address"}`;
+      const addressError = `${
+        withdrawalVal.recipient === "0x0..."
+          ? "Must provide address."
+          : withdrawalVal.recipient + " is not a valid address"
+      }`;
       this.setState({ addressError });
       return;
     }
@@ -173,15 +177,19 @@ class CashOutCard extends Component {
     this.setState({ withdrawing: true });
 
     console.log(`Withdrawing: ${JSON.stringify(withdrawalVal, null, 2)}`);
-    let withdrawalRes = await connext.withdraw(withdrawalVal);
-    console.log(`Withdrawal result: ${JSON.stringify(withdrawalRes, null, 2)}`);
+    await connext.withdraw(withdrawalVal);
 
     this.poller();
   }
 
   render() {
     const { classes, exchangeRate, connextState } = this.props;
-    const { recipientDisplayVal, addressError, scan, aggregateBalance/*, withdrawing*/ } = this.state;
+    const {
+      recipientDisplayVal,
+      addressError,
+      scan,
+      aggregateBalance /*, withdrawing*/
+    } = this.state;
     return (
       <Grid
         container
@@ -197,7 +205,13 @@ class CashOutCard extends Component {
         }}
       >
         {/* <ProgressModalWrapped withdrawing={withdrawing} /> */}
-        <Grid container wrap="nowrap" direction="row" justify="center" alignItems="center">
+        <Grid
+          container
+          wrap="nowrap"
+          direction="row"
+          justify="center"
+          alignItems="center"
+        >
           <Grid item xs={12}>
             <UnarchiveIcon className={classes.icon} />
           </Grid>
@@ -230,8 +244,17 @@ class CashOutCard extends Component {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <Tooltip disableFocusListener disableTouchListener title="Scan with QR code">
-                    <Button variant="contained" color="primary" style={{ color: "primary" }} onClick={() => this.setState({ scan: true })}>
+                  <Tooltip
+                    disableFocusListener
+                    disableTouchListener
+                    title="Scan with QR code"
+                  >
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      style={{ color: "primary" }}
+                      onClick={() => this.setState({ scan: true })}
+                    >
                       <QRIcon />
                     </Button>
                   </Tooltip>
@@ -240,26 +263,36 @@ class CashOutCard extends Component {
             }}
           />
         </Grid>
-        <Modal 
-          id="qrscan" 
-          open={scan} 
-          onClose={() => this.setState({ scan: false })} 
-          style={{ 
-            justifyContent: "center", 
-            alignItems: "center", 
-            textAlign: "center", 
-            position: "absolute", 
-            top: "10%", 
+        <Modal
+          id="qrscan"
+          open={scan}
+          onClose={() => this.setState({ scan: false })}
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            position: "absolute",
+            top: "10%",
             width: "375px",
             marginLeft: "auto",
             marginRight: "auto",
             left: "0",
-            right: "0",
-          }}>
-          <QRScan handleResult={this.updateRecipientHandler.bind(this)} history={this.props.history} />
+            right: "0"
+          }}
+        >
+          <QRScan
+            handleResult={this.updateRecipientHandler.bind(this)}
+            history={this.props.history}
+          />
         </Modal>
         <Grid item xs={12}>
-          <Grid container spacing={8} direction="row" alignItems="center" justify="center">
+          <Grid
+            container
+            spacing={8}
+            direction="row"
+            alignItems="center"
+            justify="center"
+          >
             <Grid item xs={6}>
               <Button
                 className={classes.button}
@@ -268,28 +301,42 @@ class CashOutCard extends Component {
                 disabled={!connextState || !connextState.runtime.canWithdraw}
               >
                 Cash Out Eth
-                <img src={EthIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} alt="" />
+                <img
+                  src={EthIcon}
+                  style={{ width: "15px", height: "15px", marginLeft: "5px" }}
+                  alt=""
+                />
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button className={classes.button} variant="contained" fullWidth onClick={() => this.withdrawalHandler(false)} disabled>
+              <Button
+                className={classes.button}
+                variant="contained"
+                fullWidth
+                onClick={() => this.withdrawalHandler(false)}
+                disabled
+              >
                 Cash Out Dai
-                <img src={DaiIcon} style={{ width: "15px", height: "15px", marginLeft: "5px" }} alt="" />
+                <img
+                  src={DaiIcon}
+                  style={{ width: "15px", height: "15px", marginLeft: "5px" }}
+                  alt=""
+                />
               </Button>
             </Grid>
           </Grid>
         </Grid>
         <Grid item xs={12}>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             style={{
               background: "#FFF",
               border: "1px solid #F22424",
               color: "#F22424",
-              width: "15%",
+              width: "15%"
             }}
-            size="medium" 
-            onClick={()=>this.props.history.push("/")}
+            size="medium"
+            onClick={() => this.props.history.push("/")}
           >
             Back
           </Button>
