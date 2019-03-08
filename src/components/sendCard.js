@@ -458,7 +458,6 @@ class PayCard extends Component {
       showReceipt: true
     });
 
-    let needsCollateral = true;
     // collateralize by sending payment
     const err = await this._sendPayment(paymentVal, true);
     // somehow it worked???
@@ -480,14 +479,15 @@ class PayCard extends Component {
     // call to send payment failed, monitor collateral
     // watch for confirmation on the recipients side
     // of the channel for 20s
+    let needsCollateral
     const self = this;
     await interval(
       async (iteration, stop) => {
+        // returns null if no collateral needed
         needsCollateral = await connext.recipientNeedsCollateral(
           paymentVal.payments[0].recipient,
           convertPayment("str", paymentVal.payments[0].amount)
         );
-        console.log("needsCollateral: ", needsCollateral);
         if (!needsCollateral || iteration > 20) {
           stop();
         }
