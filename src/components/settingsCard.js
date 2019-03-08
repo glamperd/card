@@ -148,9 +148,7 @@ class SettingsCard extends Component {
             disableUnderline
             IconComponent={() => null}
           >
-            <MenuItem disabled={true} value={"MAINNET"}>
-              MAINNET
-            </MenuItem>
+            <MenuItem value={"MAINNET"}>MAINNET</MenuItem>
             <MenuItem value={"RINKEBY"}>RINKEBY</MenuItem>
             <MenuItem value={"LOCALHOST"}>LOCALHOST</MenuItem>
           </Select>
