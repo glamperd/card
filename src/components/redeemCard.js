@@ -235,7 +235,7 @@ class RedeemCard extends Component {
           {purchaseId && purchaseId !== "failed" && (
             <DoneIcon className={classes.icon} />
           )}
-          <Typography noWrap variant="body1">
+          <Typography noWrap variant="body1" style={{marginBottom: "1.5em"}}>
             {!purchaseId && !isConfirm && requestedCollateral && <span>{"Setting up your card too. This will take 30-40s."}</span>}
           </Typography>
           {!purchaseId && !isConfirm && <CircularProgress />}
