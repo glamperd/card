@@ -61,7 +61,7 @@ push-live:
 
 test: prod
 	MODE=test bash ops/restart.sh prod
-	$(install) && rm build/node-modules # Make sure cypress is configured to run locally
+	$(install) && rm .makeflags/node-modules # Make sure cypress is configured to run locally
 	./node_modules/.bin/cypress run
 
 ########################################
