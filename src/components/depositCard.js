@@ -37,15 +37,15 @@ class DepositCard extends Component {
   };
 
   render() {
-    const { classes, address, connextState, minDepositWei, maxTokenDeposit } = this.props;
+    const { classes, address, connextState, browserMinimumBalance, maxTokenDeposit } = this.props;
     const { copied, } = this.state;
 
     let minDai, minEth
     let maxDai, maxEth
-    if (connextState && connextState.runtime.canDeposit) {
+    if (connextState && connextState.runtime.canDeposit && browserMinimumBalance) {
       const minConvertable = new CurrencyConvertable(
         CurrencyType.WEI,
-        minDepositWei,
+        browserMinimumBalance.wei,
         () => getExchangeRates(connextState)
       )
 
@@ -56,7 +56,7 @@ class DepositCard extends Component {
       )
 
       minEth = minConvertable.toETH().amountBigNumber.toFixed()
-      minDai = Currency.USD(minConvertable.toUSD().amountBigNumber).format({})
+      minDai = Currency.USD(browserMinimumBalance.dai).format({})
       maxEth = maxConvertable.toETH().amountBigNumber.toFixed()
       maxDai = Currency.USD(maxConvertable.toUSD().amountBigNumber).format({})
     }

@@ -674,7 +674,7 @@ class App extends React.Component {
                 <DepositCard
                   {...props}
                   address={address}
-                  minDepositWei={browserMinimumBalance.wei}
+                  browserMinimumBalance={browserMinimumBalance}
                   exchangeRate={exchangeRate}
                   maxTokenDeposit={CHANNEL_DEPOSIT_MAX.toString()}
                   connextState={connextState}
