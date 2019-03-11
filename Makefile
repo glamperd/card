@@ -60,7 +60,8 @@ push-live:
 	docker push $(prod_image):$(version)
 
 test: prod
-	npm run start-prod
+	MODE=test bash ops/restart.sh prod
+	$(install) && rm build/node-modules # Make sure cypress is configured to run locally
 	./node_modules/.bin/cypress run
 
 ########################################
