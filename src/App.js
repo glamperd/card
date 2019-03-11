@@ -408,7 +408,7 @@ class App extends React.Component {
       );
 
       // return wei to sender
-      if (weiToReturn != "0") {
+      if (weiToReturn !== "0") {
         await this.returnWei(weiToReturn);
         return;
       }
@@ -470,6 +470,7 @@ class App extends React.Component {
         value: wei
       });
       const tx = await customWeb3.eth.getTransaction(res.transactionHash);
+      console.log(`Returned deposit overflow: ${tx}`)
       // calculate expected balance after transaction and set in local
       // storage. once the tx is submitted, the wallet balance should
       // always be lower than the expected balance, because of added
@@ -607,7 +608,7 @@ class App extends React.Component {
               exact
               path="/"
               render={props =>
-                runtime && runtime.channelStatus != "CS_OPEN" ? (
+                runtime && runtime.channelStatus !== "CS_OPEN" ? (
                   <Redirect to="/support" />
                 ) : (
                   <Home
