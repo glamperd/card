@@ -27,7 +27,13 @@ else
   docker pull $image
 fi
 
-echo "Deploying image: $image to domain $DOMAINNAME linked to hub $HUB_URL"
+####################
+# Deploy according to above configuration
+
+echo "Deploying image: $image to domain $DOMAINNAME linked to rinkeby hub $RINKEBY_HUB_URL and mainnet hub $MAINNET_HUB_URL"
+
+# turn on swarm mode if it's not already on
+docker swarm init 2> /dev/null || true
 
 mkdir -p /tmp/$project
 cat - > /tmp/$project/docker-compose.yml <<EOF
