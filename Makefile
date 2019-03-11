@@ -60,6 +60,7 @@ push-live:
 	docker push $(prod_image):$(version)
 
 test: prod
+	npm run start-prod
 	./node_modules/.bin/cypress run
 
 ########################################
