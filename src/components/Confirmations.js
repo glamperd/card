@@ -123,8 +123,7 @@ class Confirmations extends Component {
             horizontal: "center"
           }}
           open={deposit === "PENDING"}
-          autoHideDuration={30000}
-          onClose={() => this.props.closeConfirmations()}
+          onClose={() => this.props.closeConfirmations("deposit")}
         >
           <MySnackbarContentWrapper
             onClose={this.handleClose}
@@ -138,8 +137,7 @@ class Confirmations extends Component {
             horizontal: "center"
           }}
           open={withdraw === "PENDING"}
-          autoHideDuration={30000}
-          onClose={() => this.props.closeConfirmations()}
+          onClose={() => this.props.closeConfirmations("withdraw")}
         >
           <MySnackbarContentWrapper
             onClose={this.handleClose}
@@ -153,7 +151,7 @@ class Confirmations extends Component {
             horizontal: "center"
           }}
           open={deposit === "SUCCESS"}
-          autoHideDuration={30000}
+          autoHideDuration={4000}
           onClose={() => this.props.closeConfirmations()}
         >
           <MySnackbarContentWrapper
@@ -168,7 +166,7 @@ class Confirmations extends Component {
             horizontal: "center"
           }}
           open={withdraw === "SUCCESS"}
-          autoHideDuration={30000}
+          autoHideDuration={4000}
           onClose={() => this.props.closeConfirmations()}
         >
           <MySnackbarContentWrapper

@@ -538,17 +538,15 @@ class App extends React.Component {
           }
           break;
         case "ConfirmPending":
-          if(this.state.status.deposit == "PENDING") {
+          if(this.state.status.depositHistory == "PENDING") {
             this.closeConfirmations()
             deposit = "SUCCESS";
-          } else if(this.state.status.withdraw == "PENDING") {
+          } else if(this.state.status.withdrawHistory == "PENDING") {
             this.closeConfirmations()
             withdraw = "SUCCESS";
           }
           break;
         default:
-          deposit = null;
-          withdraw = null;
       }
       this.setState({ status: { deposit, withdraw, hasRefund } });
     }
@@ -581,12 +579,23 @@ class App extends React.Component {
     }
   }
 
-  async closeConfirmations() {
+  async closeConfirmations(type) {
     let deposit = null;
-    let payment = null;
     let withdraw = null;
     let hasRefund = null;
-    this.setState({ status: { deposit, payment, withdraw, hasRefund } });
+    let depositHistory, withdrawHistory;
+    if(!type) {
+      depositHistory = null;
+      withdrawHistory = null;
+    }
+    // Hack to keep deposit/withdraw context for confirm pending notifications
+    if(type == "deposit") {
+      depositHistory = this.state.status.deposit
+    }
+    if(type == "withdraw") {
+      withdrawHistory = this.state.status.withdraw
+    }
+    this.setState({ status: { deposit, depositHistory, withdraw, withdrawHistory, hasRefund } });
   }
 
   render() {
