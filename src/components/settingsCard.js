@@ -49,7 +49,7 @@ class SettingsCard extends Component {
     this.state = {
       showRecovery: false,
       inputRecovery: false,
-      rpc: localStorage.getItem("rpc"),
+      rpc: localStorage.getItem("rpc-prod"),
       mnemonic: null,
       copied: null,
       showWarning: false

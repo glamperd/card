@@ -135,12 +135,12 @@ class App extends React.Component {
     const mnemonic = localStorage.getItem("mnemonic");
     // on mount, check if you need to refund by removing maxBalance
     localStorage.removeItem("refunding");
-    let rpc = localStorage.getItem("rpc");
+    let rpc = localStorage.getItem("rpc-prod");
     // TODO: better way to set default provider
     // if it doesnt exist in storage
     if (!rpc) {
-      rpc = env === "development" ? "LOCALHOST" : "RINKEBY";
-      localStorage.setItem("rpc", rpc);
+      rpc = env === "development" ? "LOCALHOST" : "MAINNET";
+      localStorage.setItem("rpc-prod", rpc);
     }
     // If a browser address exists, create wallet
     if (mnemonic) {
@@ -162,10 +162,7 @@ class App extends React.Component {
        await this.pollConnextState();
       await this.poller();
     } else {
-      // Else, we wait for user to finish selecting through modal which will refresh page when done
-      // TODO
-      // const { modals } = this.state;
-      // this.setState({ modals: { ...modals, keyGen: true } });
+      // Else, we create a new address
       await createWallet(this.state.web3);
       // Then refresh the page
       window.location.reload();
@@ -178,14 +175,15 @@ class App extends React.Component {
 
   async networkHandler(rpc) {
     // called from settingsCard when a new RPC URL is connected
-    // will create a new custom web3 and reinstantiate connext
-    localStorage.setItem("rpc", rpc);
+    // will refresh the page after
+    localStorage.setItem("rpc-prod", rpc);
     // update refunding variable on rpc switch
     localStorage.removeItem("maxBalanceAfterRefund");
     localStorage.removeItem("refunding");
-    await this.setWeb3(rpc);
-    await this.setConnext();
-    await this.setTokenContract();
+    // await this.setWeb3(rpc);
+    // await this.setConnext();
+    // await this.setTokenContract();
+    window.location.reload();
     return;
   }
 

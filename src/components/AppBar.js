@@ -66,7 +66,7 @@ const AppBarComponent = props => (
             component={Link}
             to="/settings"
           >
-            {localStorage.getItem("rpc")}
+            {localStorage.getItem("rpc-prod")}
             <SettingIcon style={{ marginLeft: "3px" }} />
           </Button>
           {/* <IconButton color="inherit" variant="contained" component={Link} to="/settings">
