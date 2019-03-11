@@ -123,6 +123,10 @@ class CashOutCard extends Component {
   }
 
   async updateRecipientHandler(value) {
+    if (value.includes("ethereum:")) {
+      let temp = value.split(":")
+      value = temp[1]
+    }
     this.setState({
       recipientDisplayVal: value,
       scan: false
