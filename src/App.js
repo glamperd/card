@@ -539,10 +539,10 @@ class App extends React.Component {
           break;
         case "ConfirmPending":
           if(this.state.status.depositHistory == "PENDING") {
-            this.closeConfirmations()
+            this.closeConfirmations("deposit")
             deposit = "SUCCESS";
           } else if(this.state.status.withdrawHistory == "PENDING") {
-            this.closeConfirmations()
+            this.closeConfirmations("withdraw")
             withdraw = "SUCCESS";
           }
           break;
