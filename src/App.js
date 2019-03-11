@@ -519,30 +519,39 @@ class App extends React.Component {
     const { runtime } = this.state;
     const refundStr = localStorage.getItem("refunding");
     const hasRefund = !!refundStr ? refundStr.split(",") : null;
-    let deposit = null;
-    let payment = null;
-    let withdraw = null;
     if (runtime.syncResultsFromHub[0]) {
+      let deposit;
+      let withdraw;
       switch (runtime.syncResultsFromHub[0].update.reason) {
         case "ProposePendingDeposit":
-          deposit = "PENDING";
+          if(runtime.syncResultsFromHub[0].update.args.depositTokenUser != "0" ||
+            runtime.syncResultsFromHub[0].update.args.depositWeiUser != "0" ) {
+            this.closeConfirmations()
+            deposit = "PENDING";
+          }
           break;
         case "ProposePendingWithdrawal":
-          withdraw = "PENDING";
+          if(runtime.syncResultsFromHub[0].update.args.withdrawalTokenUser != "0" ||
+            runtime.syncResultsFromHub[0].update.args.withdrawalWeiUser != "0" ) {
+            this.closeConfirmations()
+            withdraw = "PENDING";
+          }
           break;
         case "ConfirmPending":
-          withdraw = "SUCCESS";
-          break;
-        case "Payment":
-          payment = "SUCCESS";
+          if(this.state.status.deposit == "PENDING") {
+            this.closeConfirmations()
+            deposit = "SUCCESS";
+          } else if(this.state.status.withdraw == "PENDING") {
+            this.closeConfirmations()
+            withdraw = "SUCCESS";
+          }
           break;
         default:
           deposit = null;
           withdraw = null;
-          payment = null;
       }
+      this.setState({ status: { deposit, withdraw, hasRefund } });
     }
-    this.setState({ status: { deposit, withdraw, payment, hasRefund } });
   }
 
   // ************************************************* //
