@@ -43,12 +43,12 @@ const AppBarComponent = props => (
                   : noAddrBlocky
               }
               alt=""
-              style={{ width: "40px", height: "40px" }}
+              style={{ width: "40px", height: "40px", borderRadius: "4px" }}
             />
             <Typography
               variant="body2"
               noWrap
-              style={{ width: "75px", color: "#c1c6ce", marginLeft: "3px" }}
+              style={{ width: "75px", color: "#c1c6ce", marginLeft: "0.5em" }}
             >
               <span>{props.address}</span>
             </Typography>
