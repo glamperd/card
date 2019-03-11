@@ -31,7 +31,6 @@ const AppBarComponent = props => (
       >
         <Grid item xs={3}>
           <IconButton
-            id="goto-deposit"
             color="inherit"
             variant="contained"
             component={Link}
