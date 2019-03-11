@@ -59,6 +59,9 @@ push-live:
 	docker tag daicard:latest $(prod_image):$(version)
 	docker push $(prod_image):$(version)
 
+test: prod
+	./node_modules/.bin/cypress run
+
 ########################################
 # Begin Tests
 

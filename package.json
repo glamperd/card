@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "cypress": "./node_modules/.bin/cypress open",
     "start": "react-scripts start",
     "start-prod": "make start-prod",
-    "build": "react-scripts build",
+    "start-tests": "./node_modules/.bin/cypress open",
     "test": "react-scripts test",
+    "build": "react-scripts build",
     "eject": "react-scripts eject"
   },
   "dependencies": {
