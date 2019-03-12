@@ -2,9 +2,7 @@
 
 A simple offchain wallet, hosted in the browser, which utilizes Indra payment channels. Inspired by the SpankCard and Austin Griffith's burner wallet.
 
-See it on Rinkeby at: https://card.connext.network
-
-Mainnet implementation: https://daicard.io
+See it live at: https://daicard.io
 
 ## Contents
 - [Overview](#overview)
@@ -22,16 +20,16 @@ Mainnet implementation: https://daicard.io
 
 ## Overview
 
-Developer note: for branch `get-hub-config` to be functional in production, the updates from indra branch `config-endpoint` need to be merged to master, deployed to prod, and have it's client changed published to npm.
-
 ### Local development
 
-#### Prerequisites
-- Node 9+
-- Docker 
-- Make
+Prerequisites
+ - Node 9+
+ - Docker
+ - Make
 
-1. Make sure you have indra running locally. Check out the instructions at https://github.com/ConnextProject/indra
+1. Make sure you have indra running locally. Check out the instructions in the [indra repo](https://github.com/ConnextProject/indra).
+
+TL;DR run:
 
 ```
 git clone https://github.com/ConnextProject/indra.git
@@ -39,41 +37,58 @@ cd indra
 npm start
 ```
 
-2. Clone this repo and install dependencies
+2. Deploy
+
+From the card's project root (eg `git clone https://github.com/ConnextProject/card.git && cd card`), run one of the following:
+
+Using a local webpack dev server:
 
 ```
-git clone https://github.com/ConnextProject/card.git
-npm i
-
-```
-
-3. Start the app in developer-mode
-
-```
+npm install
 npm start
 ```
 
-If you have trouble connecting the card to your local Indra, you can also launch with Make:
+Using a containerized webpack dev server:
 
 ```
 make start
 ```
 
-4. If you started with `npm start`, browse to `localhost:3000` or the port specified by npm; if you started with `make start`, browse to `localhost`
+3. Check it out
 
-### Developing Connext Client Alongside 
+ - If you started with `npm start`, browse to `http://localhost:3000`
+ - If you started with `make start`, browse to `http://localhost`
+
+4. Run tests
+
+During local development, start the test watcher with:
 
 ```
-# From the card repo, assuming indra has been cloned & started in the parent directory
-cp -rf ../indra/modules/client connext
-rm -rf node_modules/connext
-ln -s ../connext node_modules/connext
+npm run start-test
+```
+
+This will start an ongoing e2e tester that will re-run any time the tests are changed. Works well with webpack dev server but you'll have to manually re-trigger the tests after changing the card's source code.
+
+You can also run the more heavy-duty e2e tests that will be run as part of CI integration with:
+
+```
+npm run test
+```
+
+### Developing Connext Client Alongside
+
+Assuming indra has been cloned & started in the parent directory, run the following from the card repo:
+
+```
+bash ops/link-connext.sh
 npm restart
 ```
 
+The above will create a local copy of the connext client that you can mess with. None of you changes in this local client will be reflected in indra, make sure to copy over any changes worth keeping.
+
 ## Integrating into your App
 
-This card is a simple implementation of the Connext Client package. If you'd like to integrate p2p micropayments into your application, you have a few options: 
+This card is a simple implementation of the Connext Client package. If you'd like to integrate p2p micropayments into your application, you have a few options:
 
 (1) Simply embed the card in your app or link to it for payments
 (2) Build a more "bespoke" integration to fit your needs
@@ -86,7 +101,7 @@ The Connext client is a lightweight NPM package that can be found here:
 
 https://www.npmjs.com/package/connext
 
-Installation: 
+Installation:
 
 `npm i connext`
 
@@ -101,7 +116,7 @@ We instantiate Web3 in App.js using our [custom provider](https://github.com/Con
 ```
   async setWeb3(rpc) {
     let rpcUrl, hubUrl;
-    
+
     // SET RPC
     switch (rpc) {
       case "LOCALHOST":
@@ -130,16 +145,16 @@ We instantiate Web3 in App.js using our [custom provider](https://github.com/Con
 
     // Set provider options to current RPC
     const providerOpts = new ProviderOptions(store, rpcUrl).approving();
-    
-    // Create provider 
+
+    // Create provider
     const provider = clientProvider(providerOpts);
-    
+
     // Instantiate Web3 using provider
     const customWeb3 = new Web3(provider);
-    
+
     // Get network ID to set guardrails
     const customId = await customWeb3.eth.net.getId();
-    
+
     // NOTE: token/contract/hubWallet ddresses are set to state while initializing connext
     this.setState({ customWeb3, hubUrl });
     if (windowId && windowId !== customId) {
@@ -148,10 +163,10 @@ We instantiate Web3 in App.js using our [custom provider](https://github.com/Con
     return;
   }
   ```
-  
+
 ### Instantiating the Connext Client
 
-Once you've instantiated Web3 (whether through a custom provider or the Metamask injection), you need to start up the Connext Client. We do this by creating a Connext object in App.js and then passing it as a prop to any components that require it. 
+Once you've instantiated Web3 (whether through a custom provider or the Metamask injection), you need to start up the Connext Client. We do this by creating a Connext object in App.js and then passing it as a prop to any components that require it.
 
 ```
 async setConnext() {
@@ -180,14 +195,14 @@ async setConnext() {
     });
   }
   ```
-  
+
   Because channel state changes when users take action, you'll likely want to poll state so that your components are working with the latest channel state:
-  
+
   ```
     async pollConnextState() {
-    // Get connext object 
+    // Get connext object
     let connext = this.state.connext;
-    
+
     // Register listeners
     connext.on("onStateChange", state => {
       console.log("Connext state changed:", state);
@@ -198,16 +213,16 @@ async setConnext() {
         exchangeRate: state.runtime.exchangeRate ? state.runtime.exchangeRate.rates.USD : 0
       });
     });
-    
+
     // start polling
     await connext.start();
   }
   ```
-  
+
  ### Making Deposits to Channels
- 
+
  Depositing to a channel requires invoking `connext.deposit()`, referencing the Connext object that you created when you instantiated the Client. `connext.deposit()` is asynchronous, and accepts a deposit object containing strings of Wei and token values:
- 
+
  ```
 const params = {
   amountWei: "10"
@@ -244,7 +259,7 @@ async autoDeposit() {
         // console.log("Cannot deposit");
         return;
       }
-      
+
       // Set deposit amounts
       const actualDeposit = {
         amountWei: eth.utils
@@ -259,27 +274,27 @@ async autoDeposit() {
         console.log(`Actual deposit is 0, not depositing.`);
         return;
       }
-  
+
       console.log(`Depositing: ${JSON.stringify(actualDeposit, null, 2)}`);
-      
+
       // Make actual deposit
       let depositRes = await this.state.connext.deposit(actualDeposit);
     }
   }
   ```
-  
-### Making ETH to Token Swaps 
-  
+
+### Making ETH to Token Swaps
+
   How and if you use the in-channel swap functionality will depend largely on your use case. If you have an ecosystem with a native token, you can use in-channel swaps to onboard new users without them buying your token a priori: just have them deposit ETH and swap it for tokens from your reserve. You can also give users the option to swap in your UI.
-  
+
   Swapping assets in-channel requires invoking `connext.exchange()`, referencing the Connext object that you created when you instantiated the Client. `connext.exchange()` is asynchronous, and accepts a balance to swap and a string representing the denomination you're swapping from:
-  
+
  ```
  await this.state.connext.exchange("10", "wei");
  ```
-  
+
   If you'd like users to be able to interact on your token-denominated platform without ever needing to buy your token, you can automatically swap any ETH-denominated channel deposits for your token. In the card, we've done this with an ETH<->DAI swap. We wrote an autoSwap function that's very similar to the autoDeposit in the last section; it's set to run on an interval and swaps any ETH that it finds in the channel for DAI:
-  
+
   ```
     async autoSwap() {
     const { channelState, connextState } = this.state;
@@ -295,10 +310,10 @@ async autoDeposit() {
     }
   }
   ```
-  
-### Making Payments 
-  
-Making payments is the core functionality of Connext, and you have a great degree of flexibility in terms of implementing payments in your application. 
+
+### Making Payments
+
+Making payments is the core functionality of Connext, and you have a great degree of flexibility in terms of implementing payments in your application.
 
 We facilitate 3 types of payments:
 1) Channel Payments
@@ -309,7 +324,7 @@ We facilitate 3 types of payments:
 
 *Thread payments are sent directly from payer to payee in ephemeral "virtual channels". The payer passes a state update to the payee, and the hub decomposes that update into two channel payments (one from the payer to the hub, one from the hub to the payee). The hub never takes control of user funds; rather, it updates channel states to reflect the agreed-upon balances. In the case of disputes, users can go to chain with the latest double-signed state of their thread and recover funds.*
 
-3) Link Payments 
+3) Link Payments
 
 *Link payments allow you to send payments to a user who has never opened a channel with a Connext hub.*
 [[NEED TO DESCRIBE PROCESS]]
@@ -333,17 +348,17 @@ paymentVal: {
           }
         ]
       }
-      
+
  await connext.buy(paymentVal);
  ```
- 
- In the card, we've wrapped `connext.buy()` in a button; users enter an address and payment amount, the paymentVal object is updated, and the function is called onClick. However, `connext.buy()` can be implemented to fit your use case: streaming payments, for example, could run `buy` on a poller until a user stops watching a video. Alternatively, a machine could trigger a payment on receipt of data--and this is just the tip of the iceberg!
- 
-You'll notice that the paymentVal object allows for multiple payments. This is done so that, if you'd like, you can batch payments. This could be helpful if (e.g.) you're using Metamask as a signer instead of an autosigner and want to batch payments from a user; it could also help with invoicing or accounting if you're operating an ecosystem with a many-to-one payment paradigm.
-    
-### Withdrawals 
 
-`connext.withdraw()` allows you to withdraw part or all of your funds from a channel to an external address. Called on the Connext object, it accepts parameters indicating the amount to withdraw in tokens and/or Wei. It also includes a `tokensToSell` parameter that, at your/your user's discretion, will automatically swap those tokens for ETH and withdraw your balance in ETH rather than tokens. This is helpful for onboarding to/offboarding from ecosystems with a native token or a specific desired denomination. 
+ In the card, we've wrapped `connext.buy()` in a button; users enter an address and payment amount, the paymentVal object is updated, and the function is called onClick. However, `connext.buy()` can be implemented to fit your use case: streaming payments, for example, could run `buy` on a poller until a user stops watching a video. Alternatively, a machine could trigger a payment on receipt of data--and this is just the tip of the iceberg!
+
+You'll notice that the paymentVal object allows for multiple payments. This is done so that, if you'd like, you can batch payments. This could be helpful if (e.g.) you're using Metamask as a signer instead of an autosigner and want to batch payments from a user; it could also help with invoicing or accounting if you're operating an ecosystem with a many-to-one payment paradigm.
+
+### Withdrawals
+
+`connext.withdraw()` allows you to withdraw part or all of your funds from a channel to an external address. Called on the Connext object, it accepts parameters indicating the amount to withdraw in tokens and/or Wei. It also includes a `tokensToSell` parameter that, at your/your user's discretion, will automatically swap those tokens for ETH and withdraw your balance in ETH rather than tokens. This is helpful for onboarding to/offboarding from ecosystems with a native token or a specific desired denomination.
 
 Implementation:
 
@@ -355,7 +370,7 @@ withdrawalVal: {
         weiToSell: "0",
         recipient: "0x0..."
       }
-   
+
 await connext.withdraw(withdrawalVal);
 ```
 
@@ -364,14 +379,18 @@ Because the card is effectively a hot wallet, we've set our implementation of `c
 
 ### Collateralization
 
-To receive payments, the recipient's channel must be collateralized. This presents a few practical challenges: hub operators must decide how to allocate their reserves to minimize (a) the number of payments that fail due to uncollateralized channels and (b) the amount of funds locked up in channels. In addition, implementers should adhere to some best practices to reduce loads on the hub and minimize the chance of payment delays. Because this is new technology, we're still exploring the best ways to handle collateralization and hub reserve management. 
+`connext.requestCollateral()` is used to have the hub collateralize the payee's channel so that they can receive payments.
+
+The hub has a minimum it will collateralize into any channel. This deposit minimum is set to 10 DAI and is enforced on every user deposit, collateral call, but NOT enforced on withdrawals.
+
+The hub is triggered to check the collateral needs of the user after any payment is sent to them, regardless if the payment was successful. As you are implementing the client, you can use a failed payment to kickoff the autocollateral mechanism.
+
+The autocollateral mechanism determines the amount the hub should deposit by checking all recent payments made to recipients, and deposits the 1.5 times the amount to cover the collateral. A minimum of 10 DAI and maximum of 169 DAI are enforced here to reduce collateral burden on the hub.
+
+On cashout, you have the ability to implement "partial withdrawals", which would leave some tokens (and potentially wei) in the channel. On withdrawing, the hub will leave enough DAI in the channel to facilitate exchanges for the remaining user wei balance, up to the exchange limit of 69 DAI. This way, the hub is optimistically collateralizing for future exchanges.
+
+Note that these collateral limitations mean that there is a hard cap to the size of payments the hub can facilitate (169 DAI). However, there is no limit to how much eth the user can store in their side of the channel. The hub will just refuse to facilitate payments or exchanges that it cannot collateralize, but the user will not have to deposit more ETH.
 
 Right now, submitting a withdrawal request with zero value will decollateralize a user's channel entirely.
 
-A few tips that we've found helpful:
-1. Collateralize on auth instead of page load. This helps minimize unnecessary collateralization.
-2. If your wallet is intended to be ephemeral, decollateralize when a user burns their wallet.
-
-
-
-  
+This presents a few practical challenges: hub operators must decide how to allocate their reserves to minimize (a) the number of payments that fail due to uncollateralized channels and (b) the amount of funds locked up in channels. In addition, implementers should adhere to some best practices to reduce loads on the hub and minimize the chance of payment delays. Because this is new technology, we're still exploring the best ways to handle collateralization and hub reserve management and will update this section as we learn more.

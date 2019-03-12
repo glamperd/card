@@ -18,10 +18,12 @@ export type ApproveSignCallback = (
 export default class ProviderOptions {
   store: any;
   rpcUrl: string | undefined;
+  hubUrl: string | undefined;
 
-  constructor(store: any, rpcUrl: string) {
+  constructor(store: any, rpcUrl: string, hubUrl: string) {
     this.store = store;
     this.rpcUrl = rpcUrl;
+    this.hubUrl = hubUrl;
   }
 
   getAccounts = (
@@ -84,6 +86,7 @@ export default class ProviderOptions {
         web3_clientVersion: `LiteratePayments/v${1.0}`
       },
       rpcUrl: this.rpcUrl,
+      hubUrl: this.hubUrl,
       getAccounts: this.getAccounts,
       approveTransaction: this.approveTransactionAlways,
       signTransaction: this.signTransaction,

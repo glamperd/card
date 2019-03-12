@@ -29,7 +29,7 @@ $(shell mkdir -p build .makeflags)
 .PHONY: default all dev prod stop clean purge push push-live
 
 default: dev
-all: dev prod
+all: dev prod proxy-test
 dev: node-modules proxy
 prod: proxy-prod
 
@@ -62,7 +62,14 @@ push-live:
 ########################################
 # Begin Tests
 
-test: node-modules prod
+test: proxy-test
+	MODE=test MAINNET_HUB_URL="http://172.17.0.1:3000" bash ops/restart.sh prod
+	./node_modules/.bin/cypress install
+	./node_modules/.bin/cypress run
+
+start-test: node-modules
+	./node_modules/.bin/cypress install
+	./node_modules/.bin/cypress open
 
 ########################################
 # Begin Real Rules
@@ -72,13 +79,25 @@ proxy-prod: card-prod $(shell find ops/proxy $(find_options))
 	docker build --file ops/proxy/prod.dockerfile --tag daicard:latest .
 	$(log_finish) && touch $(flags)/$@
 
-proxy: env node-modules $(shell find ops/proxy $(find_options))
+proxy-test: card-test $(shell find ops/proxy $(find_options))
+	$(log_start)
+	docker build --file ops/proxy/prod.dockerfile --tag daicard:test .
+	$(log_finish) && touch $(flags)/$@
+
+proxy: node-modules $(shell find ops/proxy $(find_options))
 	$(log_start)
 	docker build --file ops/proxy/dev.dockerfile --tag $(project)_proxy:dev .
 	$(log_finish) && touch $(flags)/$@
 
-card-prod: prod-env node-modules $(src)
+card-prod: ops/prod.env node-modules $(src)
 	$(log_start)
+	cp -f ops/prod.env .env
+	$(docker_run) "npm run build"
+	$(log_finish) && touch $(flags)/$@
+
+card-test: ops/dev.env node-modules $(src)
+	$(log_start)
+	cp -f ops/dev.env .env
 	$(docker_run) "npm run build"
 	$(log_finish) && touch $(flags)/$@
 
@@ -92,12 +111,12 @@ builder:
 	docker build --file ops/builder.dockerfile --tag $(project)_builder:latest .
 	$(log_finish) && touch $(flags)/$@
 
-prod-env: ops/prod.env
+prod-env: .env ops/prod.env
 	$(log_start)
 	cp -f ops/prod.env .env
 	$(log_finish) && touch $(flags)/$@
 
-env: ops/dev.env
+dev-env: .env ops/dev.env
 	$(log_start)
 	cp -f ops/dev.env .env
 	$(log_finish) && touch $(flags)/$@
