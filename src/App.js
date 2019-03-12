@@ -18,6 +18,7 @@ import CashOutCard from "./components/cashOutCard";
 import SupportCard from "./components/supportCard";
 import { createWallet } from "./walletGen";
 import RedeemCard from "./components/redeemCard";
+import SetupCard from "./components/setupCard";
 import Confirmations from "./components/Confirmations";
 import BigNumber from "bignumber.js";
 import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
@@ -162,7 +163,13 @@ class App extends React.Component {
       await this.poller();
     } else {
       // Else, we create a new address
-      await createWallet(this.state.web3);
+      const delegateSigner = await createWallet(this.state.web3);
+      const address = await delegateSigner.getAddressString();
+      this.setState({ delegateSigner, address });
+      store.dispatch({
+        type: "SET_WALLET",
+        text: delegateSigner
+      });
       // Then refresh the page
       window.location.reload();
     }
@@ -657,14 +664,24 @@ class App extends React.Component {
                 runtime && runtime.channelStatus != "CS_OPEN" ? (
                   <Redirect to="/support" />
                 ) : (
-                  <Home
-                    {...props}
-                    address={address}
-                    connextState={connextState}
-                    channelState={channelState}
-                    publicUrl={publicUrl}
-                    scanURL={this.scanURL.bind(this)}
-                  />
+                  <div>
+                    <Home
+                      {...props}
+                      address={address}
+                      connextState={connextState}
+                      channelState={channelState}
+                      publicUrl={publicUrl}
+                      scanURL={this.scanURL.bind(this)}
+                    />
+
+                    <SetupCard
+                      {...props}
+                      browserMinimumBalance={browserMinimumBalance}
+                      maxTokenDeposit={CHANNEL_DEPOSIT_MAX.toString()}
+                      connextState={connextState}
+                    />
+                  </div>
+                  
                 )
               }
             />
