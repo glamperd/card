@@ -4,3 +4,7 @@ node_modules
 .git
 .npm
 .node-gyp
+
+# External repos
+connext
+indra

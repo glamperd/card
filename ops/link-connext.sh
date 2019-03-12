@@ -18,5 +18,8 @@ rm -rf node_modules/connext
 echo "ln -s ../connext node_modules/connext"
 ln -s ../connext node_modules/connext
 
+echo "rebuilding the client..."
+cd connext && npm run build
+
 echo "Done!"
 

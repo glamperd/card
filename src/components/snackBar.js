@@ -3,7 +3,7 @@ import React from "react";
 import { Snackbar, IconButton } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 
-const ConfirmationSnackbar = ({ handleClick, open, text, classes }) => (
+const ConfirmationSnackbar = ({ handleClick, open, text, duration, classes }) => (
   <Snackbar
     classes={classes}
     anchorOrigin={{
@@ -11,7 +11,7 @@ const ConfirmationSnackbar = ({ handleClick, open, text, classes }) => (
       horizontal: "center"
     }}
     message={<span id="message-id">{text}</span>}
-    autoHideDuration={4000}
+    autoHideDuration={duration ? duration : 4000}
     onClose={handleClick}
     open={open}
     action={[
