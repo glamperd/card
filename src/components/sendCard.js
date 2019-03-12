@@ -63,21 +63,19 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
       return (
         <Grid style={{ width: "80%" }}>
           <Grid item style={{ margin: "1em" }}>
-            <Typography variant="h5" style={{ color: "#F22424" }}>
+            <Typography variant="h5" color="primary">
               Payment In Process
             </Typography>
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Recipient channel is being initialized, payment will be sent
-              after.
+              Recipient's Card is being set up. This should take 20-30 seconds.
             </Typography>
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Do not refresh the page. If you refresh, you will have to send
-              your payment again. If you have any questions, please contact
-              support. (Settings --> Support)
+              If you stay on this page, your payment will be retried automatically. 
+              If you navigate away or refresh the page, you will have to attempt the payment again yourself.
             </Typography>
           </Grid>
           <CircularProgress style={{ marginTop: "1em" }} />
@@ -98,7 +96,7 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Maybe they need to log in? Please try your payment again later. If
+              Is the receiver online to set up their Card? Please try your payment again later. If
               you have any questions, please contact support. (Settings -->
               Support)
             </Typography>
@@ -332,10 +330,10 @@ class PayCard extends Component {
 
     // validate recipient is valid address OR the empty address
     // recipient address can be empty
-    const isLink = paymentVal.payments[0].type == "PT_LINK";
+    const isLink = paymentVal.payments[0].type === "PT_LINK";
     const isValidRecipient =
       Web3.utils.isAddress(address) &&
-      (isLink ? address == emptyAddress : address != emptyAddress);
+      (isLink ? address === emptyAddress : address !== emptyAddress);
 
     if (!isValidRecipient) {
       addressError = "Please choose a valid address";
@@ -424,6 +422,7 @@ class PayCard extends Component {
         case CollateralStates.Timeout:
           return;
         case CollateralStates.Success:
+        default:
         // send payment via fall through
       }
     }
@@ -435,7 +434,7 @@ class PayCard extends Component {
   async collateralizeRecipient(paymentVal) {
     const { connext } = this.props;
     // do not collateralize on pt link payments
-    if (paymentVal.payments[0].type == "PT_LINK") {
+    if (paymentVal.payments[0].type === "PT_LINK") {
       return;
     }
 
@@ -460,7 +459,6 @@ class PayCard extends Component {
     // watch for confirmation on the recipients side
     // of the channel for 20s
     let needsCollateral
-    const self = this;
     await interval(
       async (iteration, stop) => {
         // returns null if no collateral needed
@@ -508,7 +506,7 @@ class PayCard extends Component {
     // you can call the appropriate type here
     try {
       await connext.buy(paymentVal);
-      if (paymentVal.payments[0].type == "PT_LINK") {
+      if (paymentVal.payments[0].type === "PT_LINK") {
         // automatically route to redeem card
         const secret = paymentVal.payments[0].secret;
         const amount = paymentVal.payments[0].amount;
@@ -598,7 +596,7 @@ class PayCard extends Component {
             margin="normal"
             variant="outlined"
             onChange={evt => this.updatePaymentHandler(evt.target.value)}
-            error={this.state.balanceError != null}
+            error={this.state.balanceError !== null}
             helperText={this.state.balanceError}
           />
         </Grid>
@@ -621,7 +619,7 @@ class PayCard extends Component {
                 ? this.state.addressError
                 : "Optional for linked payments"
             }
-            error={this.state.addressError != null}
+            error={this.state.addressError !== null}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">

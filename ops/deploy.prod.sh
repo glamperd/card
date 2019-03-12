@@ -5,9 +5,9 @@
 
 DOMAINNAME="${DOMAINNAME:-localhost}"
 EMAIL="${EMAIL:-noreply@gmail.com}"
-LOCAL_HUB_URL="" # Not used in prod, use env var overrides instead
-RINKEBY_HUB_URL="${RINKEBY_HUB_URL:-https://hub.connext.network}"
-MAINNET_HUB_URL="${MAINNET_HUB_URL:-$RINKEBY_HUB_URL}"
+LOCAL_HUB_URL="" # Not available in prod
+RINKEBY_HUB_URL="${RINKEBY_HUB_URL:-https://rinkeby.hub.connext.network}"
+MAINNET_HUB_URL="${MAINNET_HUB_URL:-https://hub.connext.network}"
 
 ########################################
 ## Internal Config
@@ -17,7 +17,9 @@ number_of_services=1
 project="`cat package.json | grep '"name":' | awk -F '"' '{print $4}' | tr -d '-'`"
 version="`cat package.json | grep '"version":' | egrep -o '[.0-9]+'`"
 
-if [[ "$DOMAINNAME" == "localhost" ]]
+if [[ "$MODE" == "test" ]]
+then image=daicard:test
+elif [[ "$DOMAINNAME" == "localhost" ]]
 then image=daicard:latest
 else
   if [[ "$MODE" == "live" ]]
@@ -27,7 +29,13 @@ else
   docker pull $image
 fi
 
-echo "Deploying image: $image to domain $DOMAINNAME linked to hub $HUB_URL"
+####################
+# Deploy according to above configuration
+
+echo "Deploying image: $image to domain $DOMAINNAME linked to rinkeby hub $RINKEBY_HUB_URL and mainnet hub $MAINNET_HUB_URL"
+
+# turn on swarm mode if it's not already on
+docker swarm init 2> /dev/null || true
 
 mkdir -p /tmp/$project
 cat - > /tmp/$project/docker-compose.yml <<EOF

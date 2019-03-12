@@ -17,7 +17,7 @@ export default class GaspriceSubprovider extends Subprovider {
   }
 
   handleRequest(payload: any, next: () => void, end: (err: any, res?: any) => void) {
-    if (payload.method !== 'gas-estimate-latest') {
+    if (payload.method !== 'eth_gasPrice') {
       return next()
     }
 
@@ -32,7 +32,7 @@ export default class GaspriceSubprovider extends Subprovider {
         return gasPrice
       })
       .then(
-        gasPrice => end(null, `0x${gasPrice.toFixed(16)}`),
+        gasPrice => end(null, `0x${gasPrice.toString(16)}`),
         err => end(err)
       )
   }
@@ -53,7 +53,7 @@ export default class GaspriceSubprovider extends Subprovider {
         const blockNums = []
 
         for (let i = 0; i < 10; i++) {
-          blockNums.push(`0x${lastBlock.toFixed(16)}`)
+          blockNums.push(`0x${lastBlock.toString(16)}`)
           lastBlock = lastBlock.minus(1)
         }
 

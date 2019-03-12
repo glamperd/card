@@ -1,12 +1,7 @@
 import React, { Component } from "react";
 import Button from "@material-ui/core/Button";
-import DepositIcon from "@material-ui/icons/AttachMoney";
-import Tooltip from "@material-ui/core/Tooltip";
-import { CopyToClipboard } from "react-copy-to-clipboard";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import QRGenerate from "./qrGenerate";
-import Snackbar from "./snackBar";
 import { withStyles } from "@material-ui/core";
 
 const styles = theme => ({
@@ -33,14 +28,13 @@ class SupportCard extends Component {
 
   render() {
     const { channelState } = this.props;
-    const { error, exitableBalance } = this.state;
 
     const exitableState =
       channelState &&
       channelState.sigUser &&
       channelState.sigHub &&
-      channelState.sigUser != "0x0" &&
-      channelState.sigHub != "0x0";
+      channelState.sigUser !== "0x0" &&
+      channelState.sigHub !== "0x0";
 
     return (
       <Grid

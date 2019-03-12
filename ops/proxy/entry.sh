@@ -21,10 +21,15 @@ mkdir -p $devcerts
 mkdir -p /etc/certs
 mkdir -p /var/www/letsencrypt
 
+loading_page='<!doctype html><html lang=en>
+<head><meta charset=utf-8><title>Loading...</title></head>
+<body><h1>Waiting for the rest of the app to wake up...</h1></body>
+</html>'
+
 # Provide a message indicating that we're still waiting for everything to wake up
 function loading_msg {
   while true # unix.stackexchange.com/a/37762
-  do echo 'Waiting for the rest of the app to wake up..' | nc -lk -p 80
+  do echo "$loading_page" | nc -lk -p 80
   done > /dev/null
 }
 loading_msg &
