@@ -9,7 +9,7 @@ import { getConnextClient } from "connext/dist/Connext.js";
 import ProviderOptions from "./utils/ProviderOptions.ts";
 import clientProvider from "./utils/web3/clientProvider.ts";
 import { createWalletFromMnemonic } from "./walletGen";
-import { Paper, withStyles } from "@material-ui/core";
+import { Paper, withStyles, Grid } from "@material-ui/core";
 import AppBarComponent from "./components/AppBar";
 import SettingsCard from "./components/settingsCard";
 import ReceiveCard from "./components/receiveCard";
@@ -18,6 +18,7 @@ import CashOutCard from "./components/cashOutCard";
 import SupportCard from "./components/supportCard";
 import { createWallet } from "./walletGen";
 import RedeemCard from "./components/redeemCard";
+import SetupCard from "./components/setupCard";
 import Confirmations from "./components/Confirmations";
 import BigNumber from "bignumber.js";
 import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
@@ -45,6 +46,7 @@ const overrides = {
   mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE
 };
 
+const DEPOSIT_ESTIMATED_GAS = new BigNumber("700000") // 700k gas
 const DEPOSIT_MINIMUM_WEI = new BigNumber(Web3.utils.toWei("0.020", "ether")); // 30 FIN
 const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 69 TST
 const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
@@ -53,8 +55,9 @@ const styles = theme => ({
   paper: {
     height: "100%",
     width: "100%",
-    [theme.breakpoints.up(600)]: {
-      width: 550
+    [theme.breakpoints.up('sm')]: {
+      width: "50vw",
+      height: "100vh",
     },
     zIndex: 1000,
     margin: "0px"
@@ -62,15 +65,16 @@ const styles = theme => ({
   app: {
     display: "flex",
     justifyContent: "center",
+    alignItems: "center",
     flexGrow: 1,
     fontFamily: ["proxima-nova", "sans-serif"],
     backgroundColor: "#FFF",
     width: "100%",
     margin: "0px",
-    [theme.breakpoints.up(824)]: {
+    [theme.breakpoints.up('sm')]: {
       height: "100%"
     },
-    [theme.breakpoints.down(824)]: {
+    [theme.breakpoints.down('sm')]: {
       height: "100vh"
     }
   },
@@ -119,7 +123,8 @@ class App extends React.Component {
         withdraw: "",
         payment: "",
         hasRefund: ""
-      }
+      },
+      browserMinimumBalance: null,
     };
 
     this.networkHandler = this.networkHandler.bind(this);
@@ -154,18 +159,22 @@ class App extends React.Component {
         text: delegateSigner
       });
 
-      // // If a browser address exists, instantiate connext
-      // console.log('this.state.delegateSigner', this.state.delegateSigner)
-      // if (this.state.delegateSigner) {
       await this.setWeb3(rpc);
       await this.setConnext();
       await this.setTokenContract();
 
-       await this.pollConnextState();
+      await this.pollConnextState();
+      await this.setBrowserWalletMinimumBalance();
       await this.poller();
     } else {
       // Else, we create a new address
-      await createWallet(this.state.web3);
+      const delegateSigner = await createWallet(this.state.web3);
+      const address = await delegateSigner.getAddressString();
+      this.setState({ delegateSigner, address });
+      store.dispatch({
+        type: "SET_WALLET",
+        text: delegateSigner
+      });
       // Then refresh the page
       window.location.reload();
     }
@@ -309,6 +318,30 @@ class App extends React.Component {
     }, 400);
   }
 
+  async setBrowserWalletMinimumBalance() {
+    const { customWeb3, connextState } = this.state
+    if (!customWeb3 || !connextState) {
+      return
+    }
+    const defaultGas = new BigNumber(await customWeb3.eth.getGasPrice())
+    // default connext multiple is 1.5, leave 2x for safety
+    const depositGasPrice = DEPOSIT_ESTIMATED_GAS
+      .multipliedBy(new BigNumber(2))
+      .multipliedBy(defaultGas)
+    // add dai conversion
+    const minConvertable = new CurrencyConvertable(
+      CurrencyType.WEI, 
+      depositGasPrice, 
+      () => getExchangeRates(connextState)
+    )
+    const browserMinimumBalance = { 
+      wei: minConvertable.toWEI().amount, 
+      dai: minConvertable.toUSD().amount 
+    }
+    this.setState({ browserMinimumBalance })
+    return browserMinimumBalance
+  }
+
   async autoDeposit() {
     const {
       address,
@@ -317,11 +350,17 @@ class App extends React.Component {
       tokenAddress,
       exchangeRate,
       channelState,
-      rpcUrl
+      rpcUrl,
+      browserMinimumBalance,
     } = this.state;
     if (!rpcUrl) {
       return;
     }
+
+    if (!browserMinimumBalance) {
+      return
+    }
+
     const web3 = new Web3(rpcUrl);
     const balance = await web3.eth.getBalance(address);
 
@@ -355,7 +394,8 @@ class App extends React.Component {
     }
 
     if (balance !== "0" || tokenBalance !== "0") {
-      if (new BigNumber(balance).lt(DEPOSIT_MINIMUM_WEI)) {
+      const minWei = new BigNumber(browserMinimumBalance.wei)
+      if (new BigNumber(balance).lt(minWei)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
         return;
@@ -380,7 +420,7 @@ class App extends React.Component {
         // refund any wei that is in the browser wallet
         // above the minimum
         const refundWei = BigNumber.max(
-          new BigNumber(balance).minus(DEPOSIT_MINIMUM_WEI),
+          new BigNumber(balance).minus(minWei),
           0
         );
         await this.returnWei(refundWei.toFixed(0));
@@ -389,7 +429,7 @@ class App extends React.Component {
 
       let channelDeposit = {
         amountWei: new BigNumber(balance)
-          .minus(DEPOSIT_MINIMUM_WEI)
+          .minus(minWei)
           .toFixed(0),
         amountToken: tokenBalance
       };
@@ -615,13 +655,21 @@ class App extends React.Component {
       customWeb3,
       connext,
       connextState,
-      runtime
+      runtime,
+      browserMinimumBalance
     } = this.state;
     const { classes } = this.props;
     return (
       <Router>
-        <div className={classes.app}>
-          <Paper className={classes.paper} elevation={1}>
+        <Grid className={classes.app}>
+          <Paper elevation={1} className={classes.paper}>
+          <Grid 
+          container
+          spacing={16}
+          direction="column"
+          className={classes.paper}
+          >
+          <Grid item xs={12}>
             <Snackbar
               handleClick={() => this.handleClick()}
               onClose={() => this.handleClick()}
@@ -641,14 +689,24 @@ class App extends React.Component {
                 runtime && runtime.channelStatus !== "CS_OPEN" ? (
                   <Redirect to="/support" />
                 ) : (
-                  <Home
-                    {...props}
-                    address={address}
-                    connextState={connextState}
-                    channelState={channelState}
-                    publicUrl={publicUrl}
-                    scanURL={this.scanURL.bind(this)}
-                  />
+                  <div>
+                    <Home
+                      {...props}
+                      address={address}
+                      connextState={connextState}
+                      channelState={channelState}
+                      publicUrl={publicUrl}
+                      scanURL={this.scanURL.bind(this)}
+                    />
+
+                    <SetupCard
+                      {...props}
+                      browserMinimumBalance={browserMinimumBalance}
+                      maxTokenDeposit={CHANNEL_DEPOSIT_MAX.toString()}
+                      connextState={connextState}
+                    />
+                  </div>
+                  
                 )
               }
             />
@@ -658,7 +716,7 @@ class App extends React.Component {
                 <DepositCard
                   {...props}
                   address={address}
-                  minDepositWei={DEPOSIT_MINIMUM_WEI.toString()}
+                  browserMinimumBalance={browserMinimumBalance}
                   exchangeRate={exchangeRate}
                   maxTokenDeposit={CHANNEL_DEPOSIT_MAX.toString()}
                   connextState={connextState}
@@ -728,6 +786,7 @@ class App extends React.Component {
                   web3={customWeb3}
                   connext={connext}
                   connextState={connextState}
+                  runtime={runtime}
                 />
               )}
             />
@@ -737,8 +796,10 @@ class App extends React.Component {
                 <SupportCard {...props} channelState={channelState} />
               )}
             />
+          </Grid>          
+          </Grid>
           </Paper>
-        </div>
+        </Grid>
       </Router>
     );
   }

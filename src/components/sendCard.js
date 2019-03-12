@@ -12,7 +12,12 @@ import {
   withStyles,
   Grid,
   Typography,
-  CircularProgress
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from "@material-ui/core";
 import { emptyAddress } from "connext/dist/Utils";
 import { convertPayment } from "connext/dist/types";
@@ -57,91 +62,83 @@ const CollateralStates = {
   Success: 2
 };
 
-function ConfirmationModalText(paymentState, amountToken, recipient) {
+function ConfirmationDialogText(paymentState, amountToken, recipient) {
   switch (paymentState) {
     case PaymentStates.Collateralizing:
       return (
-        <Grid style={{ width: "80%" }}>
-          <Grid item style={{ margin: "1em" }}>
+        <Grid>
+          <DialogTitle disableTypography>
             <Typography variant="h5" color="primary">
               Payment In Process
             </Typography>
-          </Grid>
-          <Grid item style={{ margin: "1em" }}>
-            <Typography variant="body1" style={{ color: "#0F1012" }}>
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText variant="body1" style={{ color: "#0F1012", margin: "1em" }}>
               Recipient's Card is being set up. This should take 20-30 seconds.
-            </Typography>
-          </Grid>
-          <Grid item style={{ margin: "1em" }}>
-            <Typography variant="body1" style={{ color: "#0F1012" }}>
+            </DialogContentText>
+            <DialogContentText variant="body1" style={{ color: "#0F1012" }}>
               If you stay on this page, your payment will be retried automatically. 
               If you navigate away or refresh the page, you will have to attempt the payment again yourself.
-            </Typography>
-          </Grid>
+            </DialogContentText>
           <CircularProgress style={{ marginTop: "1em" }} />
+          </DialogContent>
         </Grid>
       );
     case PaymentStates.CollateralTimeout:
       return (
-        <Grid style={{ width: "80%" }}>
-          <Grid item style={{ margin: "1em" }}>
+        <Grid>
+          <DialogTitle disableTypography>
             <Typography variant="h5" style={{ color: "#F22424" }}>
-              Payment Failed
+            Payment Failed
             </Typography>
-          </Grid>
-          <Grid item style={{ margin: "1em" }}>
-            <Typography variant="body1" style={{ color: "#0F1012" }}>
-              After some time, recipient channel could not be initialized.
-            </Typography>
-          </Grid>
-          <Grid item style={{ margin: "1em" }}>
-            <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Is the receiver online to set up their Card? Please try your payment again later. If
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText variant="body1" style={{ color: "#0F1012", margin: "1em" }}>
+            After some time, recipient channel could not be initialized.
+            </DialogContentText>
+            <DialogContentText variant="body1" style={{ color: "#0F1012" }}>
+            Is the receiver online to set up their Card? Please try your payment again later. If
               you have any questions, please contact support. (Settings -->
               Support)
-            </Typography>
-          </Grid>
+            </DialogContentText>
+          </DialogContent>
         </Grid>
       );
     case PaymentStates.OtherError:
       return (
-        <Grid style={{ width: "80%" }}>
-          <Grid item style={{ margin: "1em" }}>
+        <Grid>
+          <DialogTitle disableTypography>
             <Typography variant="h5" style={{ color: "#F22424" }}>
-              Payment Failed
+            Payment Failed
             </Typography>
-          </Grid>
-          <Grid item style={{ margin: "1em" }}>
-            <Typography variant="body1" style={{ color: "#0F1012" }}>
-              An unknown error occured when making your payment.
-            </Typography>
-          </Grid>
-          <Grid item style={{ margin: "1em" }}>
-            <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Please try again in 30s and contact support if you continue to
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText variant="body1" style={{ color: "#0F1012", margin: "1em" }}>
+            An unknown error occured when making your payment.
+            </DialogContentText>
+            <DialogContentText variant="body1" style={{ color: "#0F1012" }}>
+            Please try again in 30s and contact support if you continue to
               experience issues. (Settings --> Support)
-            </Typography>
-          </Grid>
+            </DialogContentText>
+          </DialogContent>
         </Grid>
       );
     case PaymentStates.Success:
       return (
-        <Grid style={{ width: "80%" }}>
-          <Grid item style={{ margin: "1em" }}>
+        <Grid>
+          <DialogTitle disableTypography>
             <Typography variant="h5" style={{ color: "#009247" }}>
-              Payment Success!
+            Payment Success!
             </Typography>
-          </Grid>
-          <Grid item style={{ margin: "1em" }}>
-            <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Amount: ${amountToken}
-            </Typography>
-          </Grid>
-          <Grid item style={{ margin: "1em" }}>
-            <Typography variant="body2" style={{ color: "#0F1012" }} noWrap>
-              To: {recipient}
-            </Typography>
-          </Grid>
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText variant="body1" style={{ color: "#0F1012", margin: "1em" }}>
+            Amount: ${amountToken}
+            </DialogContentText>
+            <DialogContentText variant="body1" style={{ color: "#0F1012" }}>
+            To: {recipient.substr(0, 5)}...
+            </DialogContentText>
+          </DialogContent>
         </Grid>
       );
     case PaymentStates.None:
@@ -150,25 +147,19 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
   }
 }
 
-const PaymentConfirmationModal = props => (
-  <Modal
+const PaymentConfirmationDialog = props => (
+  <Dialog
     open={props.showReceipt}
     onBackdropClick={
       props.paymentState === PaymentStates.Collateralizing
         ? null
         : () => props.closeModal()
     }
+    fullWidth
     style={{
       justifyContent: "center",
       alignItems: "center",
       textAlign: "center",
-      position: "absolute",
-      top: "15%",
-      width: "375px",
-      marginLeft: "auto",
-      marginRight: "auto",
-      left: "0",
-      right: "0"
     }}
   >
     <Grid
@@ -180,7 +171,7 @@ const PaymentConfirmationModal = props => (
       }}
       justify="center"
     >
-      {ConfirmationModalText(
+      {ConfirmationDialogText(
         props.paymentState,
         props.amountToken,
         props.recipient
@@ -188,14 +179,11 @@ const PaymentConfirmationModal = props => (
       {props.paymentState === PaymentStates.Collateralizing ? (
         <></>
       ) : (
-        <Grid
-          item
-          style={{ margin: "1em", flexDirection: "row", width: "80%" }}
-        >
+        <DialogActions>
           <Button
             color="primary"
             variant="outlined"
-            size="small"
+            size="medium"
             onClick={() => props.closeModal()}
           >
             Pay Again
@@ -208,15 +196,15 @@ const PaymentConfirmationModal = props => (
               marginLeft: "5%"
             }}
             variant="outlined"
-            size="small"
+            size="medium"
             onClick={() => props.history.push("/")}
           >
             Home
           </Button>
-        </Grid>
+        </DialogActions>
       )}
     </Grid>
-  </Modal>
+  </Dialog>
 );
 
 class PayCard extends Component {
@@ -319,7 +307,8 @@ class PayCard extends Component {
     const { channelState } = this.props;
     this.setState({ addressError: null, balanceError: null });
 
-    let balanceError, addressError;
+    let balanceError = null
+    let addressError = null
     // validate that the token amount is within bounds
     if (payment.amountToken.gt(new BN(channelState.balanceTokenUser))) {
       balanceError = "Insufficient balance in channel";
@@ -549,7 +538,7 @@ class PayCard extends Component {
     return (
       <Grid
         container
-        spacing={24}
+        spacing={16}
         direction="column"
         style={{
           display: "flex",
@@ -713,7 +702,7 @@ class PayCard extends Component {
             Back
           </Button>
         </Grid>
-        <PaymentConfirmationModal
+        <PaymentConfirmationDialog
           showReceipt={this.state.showReceipt}
           sendError={this.state.sendError}
           amountToken={

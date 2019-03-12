@@ -9,8 +9,12 @@ import {
   TextField,
   InputAdornment,
   withStyles,
-  Modal,
-  CircularProgress
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from "@material-ui/core";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import CopyIcon from "@material-ui/icons/FileCopy";
@@ -81,16 +85,11 @@ class SettingsCard extends Component {
 
   burnRefreshPoller = async () => {
     setInterval(async () => {
-      if (this.state.isBurning) {
-        if (
-          this.props.runtime.syncResultsFromHub[0] &&
-          this.props.runtime.syncResultsFromHub[0].update.reason ===
-            "ConfirmPending"
-        ) {
-          // Then refresh the page
-          this.props.history.push("/");
-          window.location.reload();
-        }
+      const { runtime } = this.props
+      if (!runtime.awaitingOnchainTransaction) {
+        // Then refresh the page
+        this.props.history.push("/");
+        window.location.reload();
       }
     }, 400);
   };
@@ -113,7 +112,7 @@ class SettingsCard extends Component {
     return (
       <Grid
         container
-        spacing={24}
+        spacing={16}
         direction="column"
         style={{
           paddingLeft: 12,
@@ -264,20 +263,14 @@ class SettingsCard extends Component {
           >
             Burn Card
           </Button>
-          <Modal
+          <Dialog
             open={this.state.showWarning}
             onBackdropClick={() => this.setState({ showWarning: false })}
+            fullWidth
             style={{
               justifyContent: "center",
               alignItems: "center",
               textAlign: "center",
-              position: "absolute",
-              top: "25%",
-              width: "375px",
-              marginLeft: "auto",
-              marginRight: "auto",
-              left: "0",
-              right: "0"
             }}
           >
             <Grid
@@ -288,28 +281,30 @@ class SettingsCard extends Component {
                 flexDirection: "column"
               }}
             >
-              <Grid item style={{ margin: "1em" }}>
+              <DialogTitle disableTypography>
                 <Typography variant="h5" style={{ color: "#F22424" }}>
-                  Are you sure you want to burn your Card?
+                Are you sure you want to burn your Card?
                 </Typography>
-              </Grid>
+              </DialogTitle>
+              <DialogContent>
               {this.state.isBurning ? (
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="body1">
+                <Grid item xs={12}>
+                  <DialogContentText variant="body1">
                     Burning. Please do not refresh or navigate away. This page
                     with refresh automatically when it's done.
-                  </Typography>
+                  </DialogContentText>
                   <CircularProgress style={{ marginTop: "1em" }} />
-                </Grid>
+                  </Grid>
               ) : (
-                <div>
-                  <Grid item style={{ margin: "1em" }}>
-                    <Typography variant="body1" style={{ color: "#F22424" }}>
+                <Grid container alignItems="center" justify="center" direction="column">
+                <Grid item xs={12}>
+                    <DialogContentText variant="body1" style={{ color: "#F22424" }}>
                       You will lose access to your funds unless you save your
                       backup phrase!
-                    </Typography>
-                  </Grid>
-                  <Grid item style={{ margin: "1em" }}>
+                    </DialogContentText>
+                    </Grid>
+                    <Grid item xs={12}>
+                  <DialogActions>
                     <Button
                       style={{
                         background: "#F22424",
@@ -335,11 +330,14 @@ class SettingsCard extends Component {
                     >
                       Cancel
                     </Button>
+                  </DialogActions>
                   </Grid>
-                </div>
+                  </Grid>
               )}
+              </DialogContent>
+
             </Grid>
-          </Modal>
+          </Dialog>
         </Grid>
         <Grid item xs={12}>
           <Button

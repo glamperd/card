@@ -18,6 +18,10 @@ export async function createWallet(web3) {
   // update refunding variable on burn
   localStorage.removeItem("refunding");
   localStorage.removeItem("maxBalanceAfterRefund");
+
+  // also force to go through tutorial on each new
+  // wallet creation 
+  localStorage.removeItem("hasBeenWarned");
   return wallet;
 }
 

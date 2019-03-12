@@ -37,15 +37,15 @@ class DepositCard extends Component {
   };
 
   render() {
-    const { classes, address, connextState, minDepositWei, maxTokenDeposit } = this.props;
+    const { classes, address, connextState, browserMinimumBalance, maxTokenDeposit } = this.props;
     const { copied, } = this.state;
 
     let minDai, minEth
     let maxDai, maxEth
-    if (connextState && connextState.runtime.canDeposit) {
+    if (connextState && connextState.runtime.canDeposit && browserMinimumBalance) {
       const minConvertable = new CurrencyConvertable(
         CurrencyType.WEI,
-        minDepositWei,
+        browserMinimumBalance.wei,
         () => getExchangeRates(connextState)
       )
 
@@ -56,7 +56,7 @@ class DepositCard extends Component {
       )
 
       minEth = minConvertable.toETH().amountBigNumber.toFixed()
-      minDai = Currency.USD(minConvertable.toUSD().amountBigNumber).format({})
+      minDai = Currency.USD(browserMinimumBalance.dai).format({})
       maxEth = maxConvertable.toETH().amountBigNumber.toFixed()
       maxDai = Currency.USD(maxConvertable.toUSD().amountBigNumber).format({})
     }
@@ -64,11 +64,11 @@ class DepositCard extends Component {
     return (
       <Grid
         container
-        spacing={24}
+        spacing={16}
         direction="column"
         style={{
-          paddingLeft: 12,
-          paddingRight: 12,
+          paddingLeft: "10%",
+          paddingRight: "10%",
           paddingTop: "10%",
           paddingBottom: "10%",
           textAlign: "center",
@@ -93,7 +93,7 @@ class DepositCard extends Component {
           </Grid>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant="h6">
+          <Typography variant="body2">
             <Tooltip
               disableFocusListener
               disableTouchListener
@@ -102,15 +102,11 @@ class DepositCard extends Component {
               <span>{`Deposit minimum of: ${minEth || ""} Eth.`}</span>
             </Tooltip>
           </Typography>
-          <Typography variant="body2">
-            {`This covers gas fees for depositing and emergencies.`}
-          </Typography>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} margin="1em">
           <QRGenerate value={address} />
         </Grid>
         <Grid item xs={12}>
-          {/* <CopyIcon style={{marginBottom: "2px"}}/> */}
           <CopyToClipboard
             onCopy={() => this.setState({ copied: true })}
             text={address}
@@ -129,9 +125,9 @@ class DepositCard extends Component {
           </CopyToClipboard>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant="h6">
+          <Typography variant="body2">
             <span>{`Deposits over ${maxEth ? maxEth.substring(0, 4) : ""} Eth 
-                      or ${maxDai ? maxDai.substring(1, 3) : ""} Dai will be refunded.`}</span>
+                      or ${maxDai ? maxDai.substring(1, 3) : ""} Dai will be refunded`}</span>
           </Typography>
         </Grid>
         <Grid item xs={12}>

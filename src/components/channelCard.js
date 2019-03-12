@@ -5,21 +5,6 @@ import { withStyles } from "@material-ui/core";
 import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
 
 const styles = theme => ({
-  card: {
-    display: "flex",
-    flexDirection: "row",
-    flexBasis: "100%",
-    width: "100%",
-    height: "auto",
-    marginTop: "-2%",
-    justifyContent: "center",
-    backgroundColor: "#282b2e",
-    elevation: "0",
-    square: true,
-    color: "white",
-    paddingTop: "25%",
-    paddingBottom: "25%"
-  },
   row: {
     color: "white"
   },
@@ -38,9 +23,23 @@ class ChannelCard extends Component {
     // only displays token value by default
     const display = getChannelBalanceInUSD(channelState, connextState)
     return (
-      <Card className={classes.card}>
-        <Grid container direction="column" alignItems="center">
-          <Grid item>
+        <Grid>
+          <Grid 
+            container
+            spacing={16}
+            direction="row"
+            style={{
+              paddingLeft: "10%",
+              paddingRight: "10%",
+              paddingTop: "10%",
+              paddingBottom: "20%",
+              backgroundColor: "#282b2e",
+              textAlign: "center"
+            }}
+            alignItems="center"
+            justify="center"
+          >
+          <Grid item xs={12}>
             <span>
               <Typography inline={true} variant="h5" className={classes.row}>
                 {"$ "}
@@ -54,7 +53,7 @@ class ChannelCard extends Component {
             </span>
           </Grid>
         </Grid>
-      </Card>
+      </Grid>
     );
   }
 }

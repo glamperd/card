@@ -1,4 +1,4 @@
-import { withStyles, Button, CircularProgress, Modal } from "@material-ui/core";
+import { withStyles, Button, CircularProgress, Modal, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions } from "@material-ui/core";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
 import DoneIcon from "@material-ui/icons/Done";
 import ErrorIcon from "@material-ui/icons/ErrorOutline";
@@ -19,6 +19,100 @@ const styles = theme => ({
     height: "40px"
   }
 });
+
+const RedeemPaymentStates = {
+  IsSender: 0,
+  Redeeming: 1,
+  PaymentAlreadyRedeemed: 2,
+  Timeout: 3,
+  Success: 4,
+}
+
+function getStatus (state) {
+  const {
+    isConfirm,
+    purchaseId,
+    sendError,
+    previouslyRedeemed,
+  } = state;
+
+  const failed = purchaseId && purchaseId == 'failed'
+  let status
+  if (isConfirm) {
+    // sender of redeemed payment
+    status = RedeemPaymentStates.IsSender
+  } else if (failed && previouslyRedeemed) {
+    status = RedeemPaymentStates.PaymentAlreadyRedeemed
+  } else if (failed && !previouslyRedeemed) {
+    status = RedeemPaymentStates.Timeout
+  } else if (!isConfirm && !purchaseId) {
+    // still loading, purchase id assigned at failure
+    status = RedeemPaymentStates.Redeeming
+  } else if (!failed && purchaseId && !sendError) {
+    status = RedeemPaymentStates.Success
+  } else {
+    // default to error if unknown occurs
+    status = RedeemPaymentStates.Timeout
+  }
+
+  return status
+}
+
+function RedeemPaymentDialogContent(status, amount, connextState) {
+  switch (status) {
+    case RedeemPaymentStates.Timeout:
+      return (
+      <Grid>
+        <DialogTitle disableTypography>
+          <Typography variant="h5" style={{ color: "#F22424" }}>
+            Payment Failed
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText variant="body1" style={{ color: "#0F1012" }}>
+            This is most likely because your Card is being set up.
+          </DialogContentText>
+          <DialogContentText variant="body1" style={{ color: "#0F1012", paddingTop: "5%" }}>
+            Please try again in 30s and contact support if you
+            continue to experience issues. (Settings --> Support)
+          </DialogContentText>
+          </DialogContent>
+      </Grid>
+      )
+    case RedeemPaymentStates.PaymentAlreadyRedeemed:
+      return (
+        <Grid>
+            <DialogTitle disableTypography>
+              <Typography variant="h5" style={{ color: "#F22424" }}>
+                Payment Failed
+              </Typography>
+            </DialogTitle>
+          <DialogContent>
+            <DialogContentText variant="body1" style={{ color: "#0F1012" }}>
+              It appears this payment has already been redeemed.
+            </DialogContentText>
+          </DialogContent>
+        </Grid>
+      )
+    case RedeemPaymentStates.Success:
+        return (
+          <Grid>
+            <DialogTitle disableTypography>
+              <Typography variant="h5" style={{ color: "#009247" }}>
+                Redeemed Successfully!
+              </Typography>
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText variant="body1" style={{ color: "#0F1012" }}>
+                Amount: {getAmountInUSD(amount, connextState)}
+              </DialogContentText>
+            </DialogContent>
+          </Grid>
+        )
+    default:
+          return
+  }
+}
 
 class RedeemCard extends Component {
   constructor(props) {
@@ -159,13 +253,9 @@ class RedeemCard extends Component {
   }
 
   render() {
-    let {
+    const {
       secret,
-      isConfirm,
-      purchaseId,
-      sendError,
       showReceipt,
-      previouslyRedeemed,
       amount,
       requestedCollateral
     } = this.state;
@@ -173,40 +263,82 @@ class RedeemCard extends Component {
     const { classes, connextState } = this.props;
     const url = this.generateQrUrl(secret, amount);
 
+    const status = getStatus(this.state)
     // if you are not the sender, AND the purchase ID is not set
     // render a loading sign, then a check mark once the purchaseID
     // is set in the state
     return (
+      <Grid>
       <Grid
         container
-        spacing={24}
+        spacing={16}
         direction="column"
         style={{
-          paddingLeft: 12,
-          paddingRight: 12,
+          paddingLeft: "10%",
+          paddingRight: "10%",
           paddingTop: "10%",
-          paddingBottom: "10%",
           textAlign: "center",
-          justifyContent: "center"
+          justifyContent: "center",
         }}
       >
+      <Dialog
+          open={showReceipt && status != RedeemPaymentStates.IsSender}
+          onBackdropClick={() =>
+            this.setState({ showReceipt: false, sendError: false })
+          }
+          fullWidth
+          style={{
+              justify: "center",
+              alignItems: "center",
+              textAlign: "center",
+              margin: "auto",
+            }}
+          className={classes.center}
+        >
+          <Grid
+            container
+            style={{
+              backgroundColor: "#FFF",
+              paddingTop: "10%",
+              paddingBottom: "10%"
+            }}
+            justify="center"
+          >
+            {RedeemPaymentDialogContent(status, amount, connextState)}
+            <DialogActions>
+              <Button
+                style={{
+                  background: "#FFF",
+                  border: "1px solid #F22424",
+                  color: "#F22424",
+                }}
+                variant="outlined"
+                size="small"
+                onClick={() => this.props.history.push("/")}
+              >
+                Home
+              </Button>
+            </DialogActions>
+          </Grid>
+        </Dialog>
+      
         <Grid item xs={12}>
           <ReceiveIcon className={classes.icon} />
         </Grid>
         <Grid item xs={12}>
           <Typography noWrap variant="h5">
-            {isConfirm && <span>{"Scan to Redeem"}</span>}
-            {purchaseId === "failed" && <span>{"Uh Oh! Payment Failed"}</span>}
-            {purchaseId && purchaseId !== "failed" && (
+            {status == RedeemPaymentStates.IsSender && <span>{"Scan to Redeem"}</span>}
+            {status == RedeemPaymentStates.Timeout || status == RedeemPaymentStates.PaymentAlreadyRedeemed && <span>{"Uh Oh! Payment Failed"}</span>}
+            {status == RedeemPaymentStates.Success && (
               <span>{"Payment Redeemed!"}</span>
             )}
-            {!purchaseId && !isConfirm && <span>{"Redeeming Payment..."}</span>}
+            {status == RedeemPaymentStates.Redeeming && <span>{"Redeeming Payment..."}</span>}
           </Typography>
         </Grid>
         <Grid item xs={12}>
-          {isConfirm && <QRGenerate value={url} />}
+          {status == RedeemPaymentStates.IsSender && <QRGenerate value={url} />}
         </Grid>
-        {isConfirm && (
+        {status == RedeemPaymentStates.IsSender && (
           <Grid item xs={12}>
             <CopyToClipboard text={url}>
               <Button variant="outlined" fullWidth>
@@ -225,20 +357,19 @@ class RedeemCard extends Component {
         )}
         <Grid
           item
-          lg
+          xs={12}
           style={{
             paddingTop: "10%",
-            paddingBottom: "15%"
           }}
         >
-          {purchaseId === "failed" && <ErrorIcon className={classes.icon} />}
-          {purchaseId && purchaseId !== "failed" && (
+          {status == RedeemPaymentStates.Timeout || status == RedeemPaymentStates.PaymentAlreadyRedeemed && <ErrorIcon className={classes.icon} />}
+          {status == RedeemPaymentStates.Success && (
             <DoneIcon className={classes.icon} />
           )}
           <Typography noWrap variant="body1" style={{marginBottom: "1.5em"}}>
-            {!purchaseId && !isConfirm && requestedCollateral && <span>{"Setting up your card too. This will take 30-40s."}</span>}
+            {status == RedeemPaymentStates.Redeeming && requestedCollateral && <span>{"Setting up your card too. This will take 30-40s."}</span>}
           </Typography>
-          {!purchaseId && !isConfirm && <CircularProgress />}
+          {status == RedeemPaymentStates.Redeeming && <CircularProgress />}
         </Grid>
 
         <Grid item xs={12}>
@@ -248,7 +379,6 @@ class RedeemCard extends Component {
               background: "#FFF",
               border: "1px solid #F22424",
               color: "#F22424",
-              width: "15%"
             }}
             size="medium"
             onClick={() => this.props.history.push("/")}
@@ -256,102 +386,8 @@ class RedeemCard extends Component {
             Back
           </Button>
         </Grid>
-        <Modal
-          open={showReceipt && !isConfirm}
-          onBackdropClick={() =>
-            this.setState({ showReceipt: false, sendError: false })
-          }
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-            position: "absolute",
-            top: "25%",
-            width: "375px",
-            marginLeft: "auto",
-            marginRight: "auto",
-            left: "0",
-            right: "0"
-          }}
-        >
-          <Grid
-            container
-            style={{
-              backgroundColor: "#FFF",
-              paddingTop: "10%",
-              paddingBottom: "10%"
-            }}
-            justify="center"
-          >
-            {sendError ? (
-              previouslyRedeemed ? (
-                <Grid style={{ width: "80%" }}>
-                  <Grid item style={{ margin: "1em" }}>
-                    <Typography variant="h5" style={{ color: "#F22424" }}>
-                      Payment Failed
-                    </Typography>
-                  </Grid>
-                  <Grid item style={{ margin: "1em" }}>
-                    <Typography variant="body1" style={{ color: "#0F1012" }}>
-                      It appears this payment has already been redeemed.
-                    </Typography>
-                  </Grid>
-                </Grid>
-              ) : (
-                <Grid style={{ width: "80%" }}>
-                  <Grid item style={{ margin: "1em" }}>
-                    <Typography variant="h5" style={{ color: "#F22424" }}>
-                      Payment Failed
-                    </Typography>
-                  </Grid>
-                  <Grid item style={{ margin: "1em" }}>
-                    <Typography variant="body1" style={{ color: "#0F1012" }}>
-                      This is most likely because your Card is being set up.
-                    </Typography>
-                  </Grid>
-                  <Grid item style={{ margin: "1em" }}>
-                    <Typography variant="body1" style={{ color: "#0F1012" }}>
-                      Please try again in 30s and contact support if you
-                      continue to experience issues. (Settings --> Support)
-                    </Typography>
-                  </Grid>
-                </Grid>
-              )
-            ) : (
-              <Grid style={{ width: "80%" }}>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="h5" style={{ color: "#009247" }}>
-                    Redeemed Successfully!
-                  </Typography>
-                </Grid>
-                <Grid item style={{ margin: "1em" }}>
-                  <Typography variant="body1" style={{ color: "#0F1012" }}>
-                    Amount: {getAmountInUSD(amount, connextState)}
-                  </Typography>
-                </Grid>
-              </Grid>
-            )}
-            <Grid
-              item
-              style={{ margin: "1em", flexDirection: "row", width: "80%" }}
-            >
-              <Button
-                style={{
-                  background: "#FFF",
-                  border: "1px solid #F22424",
-                  color: "#F22424",
-                  marginLeft: "5%"
-                }}
-                variant="outlined"
-                size="small"
-                onClick={() => this.props.history.push("/")}
-              >
-                Home
-              </Button>
-            </Grid>
-          </Grid>
-        </Modal>
-      </Grid>
+       </Grid>
+       </Grid>
     );
   }
 }
