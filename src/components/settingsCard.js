@@ -9,7 +9,6 @@ import {
   TextField,
   InputAdornment,
   withStyles,
-  Modal,
   CircularProgress,
   Dialog,
   DialogTitle,
