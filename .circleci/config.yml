@@ -5,8 +5,7 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: git clone https://github.com/ConnextProject/indra.git && cd indra && npm start
-      - run: MAINNET_HUB_URL="http://host.docker.internal:3000" bash ops/restart.sh prod
+      - run: git clone https://github.com/ConnextProject/indra.git && cd indra && npm start && cd -
       - run: npm run test
 
   push-images:
