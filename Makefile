@@ -29,7 +29,7 @@ $(shell mkdir -p build .makeflags)
 .PHONY: default all dev prod stop clean purge push push-live
 
 default: dev
-all: dev prod
+all: dev prod proxy-test
 dev: node-modules proxy
 prod: proxy-prod
 
@@ -59,25 +59,17 @@ push-live:
 	docker tag daicard:latest $(prod_image):$(version)
 	docker push $(prod_image):$(version)
 
-test: prod
-	MODE=test bash ops/restart.sh prod
-	./node_modules/.bin/cypress install
-	./node_modules/.bin/cypress run
-
-start-test:
-	./node_modules/.bin/cypress open
-
-test-ci: proxy-ci
-	if [[ ! -e indra ]]; then git clone https://github.com/ConnextProject/indra.git; fi
-	#cd indra && npm start
-	#MAINNET_HUB_URL="http://host.docker.internal:3000" bash ops/restart.sh prod
-	#./node_modules/.bin/cypress install
-	./node_modules/.bin/cypress run
-
 ########################################
 # Begin Tests
 
-test: node-modules prod
+test: proxy-test
+	MODE=test MAINNET_HUB_URL="http://host.docker.internal:3000" bash ops/restart.sh prod
+	./node_modules/.bin/cypress install
+	./node_modules/.bin/cypress run
+
+start-test: node-modules
+	./node_modules/.bin/cypress install
+	./node_modules/.bin/cypress open
 
 ########################################
 # Begin Real Rules
@@ -87,23 +79,25 @@ proxy-prod: card-prod $(shell find ops/proxy $(find_options))
 	docker build --file ops/proxy/prod.dockerfile --tag daicard:latest .
 	$(log_finish) && touch $(flags)/$@
 
-proxy-ci: card-ci $(shell find ops/proxy $(find_options))
+proxy-test: card-test $(shell find ops/proxy $(find_options))
 	$(log_start)
-	docker build --file ops/proxy/prod.dockerfile --tag daicard:latest .
+	docker build --file ops/proxy/prod.dockerfile --tag daicard:test .
 	$(log_finish) && touch $(flags)/$@
 
-proxy: env node-modules $(shell find ops/proxy $(find_options))
+proxy: node-modules $(shell find ops/proxy $(find_options))
 	$(log_start)
 	docker build --file ops/proxy/dev.dockerfile --tag $(project)_proxy:dev .
 	$(log_finish) && touch $(flags)/$@
 
-card-prod: prod-env node-modules $(src)
+card-prod: ops/prod.env node-modules $(src)
 	$(log_start)
+	cp -f ops/prod.env .env
 	$(docker_run) "npm run build"
 	$(log_finish) && touch $(flags)/$@
 
-card-ci: env node-modules $(src)
+card-test: ops/dev.env node-modules $(src)
 	$(log_start)
+	cp -f ops/dev.env .env
 	$(docker_run) "npm run build"
 	$(log_finish) && touch $(flags)/$@
 
@@ -122,7 +116,7 @@ prod-env: .env ops/prod.env
 	cp -f ops/prod.env .env
 	$(log_finish) && touch $(flags)/$@
 
-env: .env ops/dev.env
+dev-env: .env ops/dev.env
 	$(log_start)
 	cp -f ops/dev.env .env
 	$(log_finish) && touch $(flags)/$@

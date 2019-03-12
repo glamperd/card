@@ -27,11 +27,14 @@ Developer note: for branch `get-hub-config` to be functional in production, the 
 ### Local development
 
 #### Prerequisites
+
 - Node 9+
 - Docker 
 - Make
 
 1. Make sure you have indra running locally. Check out the instructions at https://github.com/ConnextProject/indra
+
+TL;DR run:
 
 ```
 git clone https://github.com/ConnextProject/indra.git
@@ -44,7 +47,6 @@ npm start
 ```
 git clone https://github.com/ConnextProject/card.git
 npm i
-
 ```
 
 3. Start the app in developer-mode
@@ -63,12 +65,29 @@ make start
 
 ### Developing Connext Client Alongside 
 
+Assuming indra has been cloned & started in the parent directory, run the following from the card repo:
+
 ```
-# From the card repo, assuming indra has been cloned & started in the parent directory
-cp -rf ../indra/modules/client connext
-rm -rf node_modules/connext
-ln -s ../connext node_modules/connext
+bash ops/link-connext.sh
 npm restart
+```
+
+The above will create a local copy of the connext client that you can mess with. None of you changes in this local client will be reflected in indra, make sure to copy over any changes worth keeping.
+
+### Running Tests
+
+For local development, start the test watcher with:
+
+```
+npm run start # make sure your daicard is running
+npm run start-test
+```
+
+This will start an ongoing e2e tester that will re-run any time the tests are changed. Works well with webpack dev server.
+
+Run the e2e tests that will be run as part of CI integration with:
+```
+npm run test
 ```
 
 ## Integrating into your App

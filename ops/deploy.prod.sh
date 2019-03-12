@@ -17,7 +17,9 @@ number_of_services=1
 project="`cat package.json | grep '"name":' | awk -F '"' '{print $4}' | tr -d '-'`"
 version="`cat package.json | grep '"version":' | egrep -o '[.0-9]+'`"
 
-if [[ "$DOMAINNAME" == "localhost" ]]
+if [[ "$MODE" == "test" ]]
+then image=daicard:test
+elif [[ "$DOMAINNAME" == "localhost" ]]
 then image=daicard:latest
 else
   if [[ "$MODE" == "live" ]]
