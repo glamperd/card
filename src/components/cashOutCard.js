@@ -342,7 +342,7 @@ class CashOutCard extends Component {
           >
             Back
           </Button>
-          <Grid item xs={12}>
+          <Grid item xs={12} paddingTop="10%">
             {this.state.withdrawing && <CircularProgress color="primary" />}
           </Grid>
         </Grid>
