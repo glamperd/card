@@ -32,7 +32,7 @@ class ChannelCard extends Component {
               paddingLeft: "10%",
               paddingRight: "10%",
               paddingTop: "10%",
-              paddingBottom: "10%",
+              paddingBottom: "20%",
               backgroundColor: "#282b2e",
               textAlign: "center"
             }}
