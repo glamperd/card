@@ -266,12 +266,11 @@ class SettingsCard extends Component {
           <Dialog
             open={this.state.showWarning}
             onBackdropClick={() => this.setState({ showWarning: false })}
-            maxWidth="xs"
+            fullWidth
             style={{
               justifyContent: "center",
               alignItems: "center",
               textAlign: "center",
-              marginBottom: "10%",
             }}
           >
             <Grid
