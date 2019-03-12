@@ -129,6 +129,7 @@ class RedeemCard extends Component {
     ) {
       // channel does not have collateral
       await connext.requestCollateral();
+      this.setState({requestedCollateral: true})
       // if you already requested collateral, return
       return;
     }
@@ -165,7 +166,8 @@ class RedeemCard extends Component {
       sendError,
       showReceipt,
       previouslyRedeemed,
-      amount
+      amount,
+      requestedCollateral
     } = this.state;
 
     const { classes, connextState } = this.props;
@@ -233,6 +235,9 @@ class RedeemCard extends Component {
           {purchaseId && purchaseId !== "failed" && (
             <DoneIcon className={classes.icon} />
           )}
+          <Typography noWrap variant="body1" style={{marginBottom: "1.5em"}}>
+            {!purchaseId && !isConfirm && requestedCollateral && <span>{"Setting up your card too. This will take 30-40s."}</span>}
+          </Typography>
           {!purchaseId && !isConfirm && <CircularProgress />}
         </Grid>
 
