@@ -93,25 +93,21 @@ class DepositCard extends Component {
           </Grid>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant="h6">
+          <Typography variant="body2">
             <Tooltip
               disableFocusListener
               disableTouchListener
               title="Because gas"
             >
-              <span>{`Deposit minimum of: ${minEth || ""} Eth 
-                      or ${minDai ? minDai.substr(1) : ""} Dai.`}</span>
+              <span>{`Minimum deposit of ${minEth || ""} Eth 
+                      / ${minDai ? minDai.substr(1) : ""} Dai`}</span>
             </Tooltip>
           </Typography>
-          <Typography variant="body2">
-            {`This covers gas fees for depositing and emergencies.`}
-          </Typography>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} margin="1em">
           <QRGenerate value={address} />
         </Grid>
         <Grid item xs={12}>
-          {/* <CopyIcon style={{marginBottom: "2px"}}/> */}
           <CopyToClipboard
             onCopy={() => this.setState({ copied: true })}
             text={address}
@@ -130,9 +126,9 @@ class DepositCard extends Component {
           </CopyToClipboard>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant="h6">
+          <Typography variant="body2">
             <span>{`Deposits over ${maxEth ? maxEth.substring(0, 4) : ""} Eth 
-                      or ${maxDai ? maxDai.substring(1, 3) : ""} Dai will be refunded.`}</span>
+                      or ${maxDai ? maxDai.substring(1, 3) : ""} Dai will be refunded`}</span>
           </Typography>
         </Grid>
         <Grid item xs={12}>
