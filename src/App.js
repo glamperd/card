@@ -45,7 +45,7 @@ const overrides = {
   mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE
 };
 
-const DEPOSIT_MINIMUM_WEI = new BigNumber(Web3.utils.toWei("0.025", "ether")); // 30 FIN
+const DEPOSIT_MINIMUM_WEI = new BigNumber(Web3.utils.toWei("0.020", "ether")); // 30 FIN
 const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 69 TST
 const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
 
@@ -355,7 +355,7 @@ class App extends React.Component {
     }
 
     if (balance !== "0" || tokenBalance !== "0") {
-      if (new BigNumber(balance).lte(DEPOSIT_MINIMUM_WEI)) {
+      if (new BigNumber(balance).lt(DEPOSIT_MINIMUM_WEI)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
         return;
