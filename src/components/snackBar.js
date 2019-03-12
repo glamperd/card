@@ -7,11 +7,11 @@ const ConfirmationSnackbar = ({ handleClick, open, text, classes }) => (
   <Snackbar
     classes={classes}
     anchorOrigin={{
-      vertical: "top",
+      vertical: "bottom",
       horizontal: "center"
     }}
     message={<span id="message-id">{text}</span>}
-    autoHideDuration={6000}
+    autoHideDuration={4000}
     onClose={handleClick}
     open={open}
     action={[

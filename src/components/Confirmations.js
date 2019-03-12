@@ -98,11 +98,11 @@ class Confirmations extends Component {
       <div>
         <Snackbar
           anchorOrigin={{
-            vertical: "top",
+            vertical: "bottom",
             horizontal: "center"
           }}
           open={!!hasRefund}
-          autoHideDuration={4000}
+          autoHideDuration={30000}
           onClose={() => this.props.closeConfirmations()}
         >
           <MySnackbarContentWrapper
@@ -119,12 +119,11 @@ class Confirmations extends Component {
         </Snackbar>
         <Snackbar
           anchorOrigin={{
-            vertical: "top",
+            vertical: "bottom",
             horizontal: "center"
           }}
           open={deposit === "PENDING"}
-          autoHideDuration={30000}
-          onClose={() => this.props.closeConfirmations()}
+          onClose={() => this.props.closeConfirmations("deposit")}
         >
           <MySnackbarContentWrapper
             onClose={this.handleClose}
@@ -134,12 +133,11 @@ class Confirmations extends Component {
         </Snackbar>
         <Snackbar
           anchorOrigin={{
-            vertical: "top",
+            vertical: "bottom",
             horizontal: "center"
           }}
           open={withdraw === "PENDING"}
-          autoHideDuration={30000}
-          onClose={() => this.props.closeConfirmations()}
+          onClose={() => this.props.closeConfirmations("withdraw")}
         >
           <MySnackbarContentWrapper
             onClose={this.handleClose}
@@ -149,17 +147,32 @@ class Confirmations extends Component {
         </Snackbar>
         <Snackbar
           anchorOrigin={{
-            vertical: "top",
+            vertical: "bottom",
             horizontal: "center"
           }}
-          open={withdraw === "SUCCESS"}
-          autoHideDuration={4000}
+          open={deposit === "SUCCESS"}
+          autoHideDuration={6000}
           onClose={() => this.props.closeConfirmations()}
         >
           <MySnackbarContentWrapper
             onClose={this.handleClose}
             variant="success"
-            message="Pending transaction confirmed!"
+            message="Pending deposit confirmed!"
+          />
+        </Snackbar>
+        <Snackbar
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "center"
+          }}
+          open={withdraw === "SUCCESS"}
+          autoHideDuration={6000}
+          onClose={() => this.props.closeConfirmations()}
+        >
+          <MySnackbarContentWrapper
+            onClose={this.handleClose}
+            variant="success"
+            message="Pending withdraw confirmed!"
           />
         </Snackbar>
       </div>

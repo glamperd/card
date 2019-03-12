@@ -135,12 +135,12 @@ class App extends React.Component {
     const mnemonic = localStorage.getItem("mnemonic");
     // on mount, check if you need to refund by removing maxBalance
     localStorage.removeItem("refunding");
-    let rpc = localStorage.getItem("rpc");
+    let rpc = localStorage.getItem("rpc-prod");
     // TODO: better way to set default provider
     // if it doesnt exist in storage
     if (!rpc) {
-      rpc = env === "development" ? "LOCALHOST" : "RINKEBY";
-      localStorage.setItem("rpc", rpc);
+      rpc = env === "development" ? "LOCALHOST" : "MAINNET";
+      localStorage.setItem("rpc-prod", rpc);
     }
     // If a browser address exists, create wallet
     if (mnemonic) {
@@ -162,10 +162,7 @@ class App extends React.Component {
        await this.pollConnextState();
       await this.poller();
     } else {
-      // Else, we wait for user to finish selecting through modal which will refresh page when done
-      // TODO
-      // const { modals } = this.state;
-      // this.setState({ modals: { ...modals, keyGen: true } });
+      // Else, we create a new address
       await createWallet(this.state.web3);
       // Then refresh the page
       window.location.reload();
@@ -178,14 +175,15 @@ class App extends React.Component {
 
   async networkHandler(rpc) {
     // called from settingsCard when a new RPC URL is connected
-    // will create a new custom web3 and reinstantiate connext
-    localStorage.setItem("rpc", rpc);
+    // will refresh the page after
+    localStorage.setItem("rpc-prod", rpc);
     // update refunding variable on rpc switch
     localStorage.removeItem("maxBalanceAfterRefund");
     localStorage.removeItem("refunding");
-    await this.setWeb3(rpc);
-    await this.setConnext();
-    await this.setTokenContract();
+    // await this.setWeb3(rpc);
+    // await this.setConnext();
+    // await this.setTokenContract();
+    window.location.reload();
     return;
   }
 
@@ -522,30 +520,37 @@ class App extends React.Component {
     const { runtime } = this.state;
     const refundStr = localStorage.getItem("refunding");
     const hasRefund = !!refundStr ? refundStr.split(",") : null;
-    let deposit = null;
-    let payment = null;
-    let withdraw = null;
     if (runtime.syncResultsFromHub[0]) {
+      let deposit;
+      let withdraw;
       switch (runtime.syncResultsFromHub[0].update.reason) {
         case "ProposePendingDeposit":
-          deposit = "PENDING";
+          if(runtime.syncResultsFromHub[0].update.args.depositTokenUser != "0" ||
+            runtime.syncResultsFromHub[0].update.args.depositWeiUser != "0" ) {
+            this.closeConfirmations()
+            deposit = "PENDING";
+          }
           break;
         case "ProposePendingWithdrawal":
-          withdraw = "PENDING";
+          if(runtime.syncResultsFromHub[0].update.args.withdrawalTokenUser != "0" ||
+            runtime.syncResultsFromHub[0].update.args.withdrawalWeiUser != "0" ) {
+            this.closeConfirmations()
+            withdraw = "PENDING";
+          }
           break;
         case "ConfirmPending":
-          withdraw = "SUCCESS";
-          break;
-        case "Payment":
-          payment = "SUCCESS";
+          if(this.state.status.depositHistory == "PENDING") {
+            this.closeConfirmations("deposit")
+            deposit = "SUCCESS";
+          } else if(this.state.status.withdrawHistory == "PENDING") {
+            this.closeConfirmations("withdraw")
+            withdraw = "SUCCESS";
+          }
           break;
         default:
-          deposit = null;
-          withdraw = null;
-          payment = null;
       }
+      this.setState({ status: { deposit, withdraw, hasRefund } });
     }
-    this.setState({ status: { deposit, withdraw, payment, hasRefund } });
   }
 
   // ************************************************* //
@@ -575,12 +580,23 @@ class App extends React.Component {
     }
   }
 
-  async closeConfirmations() {
+  async closeConfirmations(type) {
     let deposit = null;
-    let payment = null;
     let withdraw = null;
     let hasRefund = null;
-    this.setState({ status: { deposit, payment, withdraw, hasRefund } });
+    let depositHistory, withdrawHistory;
+    if(!type) {
+      depositHistory = null;
+      withdrawHistory = null;
+    }
+    // Hack to keep deposit/withdraw context for confirm pending notifications
+    if(type == "deposit") {
+      depositHistory = this.state.status.deposit
+    }
+    if(type == "withdraw") {
+      withdrawHistory = this.state.status.withdraw
+    }
+    this.setState({ status: { deposit, depositHistory, withdraw, withdrawHistory, hasRefund } });
   }
 
   render() {
