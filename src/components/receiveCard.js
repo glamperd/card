@@ -63,8 +63,8 @@ class ReceiveCard extends Component {
         spacing={16}
         direction="column"
         style={{
-          paddingLeft: 12,
-          paddingRight: 12,
+          paddingLeft: "10%",
+          paddingRight: "10%",
           paddingTop: "10%",
           paddingBottom: "10%",
           textAlign: "center",
