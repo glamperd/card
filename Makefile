@@ -63,7 +63,7 @@ push-live:
 # Begin Tests
 
 test: proxy-test
-	MODE=test MAINNET_HUB_URL="http://host.docker.internal:3000" bash ops/restart.sh prod
+	MODE=test MAINNET_HUB_URL="http://172.17.0.1:3000" bash ops/restart.sh prod
 	./node_modules/.bin/cypress install
 	./node_modules/.bin/cypress run
 
