@@ -4,7 +4,7 @@ A simple offchain wallet, hosted in the browser, which utilizes Indra payment ch
 
 See it on Rinkeby at: https://card.connext.network
 
-Mainnet implementation: https://daicard.io (coming soon!)
+Mainnet implementation: https://daicard.io
 
 ## Contents
 - [Overview](#overview)
