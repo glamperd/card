@@ -44,7 +44,7 @@ const overrides = {
   mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE
 };
 
-const DEPOSIT_MINIMUM_WEI = new BigNumber(Web3.utils.toWei("0.02", "ether")); // 30 FIN
+const DEPOSIT_MINIMUM_WEI = new BigNumber(Web3.utils.toWei("0.025", "ether")); // 30 FIN
 const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 69 TST
 const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
 
