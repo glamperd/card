@@ -9,7 +9,7 @@ import { getConnextClient } from "connext/dist/Connext.js";
 import ProviderOptions from "./utils/ProviderOptions.ts";
 import clientProvider from "./utils/web3/clientProvider.ts";
 import { createWalletFromMnemonic } from "./walletGen";
-import { Paper, withStyles } from "@material-ui/core";
+import { Paper, withStyles, Grid } from "@material-ui/core";
 import AppBarComponent from "./components/AppBar";
 import SettingsCard from "./components/settingsCard";
 import ReceiveCard from "./components/receiveCard";
@@ -54,8 +54,9 @@ const styles = theme => ({
   paper: {
     height: "100%",
     width: "100%",
-    [theme.breakpoints.up(600)]: {
-      width: 550
+    [theme.breakpoints.up('sm')]: {
+      width: "50vw",
+      height: "100vh",
     },
     zIndex: 1000,
     margin: "0px"
@@ -63,15 +64,16 @@ const styles = theme => ({
   app: {
     display: "flex",
     justifyContent: "center",
+    alignItems: "center",
     flexGrow: 1,
     fontFamily: ["proxima-nova", "sans-serif"],
     backgroundColor: "#FFF",
     width: "100%",
     margin: "0px",
-    [theme.breakpoints.up(824)]: {
+    [theme.breakpoints.up('sm')]: {
       height: "100%"
     },
-    [theme.breakpoints.down(824)]: {
+    [theme.breakpoints.down('sm')]: {
       height: "100vh"
     }
   },
@@ -658,8 +660,15 @@ class App extends React.Component {
     const { classes } = this.props;
     return (
       <Router>
-        <div className={classes.app}>
-          <Paper className={classes.paper} elevation={1}>
+        <Grid className={classes.app}>
+          <Paper elevation={1} className={classes.paper}>
+          <Grid 
+          container
+          spacing={16}
+          direction="column"
+          className={classes.paper}
+          >
+          <Grid item xs={12}>
             <Snackbar
               handleClick={() => this.handleClick()}
               onClose={() => this.handleClick()}
@@ -785,8 +794,10 @@ class App extends React.Component {
                 <SupportCard {...props} channelState={channelState} />
               )}
             />
+          </Grid>          
+          </Grid>
           </Paper>
-        </div>
+        </Grid>
       </Router>
     );
   }
