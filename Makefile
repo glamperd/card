@@ -64,9 +64,7 @@ test: prod
 	./node_modules/.bin/cypress install
 	./node_modules/.bin/cypress run
 
-start-test: dev
-	MODE=test bash ops/restart.sh
-	./node_modules/.bin/cypress install
+start-test:
 	./node_modules/.bin/cypress open
 
 ########################################
