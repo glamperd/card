@@ -99,8 +99,7 @@ class DepositCard extends Component {
               disableTouchListener
               title="Because gas"
             >
-              <span>{`Deposit minimum of: ${minEth || ""} Eth 
-                      or ${minDai ? minDai.substr(1) : ""} Dai.`}</span>
+              <span>{`Deposit minimum of: ${minEth || ""} Eth.`}</span>
             </Tooltip>
           </Typography>
           <Typography variant="body2">
