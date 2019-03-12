@@ -117,7 +117,7 @@ class Home extends React.Component {
         </Grid>
         <Grid
           container
-          spacing={24}
+          spacing={16}
           direction="column"
           style={{ paddingLeft: "2%", paddingRight: "2%", textAlign: "center" }}
         >

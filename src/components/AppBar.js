@@ -23,7 +23,7 @@ const AppBarComponent = props => (
     <Toolbar>
       <Grid
         container
-        spacing={24}
+        spacing={16}
         direction="row"
         justify="space-between"
         alignItems="center"
