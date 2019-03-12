@@ -66,17 +66,15 @@ class Home extends React.Component {
     const { address, channelState, connextState } = this.props;
     return (
       <>
-        <div className="row" style={{ marginBottom: "-7.5%" }}>
-          <div
-            className="column"
-            style={{ justifyContent: "space-between", flexGrow: 1 }}
+        <Grid container direction="row" style={{ marginBottom: "-7.5%" }}>
+          <Grid item xs={12}
+            style={{ flexGrow: 1 }}
           >
             <ChannelCard channelState={channelState} address={address} connextState = {connextState}/>
-          </div>
-        </div>
-        <div className="row">
-          <div
-            className="column"
+          </Grid>
+        </Grid>
+        <Grid container direction="column">
+          <Grid item xs={12}
             style={{ marginRight: "5%", marginLeft: "80%" }}
           >
             <Fab
@@ -115,15 +113,15 @@ class Home extends React.Component {
                 history={this.props.history}
               />
             </Modal>
-          </div>
-        </div>
+          </Grid>
+        </Grid>
         <Grid
           container
           spacing={24}
           direction="column"
-          style={{ paddingLeft: 12, paddingRight: 12, textAlign: "center" }}
+          style={{ paddingLeft: "2%", paddingRight: "2%", textAlign: "center" }}
         >
-          <Grid item xs={12} style={{ paddingTop: 40 }}>
+          <Grid item xs={12} style={{ paddingTop: "10%" }}>
             <Grid
               container
               spacing={8}
