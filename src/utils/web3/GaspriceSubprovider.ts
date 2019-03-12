@@ -17,7 +17,7 @@ export default class GaspriceSubprovider extends Subprovider {
   }
 
   handleRequest(payload: any, next: () => void, end: (err: any, res?: any) => void) {
-    if (payload.method !== 'gas-estimate-latest') {
+    if (payload.method !== 'eth_gasPrice') {
       return next()
     }
 

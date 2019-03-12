@@ -216,7 +216,7 @@ class App extends React.Component {
       windowId = await window.web3.eth.net.getId();
     }
 
-    const providerOpts = new ProviderOptions(store, rpcUrl).approving();
+    const providerOpts = new ProviderOptions(store, rpcUrl, hubUrl).approving();
     const provider = clientProvider(providerOpts);
     const customWeb3 = new Web3(provider);
     const customId = await customWeb3.eth.net.getId();
