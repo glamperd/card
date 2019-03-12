@@ -395,7 +395,7 @@ class App extends React.Component {
 
     if (balance !== "0" || tokenBalance !== "0") {
       const minWei = new BigNumber(browserMinimumBalance.wei)
-      if (new BigNumber(balance).lte(minWei)) {
+      if (new BigNumber(balance).lt(minWei)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
         return;
