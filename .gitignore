@@ -5,6 +5,7 @@ build
 # Temporary
 *.swp
 connext
+indra
 
 # Useless
 .DS_Store

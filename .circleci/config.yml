@@ -5,7 +5,7 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: make test
+      - run: make test-ci
 
   push-images:
     machine: true

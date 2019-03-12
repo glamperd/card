@@ -5,7 +5,7 @@
 
 DOMAINNAME="${DOMAINNAME:-localhost}"
 EMAIL="${EMAIL:-noreply@gmail.com}"
-LOCAL_HUB_URL="" # Not used in prod, use env var overrides instead
+LOCAL_HUB_URL="" # Not available in prod
 RINKEBY_HUB_URL="${RINKEBY_HUB_URL:-https://rinkeby.hub.connext.network}"
 MAINNET_HUB_URL="${MAINNET_HUB_URL:-https://hub.connext.network}"
 

@@ -67,6 +67,13 @@ test: prod
 start-test:
 	./node_modules/.bin/cypress open
 
+test-ci: proxy-ci
+	if [[ ! -e indra ]]; then git clone https://github.com/ConnextProject/indra.git; fi
+	#cd indra && npm start
+	#MAINNET_HUB_URL="http://host.docker.internal:3000" bash ops/restart.sh prod
+	#./node_modules/.bin/cypress install
+	./node_modules/.bin/cypress run
+
 ########################################
 # Begin Tests
 
@@ -76,6 +83,11 @@ test: node-modules prod
 # Begin Real Rules
 
 proxy-prod: card-prod $(shell find ops/proxy $(find_options))
+	$(log_start)
+	docker build --file ops/proxy/prod.dockerfile --tag daicard:latest .
+	$(log_finish) && touch $(flags)/$@
+
+proxy-ci: card-ci $(shell find ops/proxy $(find_options))
 	$(log_start)
 	docker build --file ops/proxy/prod.dockerfile --tag daicard:latest .
 	$(log_finish) && touch $(flags)/$@
@@ -90,6 +102,11 @@ card-prod: prod-env node-modules $(src)
 	$(docker_run) "npm run build"
 	$(log_finish) && touch $(flags)/$@
 
+card-ci: env node-modules $(src)
+	$(log_start)
+	$(docker_run) "npm run build"
+	$(log_finish) && touch $(flags)/$@
+
 node-modules: builder package.json
 	$(log_start)
 	$(docker_run) "$(install)"
@@ -100,12 +117,12 @@ builder:
 	docker build --file ops/builder.dockerfile --tag $(project)_builder:latest .
 	$(log_finish) && touch $(flags)/$@
 
-prod-env: ops/prod.env
+prod-env: .env ops/prod.env
 	$(log_start)
 	cp -f ops/prod.env .env
 	$(log_finish) && touch $(flags)/$@
 
-env: ops/dev.env
+env: .env ops/dev.env
 	$(log_start)
 	cp -f ops/dev.env .env
 	$(log_finish) && touch $(flags)/$@
