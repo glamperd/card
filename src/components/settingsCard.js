@@ -83,6 +83,7 @@ class SettingsCard extends Component {
     setInterval(async () => {
       if (this.state.isBurning) {
         if (
+          this.props.runtime &&
           this.props.runtime.syncResultsFromHub[0] &&
           this.props.runtime.syncResultsFromHub[0].update.reason ===
             "ConfirmPending"
