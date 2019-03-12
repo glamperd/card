@@ -277,10 +277,8 @@ class RedeemCard extends Component {
           paddingLeft: "10%",
           paddingRight: "10%",
           paddingTop: "10%",
-          paddingBottom: "10%",
           textAlign: "center",
           justifyContent: "center",
-          height: "100%" 
         }}
       >
       <Dialog
@@ -359,10 +357,9 @@ class RedeemCard extends Component {
         )}
         <Grid
           item
-          lg
+          xs={12}
           style={{
             paddingTop: "10%",
-            paddingBottom: "15%"
           }}
         >
           {status == RedeemPaymentStates.Timeout || status == RedeemPaymentStates.PaymentAlreadyRedeemed && <ErrorIcon className={classes.icon} />}
@@ -382,7 +379,6 @@ class RedeemCard extends Component {
               background: "#FFF",
               border: "1px solid #F22424",
               color: "#F22424",
-              width: "15%"
             }}
             size="medium"
             onClick={() => this.props.history.push("/")}
