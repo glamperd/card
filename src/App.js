@@ -23,6 +23,7 @@ import BigNumber from "bignumber.js";
 import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
 import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
 import getExchangeRates from "connext/dist/lib/getExchangeRates";
+import Snackbar from "./components/snackBar";
 
 export const store = createStore(setWallet, null);
 
@@ -81,6 +82,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      loadingConnext: true,
       rpcUrl: null,
       hubUrl: null,
       tokenAddress: null,
@@ -287,6 +289,7 @@ class App extends React.Component {
     });
     // start polling
     await connext.start();
+    this.setState({ loadingConnext: false })
   }
 
   async poller() {
@@ -525,24 +528,24 @@ class App extends React.Component {
       let withdraw;
       switch (runtime.syncResultsFromHub[0].update.reason) {
         case "ProposePendingDeposit":
-          if(runtime.syncResultsFromHub[0].update.args.depositTokenUser != "0" ||
-            runtime.syncResultsFromHub[0].update.args.depositWeiUser != "0" ) {
+          if(runtime.syncResultsFromHub[0].update.args.depositTokenUser !== "0" ||
+            runtime.syncResultsFromHub[0].update.args.depositWeiUser !== "0" ) {
             this.closeConfirmations()
             deposit = "PENDING";
           }
           break;
         case "ProposePendingWithdrawal":
-          if(runtime.syncResultsFromHub[0].update.args.withdrawalTokenUser != "0" ||
-            runtime.syncResultsFromHub[0].update.args.withdrawalWeiUser != "0" ) {
+          if(runtime.syncResultsFromHub[0].update.args.withdrawalTokenUser !== "0" ||
+            runtime.syncResultsFromHub[0].update.args.withdrawalWeiUser !== "0" ) {
             this.closeConfirmations()
             withdraw = "PENDING";
           }
           break;
         case "ConfirmPending":
-          if(this.state.status.depositHistory == "PENDING") {
+          if(this.state.status.depositHistory === "PENDING") {
             this.closeConfirmations("deposit")
             deposit = "SUCCESS";
-          } else if(this.state.status.withdrawHistory == "PENDING") {
+          } else if(this.state.status.withdrawHistory === "PENDING") {
             this.closeConfirmations("withdraw")
             withdraw = "SUCCESS";
           }
@@ -590,14 +593,18 @@ class App extends React.Component {
       withdrawHistory = null;
     }
     // Hack to keep deposit/withdraw context for confirm pending notifications
-    if(type == "deposit") {
+    if(type === "deposit") {
       depositHistory = this.state.status.deposit
     }
-    if(type == "withdraw") {
+    if(type === "withdraw") {
       withdrawHistory = this.state.status.withdraw
     }
     this.setState({ status: { deposit, depositHistory, withdraw, withdrawHistory, hasRefund } });
   }
+
+  async handleClick() {
+    await this.setState({ loadingConnext: false });
+  };
 
   render() {
     const {
@@ -615,6 +622,13 @@ class App extends React.Component {
       <Router>
         <div className={classes.app}>
           <Paper className={classes.paper} elevation={1}>
+            <Snackbar
+              handleClick={() => this.handleClick()}
+              onClose={() => this.handleClick()}
+              open={this.state.loadingConnext}
+              duration={100000}
+              text="Starting Channel Controllers.."
+            />
             <Confirmations
               status={this.state.status}
               closeConfirmations={this.closeConfirmations.bind(this)}
