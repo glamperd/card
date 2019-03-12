@@ -13,7 +13,7 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import Modal from "@material-ui/core/Modal";
 //import CircularProgress from "@material-ui/core/CircularProgress";
 import QRScan from "./qrScan";
-import { withStyles, Grid, Typography } from "@material-ui/core";
+import { withStyles, Grid, Typography, CircularProgress } from "@material-ui/core";
 import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
 
 const styles = theme => ({
@@ -146,12 +146,10 @@ class CashOutCard extends Component {
     }
   }
 
-  //withRouter(async ({ history })
-
   poller = async () => {
     var interval = setInterval(async () => {
-      var didWithdraw = this.checkState();
-      if (didWithdraw) {
+      const { runtime } = this.props;
+      if (!runtime.awaitingOnchainTransaction) {
         this.setState({ withdrawing: false });
         clearInterval(interval);
         this.props.history.push("/");
@@ -344,6 +342,9 @@ class CashOutCard extends Component {
           >
             Back
           </Button>
+          <Grid item xs={12}>
+            {this.state.withdrawing && <CircularProgress color="primary" />}
+          </Grid>
         </Grid>
       </Grid>
     );

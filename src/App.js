@@ -785,6 +785,7 @@ class App extends React.Component {
                   web3={customWeb3}
                   connext={connext}
                   connextState={connextState}
+                  runtime={runtime}
                 />
               )}
             />
