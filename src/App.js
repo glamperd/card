@@ -47,6 +47,7 @@ const overrides = {
 };
 
 const DEPOSIT_ESTIMATED_GAS = new BigNumber("700000") // 700k gas
+const DEPOSIT_MINIMUM_WEI = new BigNumber(Web3.utils.toWei("0.020", "ether")); // 30 FIN
 const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 69 TST
 const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
 

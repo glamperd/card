@@ -379,14 +379,18 @@ Because the card is effectively a hot wallet, we've set our implementation of `c
 
 ### Collateralization
 
-To receive payments, the recipient's channel must be collateralized. This presents a few practical challenges: hub operators must decide how to allocate their reserves to minimize (a) the number of payments that fail due to uncollateralized channels and (b) the amount of funds locked up in channels. In addition, implementers should adhere to some best practices to reduce loads on the hub and minimize the chance of payment delays. Because this is new technology, we're still exploring the best ways to handle collateralization and hub reserve management.
+`connext.requestCollateral()` is used to have the hub collateralize the payee's channel so that they can receive payments.
+
+The hub has a minimum it will collateralize into any channel. This deposit minimum is set to 10 DAI and is enforced on every user deposit, collateral call, but NOT enforced on withdrawals.
+
+The hub is triggered to check the collateral needs of the user after any payment is sent to them, regardless if the payment was successful. As you are implementing the client, you can use a failed payment to kickoff the autocollateral mechanism.
+
+The autocollateral mechanism determines the amount the hub should deposit by checking all recent payments made to recipients, and deposits the 1.5 times the amount to cover the collateral. A minimum of 10 DAI and maximum of 169 DAI are enforced here to reduce collateral burden on the hub.
+
+On cashout, you have the ability to implement "partial withdrawals", which would leave some tokens (and potentially wei) in the channel. On withdrawing, the hub will leave enough DAI in the channel to facilitate exchanges for the remaining user wei balance, up to the exchange limit of 69 DAI. This way, the hub is optimistically collateralizing for future exchanges.
+
+Note that these collateral limitations mean that there is a hard cap to the size of payments the hub can facilitate (169 DAI). However, there is no limit to how much eth the user can store in their side of the channel. The hub will just refuse to facilitate payments or exchanges that it cannot collateralize, but the user will not have to deposit more ETH.
 
 Right now, submitting a withdrawal request with zero value will decollateralize a user's channel entirely.
 
-A few tips that we've found helpful:
-1. Collateralize on auth instead of page load. This helps minimize unnecessary collateralization.
-2. If your wallet is intended to be ephemeral, decollateralize when a user burns their wallet.
-
-
-
-
+This presents a few practical challenges: hub operators must decide how to allocate their reserves to minimize (a) the number of payments that fail due to uncollateralized channels and (b) the amount of funds locked up in channels. In addition, implementers should adhere to some best practices to reduce loads on the hub and minimize the chance of payment delays. Because this is new technology, we're still exploring the best ways to handle collateralization and hub reserve management and will update this section as we learn more.
