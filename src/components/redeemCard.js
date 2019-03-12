@@ -288,7 +288,7 @@ class RedeemCard extends Component {
           onBackdropClick={() =>
             this.setState({ showReceipt: false, sendError: false })
           }
-          maxWidth="xs"
+          fullWidth
           style={{
               justify: "center",
               alignItems: "center",
