@@ -63,21 +63,19 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
       return (
         <Grid style={{ width: "80%" }}>
           <Grid item style={{ margin: "1em" }}>
-            <Typography variant="h5" style={{ color: "#F22424" }}>
+            <Typography variant="h5" color="primary">
               Payment In Process
             </Typography>
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Recipient channel is being initialized, payment will be sent
-              after.
+              Recipient's Card is being set up. This should take 20-30 seconds.
             </Typography>
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Do not refresh the page. If you refresh, you will have to send
-              your payment again. If you have any questions, please contact
-              support. (Settings --> Support)
+              If you stay on this page, your payment will be retried automatically. 
+              If you navigate away or refresh the page, you will have to attempt the payment again yourself.
             </Typography>
           </Grid>
           <CircularProgress style={{ marginTop: "1em" }} />
@@ -98,7 +96,7 @@ function ConfirmationModalText(paymentState, amountToken, recipient) {
           </Grid>
           <Grid item style={{ margin: "1em" }}>
             <Typography variant="body1" style={{ color: "#0F1012" }}>
-              Maybe they need to log in? Please try your payment again later. If
+              Is the receiver online to set up their Card? Please try your payment again later. If
               you have any questions, please contact support. (Settings -->
               Support)
             </Typography>
