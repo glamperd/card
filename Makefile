@@ -28,10 +28,11 @@ $(shell mkdir -p build .makeflags)
 # Begin Shortcut Rules
 .PHONY: default all dev prod stop clean purge push push-live
 
-default: dev
-all: dev prod proxy-test
+default: hooks dev
+all: hooks dev prod proxy-test
 dev: node-modules proxy
 prod: proxy-prod
+hooks: pre-push-hook
 
 start: dev
 	bash ops/deploy.dev.sh
@@ -120,3 +121,10 @@ dev-env: .env ops/dev.env
 	$(log_start)
 	cp -f ops/dev.env .env
 	$(log_finish) && touch $(flags)/$@
+
+pre-push-hook: ops/pre-push.sh
+	$(log_start)
+	rm -f .git/hooks/pre-push
+	cp ops/pre-push.sh .git/hooks/pre-push
+	chmod +x .git/hooks/pre-push
+	$(log_finish) && touch build/$@

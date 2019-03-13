@@ -29,17 +29,17 @@ const styles = theme => ({
 const screens = (classes, minEth, minDai, maxEth, maxDai) => [
   {
     title: "Welcome to Your Dai Card!",
-    message: "Here are some helpful tips to get you setup."
+    message: "Here are some helpful tips to get you started with the next generation of payments."
   },
   {
     title: "Beta Software",
     message:
-      "This is beta software, and there may be bugs. Don't hesitate to contact us by going to Settings > Support if you find any!"
+      `This is beta software, and there are still bugs. Don't hesitate to contact us by going to Settings > Support if you find any!`
   },
   {
     title: "Your Mnemonic",
     message:
-      "All your funds are attached to this mnemonic. Make sure to copy it down and keep it in a safe place in case you ever need to recover your account.",
+      "This mnemonic is required to access your card's funds. It's available anytime via the settings page, be sure to write it down somewhere before you deposit money.",
     extra: (
       <Grid container style={{ padding: "2% 2% 2% 2%" }}>
         <CopyToClipboard
@@ -70,11 +70,11 @@ const screens = (classes, minEth, minDai, maxEth, maxDai) => [
   },
   {
     title: "Deposit Boundaries",
-    message: `The card needs a minimum deposit of ${minEth ||
-      "0.00"} eth (${minDai ||
-      "0.00"} dai) to cover the gas costs of getting setup. Cards only accept deposits of ${maxEth ||
-      "0.00"} eth (${maxDai ||
-      "0.00"} dai) or less, with any excess getting refunded.`
+    message: `The card needs a minimum deposit of ${
+      minEth || "?.??"} eth (${
+      minDai || "?.??"} dai) to cover the gas costs of getting setup. Cards only accept deposits of ${
+      maxEth || "?.??"} eth (${
+      maxDai || "?.??"} dai) or less, with any excess getting refunded.`
   }
 ];
 
@@ -147,7 +147,7 @@ class SetupCard extends Component {
 
     const display = screens(classes, minEth, minDai, maxEth, maxDai);
 
-    const isFinal = index == display.length - 1;
+    const isFinal = index === display.length - 1;
 
     const progress = 100 * ((index + 1) / display.length);
 
@@ -165,7 +165,7 @@ class SetupCard extends Component {
         }}
         zeroMinWidth={true}
       >
-        {display.length != 0 && (
+        {display.length !== 0 && (
           <Dialog open={open} fullWidth>
             <Grid container justify="center">
               <Grid item xs={12} style={{ padding: "2% 2% 2% 2%" }}>
@@ -191,7 +191,7 @@ class SetupCard extends Component {
 
                 <Grid item xs={12}>
                   <DialogActions style={{ padding: "2% 2% 2% 2%" }}>
-                    {index != 0 && (
+                    {index !== 0 && (
                       <Button
                         onClick={this.handleClickPrevious}
                         className={classes.button}

@@ -5,11 +5,78 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: git clone https://github.com/ConnextProject/indra.git && cd indra && npm start && cd -
-      - run: npm run test
+      - run:
+          command: |
+            git clone https://github.com/ConnextProject/indra.git
+            cd indra
+            make start
+            cd ..
+            npm run test
+
+  push-images:
+    machine: true
+    steps:
+      - checkout
+      - run: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD && make push
+
+  push-live-images:
+    machine: true
+    steps:
+      - checkout
+      - run: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD && make push-live
+
+  deploy-staging:
+    machine: true
+    steps:
+      - run:
+          command: |
+            ssh ubuntu@$STAGING_URL "bash -s" <<EOF
+              git clone https://github.com/ConnextProject/card.git || true
+              cd card
+              git fetch
+              git reset --hard origin/$CIRCLE_BRANCH
+              export DOMAINNAME="$STAGING_URL
+              bash ops/restart.sh prod
+            EOF
+
+  deploy-live:
+    machine: true
+    steps:
+      - run:
+          command: |
+            ssh ubuntu@$STAGING_URL "bash -s" <<EOF
+              git clone https://github.com/ConnextProject/card.git || true
+              cd card
+              git fetch
+              git reset --hard "origin/$CIRCLE_BRANCH"
+              export DOMAINNAME="$PRODUCTION_URL"
+              export MODE="live"
+              bash ops/restart.sh prod
+            EOF
 
 workflows:
   version: 2
   test:
     jobs:
       - test
+      - push-images:
+          requires:
+            - test
+      - push-live-images:
+          filters:
+            branches:
+              only: master
+          requires:
+            - test
+      - deploy-staging:
+          filters:
+            branches:
+              ignore: master
+          requires:
+            - push-images
+      - deploy-live:
+          filters:
+            branches:
+              only: master
+          requires:
+            - push-live-images

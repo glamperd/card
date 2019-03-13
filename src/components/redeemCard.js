@@ -1,4 +1,4 @@
-import { withStyles, Button, CircularProgress, Modal, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions } from "@material-ui/core";
+import { withStyles, Button, CircularProgress, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions } from "@material-ui/core";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
 import DoneIcon from "@material-ui/icons/Done";
 import ErrorIcon from "@material-ui/icons/ErrorOutline";
@@ -36,7 +36,7 @@ function getStatus (state) {
     previouslyRedeemed,
   } = state;
 
-  const failed = purchaseId && purchaseId == 'failed'
+  const failed = purchaseId && purchaseId === 'failed'
   let status
   if (isConfirm) {
     // sender of redeemed payment
@@ -282,7 +282,7 @@ class RedeemCard extends Component {
         }}
       >
       <Dialog
-          open={showReceipt && status != RedeemPaymentStates.IsSender}
+          open={showReceipt && status !== RedeemPaymentStates.IsSender}
           onBackdropClick={() =>
             this.setState({ showReceipt: false, sendError: false })
           }
@@ -327,18 +327,18 @@ class RedeemCard extends Component {
         </Grid>
         <Grid item xs={12}>
           <Typography noWrap variant="h5">
-            {status == RedeemPaymentStates.IsSender && <span>{"Scan to Redeem"}</span>}
-            {status == RedeemPaymentStates.Timeout || status == RedeemPaymentStates.PaymentAlreadyRedeemed && <span>{"Uh Oh! Payment Failed"}</span>}
-            {status == RedeemPaymentStates.Success && (
+            {status === RedeemPaymentStates.IsSender && <span>{"Scan to Redeem"}</span>}
+            {(status === RedeemPaymentStates.Timeout || status === RedeemPaymentStates.PaymentAlreadyRedeemed) && <span>{"Uh Oh! Payment Failed"}</span>}
+            {status === RedeemPaymentStates.Success && (
               <span>{"Payment Redeemed!"}</span>
             )}
-            {status == RedeemPaymentStates.Redeeming && <span>{"Redeeming Payment..."}</span>}
+            {status === RedeemPaymentStates.Redeeming && <span>{"Redeeming Payment..."}</span>}
           </Typography>
         </Grid>
         <Grid item xs={12}>
-          {status == RedeemPaymentStates.IsSender && <QRGenerate value={url} />}
+          {status === RedeemPaymentStates.IsSender && <QRGenerate value={url} />}
         </Grid>
-        {status == RedeemPaymentStates.IsSender && (
+        {status === RedeemPaymentStates.IsSender && (
           <Grid item xs={12}>
             <CopyToClipboard text={url}>
               <Button variant="outlined" fullWidth>
@@ -362,14 +362,14 @@ class RedeemCard extends Component {
             paddingTop: "10%",
           }}
         >
-          {status == RedeemPaymentStates.Timeout || status == RedeemPaymentStates.PaymentAlreadyRedeemed && <ErrorIcon className={classes.icon} />}
-          {status == RedeemPaymentStates.Success && (
+          {(status === RedeemPaymentStates.Timeout || status === RedeemPaymentStates.PaymentAlreadyRedeemed) && <ErrorIcon className={classes.icon} />}
+          {status === RedeemPaymentStates.Success && (
             <DoneIcon className={classes.icon} />
           )}
           <Typography noWrap variant="body1" style={{marginBottom: "1.5em"}}>
-            {status == RedeemPaymentStates.Redeeming && requestedCollateral && <span>{"Setting up your card too. This will take 30-40s."}</span>}
+            {status === RedeemPaymentStates.Redeeming && requestedCollateral && <span>{"Setting up your card too. This will take 30-40s."}</span>}
           </Typography>
-          {status == RedeemPaymentStates.Redeeming && <CircularProgress />}
+          {status === RedeemPaymentStates.Redeeming && <CircularProgress />}
         </Grid>
 
         <Grid item xs={12}>

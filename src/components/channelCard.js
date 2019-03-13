@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import Card from "@material-ui/core/Card";
 import { Grid, Typography } from "@material-ui/core";
 import { withStyles } from "@material-ui/core";
 import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
