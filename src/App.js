@@ -742,6 +742,8 @@ class App extends React.Component {
                 <ReceiveCard
                   {...props}
                   address={address}
+                  connextState={connextState}
+                  maxTokenDeposit={CHANNEL_DEPOSIT_MAX.toString()}
                   channelState={channelState}
                   publicUrl={publicUrl}
                 />
