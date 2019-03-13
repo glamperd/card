@@ -147,7 +147,7 @@ class SetupCard extends Component {
 
     const display = screens(classes, minEth, minDai, maxEth, maxDai);
 
-    const isFinal = index == display.length - 1;
+    const isFinal = index === display.length - 1;
 
     const progress = 100 * ((index + 1) / display.length);
 
@@ -165,7 +165,7 @@ class SetupCard extends Component {
         }}
         zeroMinWidth={true}
       >
-        {display.length != 0 && (
+        {display.length !== 0 && (
           <Dialog open={open} fullWidth>
             <Grid container justify="center">
               <Grid item xs={12} style={{ padding: "2% 2% 2% 2%" }}>
@@ -191,7 +191,7 @@ class SetupCard extends Component {
 
                 <Grid item xs={12}>
                   <DialogActions style={{ padding: "2% 2% 2% 2%" }}>
-                    {index != 0 && (
+                    {index !== 0 && (
                       <Button
                         onClick={this.handleClickPrevious}
                         className={classes.button}

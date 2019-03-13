@@ -40,7 +40,7 @@ class DepositCard extends Component {
     const { classes, address, connextState, browserMinimumBalance, maxTokenDeposit } = this.props;
     const { copied, } = this.state;
 
-    let minDai, minEth
+    let minEth//, minDai
     let maxDai, maxEth
     if (connextState && connextState.runtime.canDeposit && browserMinimumBalance) {
       const minConvertable = new CurrencyConvertable(
@@ -56,7 +56,7 @@ class DepositCard extends Component {
       )
 
       minEth = minConvertable.toETH().amountBigNumber.toFixed()
-      minDai = Currency.USD(browserMinimumBalance.dai).format({})
+      //minDai = Currency.USD(browserMinimumBalance.dai).format({})
       maxEth = maxConvertable.toETH().amountBigNumber.toFixed()
       maxDai = Currency.USD(maxConvertable.toUSD().amountBigNumber).format({})
     }
