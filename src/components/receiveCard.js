@@ -12,6 +12,10 @@ import QRGenerate from "./qrGenerate";
 //import { withRouter } from "react-router-dom";
 import { withStyles, Grid } from "@material-ui/core";
 import Snackbar from "./snackBar";
+import BN from "bn.js";
+import Web3 from "web3";
+import { getAmountInUSD } from "../utils/currencyFormatting";
+import { emptyAddress } from "connext/dist/Utils";
 
 const styles = theme => ({
   icon: {
@@ -25,10 +29,11 @@ class ReceiveCard extends Component {
     super(props);
 
     this.state = {
-      value: "0",
+      amountToken: null,
+      displayValue: "",
       error: null,
       qrUrl: this.generateQrUrl("0"),
-      copied: null
+      copied: false
     };
   }
 
@@ -36,11 +41,48 @@ class ReceiveCard extends Component {
     this.setState({ copied: false });
   };
 
+  handleCopy = () => {
+    const error = this.validatePayment()
+    if (error) {
+      this.setState({ copied: false })
+      return
+    }
+    this.setState({ copied: true })
+  }
+
+  validatePayment = () => {
+    const { amountToken, } = this.state
+    const { connextState, maxTokenDeposit, } = this.props
+    this.setState({ error: null })
+    if (!amountToken) {
+      error = "Please enter a valid amount"
+      this.setState({ error })
+      return error
+    }
+    const tokenBig = new BN(amountToken)
+    let error = null
+    const amount = {
+      amountWei: '0',
+      amountToken: maxTokenDeposit,
+    }
+    if (tokenBig.gt(new BN(amount.amountToken))) {
+      error = `Channel balances are capped at ${getAmountInUSD(amount, connextState)}`
+    }
+    if (tokenBig.isZero() || tokenBig.isNeg()) {
+      error = "Please enter a payment amount above 0"
+    }
+
+    this.setState({ error })
+    return error
+  }
+
   updatePaymentHandler = async value => {
     // appears to be just value
-    // const adjusted = Web3.utils.toWei(value)
+    const token = value ? value : "0"
     this.setState({
-      qrUrl: this.generateQrUrl(value)
+      qrUrl: this.generateQrUrl(value),
+      amountToken: Web3.utils.toWei(token, "ether"),
+      displayValue: value,
     });
   };
 
@@ -50,13 +92,13 @@ class ReceiveCard extends Component {
     // and convert it to the url with
     // appropriate strings to prefill a send
     // modal state (recipient, amountToken)
-    const url = `${publicUrl}/send?amountToken=${value}&recipient=${address}`;
+    const url = `${publicUrl || "https:/"}/send?amountToken=${value || "0"}&recipient=${address || emptyAddress}`;
     return url;
   };
 
   render() {
     const { classes } = this.props;
-    const { qrUrl, error, displayVal, copied } = this.state;
+    const { qrUrl, error, displayValue, amountToken, copied } = this.state;
     return (
       <Grid
         container
@@ -72,8 +114,8 @@ class ReceiveCard extends Component {
         }}
       >
         <Snackbar
-          handleClick={() => this.handleClick()}
-          onClose={() => this.handleClick()}
+          handleClick={this.handleClick}
+          onClose={this.handleClick}
           open={copied}
           text="Copied!"
         />
@@ -93,7 +135,7 @@ class ReceiveCard extends Component {
             fullWidth
             id="outlined-number"
             label="Amount"
-            value={displayVal}
+            value={displayValue}
             type="number"
             margin="normal"
             variant="outlined"
@@ -108,10 +150,10 @@ class ReceiveCard extends Component {
         <Grid item xs={12}>
           {/* <CopyIcon style={{marginBottom: "2px"}}/> */}
           <CopyToClipboard
-            onCopy={() => this.setState({ copied: true })}
-            text={qrUrl}
+            onCopy={this.handleCopy}
+            text={error == null && amountToken != null ? qrUrl : ''}
           >
-            <Button variant="outlined" fullWidth>
+            <Button variant="outlined" fullWidth onClick={this.validatePayment}>
               <Typography noWrap variant="body1">
                 <Tooltip
                   disableFocusListener
