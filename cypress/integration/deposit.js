@@ -4,29 +4,34 @@ const wallet = eth.Wallet.fromMnemonic(Cypress.env('mnemonic')).connect(provider
 const publicUrl = Cypress.env('publicUrl')
 
 describe('Deposit', () => {
-  it('Displays loading message while connext gets started', () => {
+  beforeEach(() => {
+    // close intro modal
     cy.visit(publicUrl)
+    cy.get('button').contains(/next/i).click()
+    cy.get('button').contains(/next/i).click()
+    cy.get('button').contains(/next/i).click()
+    cy.get('button').contains(/got it/i).click()
+    // wait until the startup modal closes
     cy.get('span#message-id').should('not.exist')
+    // click link to deposit page
+    cy.get('a[href="/deposit"]').click()
   })
 
   it('Displays a valid deposit address', () => {
-    cy.visit(publicUrl)
-    cy.get('span#message-id').should('not.exist')
-    cy.get('a[href="/deposit"]').click()
     cy.get('button').contains(/0[Xx]/).invoke('text').should('match', /0[xX][0-9a-zA-Z]{40}/)
   })
 
   it('Accepts a deposit to displayed address', () => {
-    cy.visit(publicUrl)
-    cy.get('span#message-id').should('not.exist')
-    cy.get('a[href="/deposit"]').click()
     cy.get('button').contains(/0[Xx]/).invoke('text').then(address => {
       cy.get('button').contains("Back").click()
-      wallet.sendTransaction({
+      cy.log(`Sending 0.03 eth to ${address}`)
+      return wallet.sendTransaction({
         to: address,
         value: eth.utils.parseEther('0.03')
-      }).then(() => {
-        wallet.provider.waitForTransaction(tx.hash).then(() => {
+      }).then(tx => {
+        cy.log(`Transaction sent, waiting for it to get mined..`)
+        return wallet.provider.waitForTransaction(tx.hash).then(() => {
+          cy.log(`Transaction mined, waiting for the deposit to be accepted..`)
           cy.get('h3').children('span').contains('00').should('not.exist')
         })
       })
