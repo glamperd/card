@@ -4,6 +4,7 @@ set -e
 # Thanks to https://stackoverflow.com/a/5180310 for getting staged changes
 version="`git show :package.json | grep '"version":' | awk -F '"' '{print $4}'`"
 registry="https://index.docker.io/v1/repositories/connextproject"
+image="daicard"
 wegood="yes"
 branch="`git symbolic-ref HEAD | sed -e 's|.*/\(.*\)|\1|'`"
 
@@ -13,16 +14,11 @@ fi
 
 echo "Pre-push hook activated for $branch branch (staged package.json version: $version)"
 
-echo
-for image in database hub proxy
-do
-  # Thanks to https://stackoverflow.com/a/39731444 for url to query
-  if curl -sflL "$registry/indra_$image/tags/$version" > /dev/null
-  then echo "connextproject/$image:$version already exists on docker hub" && wegood="no"
-  else echo "connextproject/$image:$version does not exist on docker hub yet"
-  fi
-done
-echo
+# Thanks to https://stackoverflow.com/a/39731444 for url to query
+if curl -sflL "$registry/indra_$image/tags/$version" > /dev/null
+then echo "connextproject/$image:$version already exists on docker hub" && wegood="no"
+else echo "connextproject/$image:$version does not exist on docker hub yet"
+fi
 
 if [[ "$wegood" == "no" ]]
 then
