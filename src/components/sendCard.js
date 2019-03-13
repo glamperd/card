@@ -313,7 +313,7 @@ class PayCard extends Component {
     if (payment.amountToken.gt(new BN(channelState.balanceTokenUser))) {
       balanceError = "Insufficient balance in channel";
     }
-    if (payment.amountToken.isZero()) {
+    if (payment.amountToken.isZero() || payment.amountToken.isNeg()) {
       balanceError = "Please enter a payment amount above 0";
     }
 
@@ -667,7 +667,7 @@ class PayCard extends Component {
                 className={classes.button}
                 variant="contained"
                 size="large"
-                onClick={() => this.linkHandler()}
+                onClick={this.linkHandler}
               >
                 Link
                 <LinkIcon style={{ marginLeft: "5px" }} />
@@ -679,7 +679,7 @@ class PayCard extends Component {
                 className={classes.button}
                 variant="contained"
                 size="large"
-                onClick={() => this.paymentHandler()}
+                onClick={this.paymentHandler}
               >
                 Send
                 <SendIcon style={{ marginLeft: "5px" }} />
