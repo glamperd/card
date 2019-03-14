@@ -79,10 +79,22 @@ class ReceiveCard extends Component {
   updatePaymentHandler = async value => {
     // appears to be just value
     const token = value ? value : "0"
+    // protect against precision errors
+    const decimal = (
+      value.startsWith('.') ? value.substr(1) : value.split('.')[1]
+    )
+
+    let error = null
+    let tokenVal = value
+    if (decimal && decimal.length > 18) {
+      tokenVal = value.startsWith('.') ? value.substr(0, 19) : value.split('.')[0] + '.' + decimal.substr(0, 18)
+      error = `Value too precise! Using ${tokenVal}`
+    }    
     this.setState({
       qrUrl: this.generateQrUrl(value),
-      amountToken: Web3.utils.toWei(token, "ether"),
+      amountToken: Web3.utils.toWei(tokenVal, "ether"),
       displayValue: value,
+      error,
     });
   };
 
@@ -151,7 +163,7 @@ class ReceiveCard extends Component {
           {/* <CopyIcon style={{marginBottom: "2px"}}/> */}
           <CopyToClipboard
             onCopy={this.handleCopy}
-            text={error == null && amountToken != null ? qrUrl : ''}
+            text={error == null || error.indexOf('too precise') != -1 && amountToken != null ? qrUrl : ''}
           >
             <Button variant="outlined" fullWidth onClick={this.validatePayment}>
               <Typography noWrap variant="body1">
