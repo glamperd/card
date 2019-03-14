@@ -51,11 +51,11 @@ deep-clean: clean
 purge: deep-clean
 	rm -rf node_modules/*
 
-push: proxy-prod
+push: prod
 	docker tag daicard:latest $(prod_image):latest
 	docker push $(prod_image):latest
 
-push-live:
+push-live: prod
 	docker tag daicard:latest $(prod_image):$(version)
 	docker push $(prod_image):$(version)
 
