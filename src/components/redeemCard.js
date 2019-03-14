@@ -367,7 +367,7 @@ class RedeemCard extends Component {
             <DoneIcon className={classes.icon} />
           )}
           <Typography noWrap variant="body1" style={{marginBottom: "1.5em"}} color="primary">
-            {status == RedeemPaymentStates.IsSender && <span>{"Make sure to copy this link!"}</span>}
+            {status === RedeemPaymentStates.IsSender && <span>{"Make sure to copy this link!"}</span>}
           </Typography>
           <Typography noWrap variant="body1" style={{marginBottom: "1.5em"}}>
             {status === RedeemPaymentStates.Redeeming && requestedCollateral && <span>{"Setting up your card too. This will take 30-40s."}</span>}

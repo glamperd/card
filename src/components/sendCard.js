@@ -219,12 +219,12 @@ class PayCard extends Component {
         },
         payments: [
           {
-            recipient: this.props.scanArgs.recipient
-              ? this.props.scanArgs.recipient
+            recipient: props.scanArgs.recipient
+              ? props.scanArgs.recipient
               : "",
             amount: {
-              amountToken: this.props.scanArgs.amount
-                ? Web3.utils.toWei(this.props.scanArgs.amount)
+              amountToken: props.scanArgs.amount
+                ? Web3.utils.toWei(props.scanArgs.amount)
                 : "0",
               amountWei: "0"
             },
@@ -236,7 +236,7 @@ class PayCard extends Component {
       balanceError: null,
       paymentState: PaymentStates.None,
       scan: false,
-      displayVal: this.props.scanArgs.amount ? this.props.scanArgs.amount : "0",
+      displayVal: props.scanArgs.amount ? props.scanArgs.amount : "0",
       showReceipt: false
     };
   }
@@ -667,7 +667,7 @@ class PayCard extends Component {
                 className={classes.button}
                 variant="contained"
                 size="large"
-                onClick={this.linkHandler}
+                onClick={() => {this.linkHandler()}}
               >
                 Link
                 <LinkIcon style={{ marginLeft: "5px" }} />
@@ -679,7 +679,7 @@ class PayCard extends Component {
                 className={classes.button}
                 variant="contained"
                 size="large"
-                onClick={this.paymentHandler}
+                onClick={() => {this.paymentHandler()}}
               >
                 Send
                 <SendIcon style={{ marginLeft: "5px" }} />

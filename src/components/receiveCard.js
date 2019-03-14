@@ -53,6 +53,7 @@ class ReceiveCard extends Component {
   validatePayment = () => {
     const { amountToken, } = this.state
     const { connextState, maxTokenDeposit, } = this.props
+    let error = null
     this.setState({ error: null })
     if (!amountToken) {
       error = "Please enter a valid amount"
@@ -60,7 +61,6 @@ class ReceiveCard extends Component {
       return error
     }
     const tokenBig = new BN(amountToken)
-    let error = null
     const amount = {
       amountWei: '0',
       amountToken: maxTokenDeposit,
