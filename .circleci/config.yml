@@ -69,9 +69,6 @@ workflows:
           requires:
             - test
       - deploy-staging:
-          filters:
-            branches:
-              ignore: master
           requires:
             - push-images
       - deploy-live:
