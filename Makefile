@@ -32,7 +32,6 @@ default: hooks dev
 all: hooks dev prod proxy-test
 dev: node-modules proxy
 prod: proxy-prod
-hooks: pre-push-hook
 
 start: dev
 	bash ops/deploy.dev.sh
@@ -122,9 +121,9 @@ dev-env: .env ops/dev.env
 	cp -f ops/dev.env .env
 	$(log_finish) && touch $(flags)/$@
 
-pre-push-hook: ops/pre-push.sh
+hooks: ops/pre-push.sh
 	$(log_start)
-	rm -f .git/hooks/pre-push
+	rm -f .git/hooks/*
 	cp ops/pre-push.sh .git/hooks/pre-push
 	chmod +x .git/hooks/pre-push
 	$(log_finish) && touch build/$@
