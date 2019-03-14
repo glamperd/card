@@ -8,8 +8,9 @@ import Typography from "@material-ui/core/Typography";
 import Tooltip from "@material-ui/core/Tooltip";
 import QRGenerate from "./qrGenerate";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import { BigNumber } from "ethers/utils";
+import BN from "bn.js";
 import { getAmountInUSD } from "../utils/currencyFormatting";
+import interval from "interval-promise";
 
 const queryString = require("query-string");
 
@@ -24,42 +25,162 @@ const RedeemPaymentStates = {
   IsSender: 0,
   Redeeming: 1,
   PaymentAlreadyRedeemed: 2,
-  Timeout: 3,
-  Success: 4,
+  Collateralizing: 3,
+  Timeout: 4,
+  SecretError: 5,
+  OtherError: 6,
+  Success: 7,
 }
 
-function getStatus (state) {
-  const {
-    isConfirm,
-    purchaseId,
-    sendError,
-    previouslyRedeemed,
-  } = state;
+function getTitle (redeemPaymentState) {
+  let title
+  switch (redeemPaymentState) {
+    case RedeemPaymentStates.IsSender:
+      title = "Scan to Redeem"
+      break
+    case RedeemPaymentStates.PaymentAlreadyRedeemed:
+    case RedeemPaymentStates.Timeout:
+    case RedeemPaymentStates.SecretError:
+    case RedeemPaymentStates.OtherError:
+      title = "Uh Oh! Payment Failed"
+      break
+    case RedeemPaymentStates.Success:
+      title = "Payment Redeemed!"
+      break
+    case RedeemPaymentStates.Redeeming:
+    case RedeemPaymentStates.Collateralizing:
+    default:
+      title = "Redeeming Payment..."
+      break
+  }
+  return title
+}
 
-  const failed = purchaseId && purchaseId === 'failed'
-  let status
-  if (isConfirm) {
-    // sender of redeemed payment
-    status = RedeemPaymentStates.IsSender
-  } else if (failed && previouslyRedeemed) {
-    status = RedeemPaymentStates.PaymentAlreadyRedeemed
-  } else if (failed && !previouslyRedeemed) {
-    status = RedeemPaymentStates.Timeout
-  } else if (!isConfirm && !purchaseId) {
-    // still loading, purchase id assigned at failure
-    status = RedeemPaymentStates.Redeeming
-  } else if (!failed && purchaseId && !sendError) {
-    status = RedeemPaymentStates.Success
-  } else {
-    // default to error if unknown occurs
-    status = RedeemPaymentStates.Timeout
+const RedeemConfirmationDialog = props => (
+  <Dialog
+    open={props.open}
+    onBackdropClick={() =>
+      this.setState({ showReceipt: false, sendError: false })
+    }
+    fullWidth
+    style={{
+      justifyContent: "center",
+      alignItems: "center",
+      textAlign: "center",
+    }}
+  >
+    <Grid
+      container
+      style={{
+        backgroundColor: "#FFF",
+        paddingTop: "10%",
+        paddingBottom: "10%"
+      }}
+      justify="center"
+    >
+      {RedeemPaymentDialogContent(
+        props.redeemPaymentState,
+        props.amount,
+        props.connextState,
+      )}
+      {props.redeemPaymentState === RedeemPaymentStates.Collateralizing ? (
+        <></>
+      ) : (
+        <DialogActions>
+          <Button
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424",
+              marginLeft: "5%"
+            }}
+            variant="outlined"
+            size="medium"
+            onClick={() => props.history.push("/")}
+          >
+            Home
+          </Button>
+        </DialogActions>
+      )}
+    </Grid>
+  </Dialog>
+);
+
+function RedeemCardContent(redeemPaymentState, url, classes) {
+  if (!classes) {
+    return
+  }
+  let senderInfo, icon, warnings
+  switch(redeemPaymentState) {
+    case RedeemPaymentStates.IsSender:
+      senderInfo = (
+        <Grid container>
+          <Grid item xs={12} style={{paddingBottom: "10%"}}>
+            <QRGenerate value={url} />
+          </Grid>
+          <Grid item xs={12}>
+            <CopyToClipboard text={url}>
+              <Button variant="outlined" fullWidth>
+                <Typography noWrap variant="body1">
+                  <Tooltip
+                    disableFocusListener
+                    disableTouchListener
+                    title="Click to Copy"
+                  >
+                    <span>{url}</span>
+                  </Tooltip>
+                </Typography>
+              </Button>
+            </CopyToClipboard>
+          </Grid>
+        </Grid>
+      )
+      warnings = "Make sure to copy this link!"
+      break
+    case RedeemPaymentStates.PaymentAlreadyRedeemed:
+      icon = (<ErrorIcon className={classes.icon} />)
+      warnings = "Payment has already been redeemed."
+      break
+    case RedeemPaymentStates.Timeout:
+      icon = (<ErrorIcon className={classes.icon} />)
+      warnings = "Payment timed out"
+      break
+    case RedeemPaymentStates.SecretError:
+      icon = (<ErrorIcon className={classes.icon} />)
+      warnings = "Are you sure your secret is right?"
+      break
+    case RedeemPaymentStates.OtherError:
+      icon = (<ErrorIcon className={classes.icon} />)
+      warnings = "Something went wrong"
+      break
+    case RedeemPaymentStates.Collateralizing:
+      warnings = "Setting up your card too. This will take 30-40s."
+    case RedeemPaymentStates.Success:
+      icon = (<DoneIcon className={classes.icon} />)
+      break
+    case RedeemPaymentStates.Redeeming:
+    default:
+      icon = (<CircularProgress className={classes.icon} />)
+      break
   }
 
-  return status
+  return (
+    <Grid container>
+      <Grid item xs={12}>{senderInfo}</Grid>
+      <Grid item xs={12} style={{
+          paddingTop: "10%",
+        }}>{icon}</Grid>
+      <Grid item xs={12}>
+        <Typography noWrap variant="body1" style={{marginBottom: "1.5em"}} color="primary">
+          <span>{warnings}</span>
+        </Typography>
+      </Grid>
+    </Grid>
+  )
 }
 
-function RedeemPaymentDialogContent(status, amount, connextState) {
-  switch (status) {
+function RedeemPaymentDialogContent(redeemPaymentState, amount, connextState) {
+  switch (redeemPaymentState) {
     case RedeemPaymentStates.Timeout:
       return (
       <Grid>
@@ -95,22 +216,22 @@ function RedeemPaymentDialogContent(status, amount, connextState) {
         </Grid>
       )
     case RedeemPaymentStates.Success:
-        return (
-          <Grid>
-            <DialogTitle disableTypography>
-              <Typography variant="h5" style={{ color: "#009247" }}>
-                Redeemed Successfully!
-              </Typography>
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText variant="body1" style={{ color: "#0F1012" }}>
-                Amount: {getAmountInUSD(amount, connextState)}
-              </DialogContentText>
-            </DialogContent>
-          </Grid>
-        )
+      return (
+        <Grid>
+          <DialogTitle disableTypography>
+            <Typography variant="h5" style={{ color: "#009247" }}>
+              Redeemed Successfully!
+            </Typography>
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText variant="body1" style={{ color: "#0F1012" }}>
+              Amount: {getAmountInUSD(amount, connextState)}
+            </DialogContentText>
+          </DialogContent>
+        </Grid>
+      )
     default:
-          return
+      return
   }
 }
 
@@ -120,13 +241,10 @@ class RedeemCard extends Component {
 
     this.state = {
       secret: null,
-      isConfirm: false,
+      redeemPaymentState: RedeemPaymentStates.Redeeming,
       purchaseId: null,
-      sendError: false,
       showReceipt: false,
-      previouslyRedeemed: false,
       amount: null,
-      requestedCollateral: false
     };
   }
 
@@ -145,15 +263,32 @@ class RedeemCard extends Component {
     // set state vars if they exist
     if (location.state && location.state.isConfirm) {
       // TODO: test what happens if not routed with isConfirm
-      this.setState({ isConfirm: location.state.isConfirm });
+      this.setState({ 
+        redeemPaymentState: RedeemPaymentStates.IsSender,
+        showReceipt: false,
+      });
+      return;
     }
 
-    // set time component mounted
-    this.setState({ redeemStarted: Date.now() });
+    // set status to redeeming on mount if not sender
+    this.setState({ redeemPaymentState: RedeemPaymentStates.Redeeming });
 
-    setInterval(async () => {
-      await this.redeemPayment();
-    }, 2000);
+    this.redeemPoller()
+  }
+
+  async redeemPoller() {
+    let { redeemPaymentState } = this.state
+    await interval(
+      async (iteration, stop) => {
+        const processing = redeemPaymentState == RedeemPaymentStates.Redeeming || redeemPaymentState == RedeemPaymentStates.Collateralizing
+        if (redeemPaymentState && !processing) {
+          stop()
+        }
+        await this.redeemPayment()
+        redeemPaymentState = this.state.redeemPaymentState
+      },
+      1000,
+    )
   }
 
   generateQrUrl(secret, amount) {
@@ -166,65 +301,85 @@ class RedeemCard extends Component {
     return url;
   }
 
-  async redeemPayment() {
+  async collateralizeChannel() {
     const {
-      secret,
-      isConfirm,
-      purchaseId,
-      redeemStarted,
       amount,
-      previouslyRedeemed
+      redeemPaymentState,
     } = this.state;
     const { connext, channelState, connextState } = this.props;
     if (!connext || !channelState || !connextState) {
       return;
     }
 
+    // only proceed if status is collateralizing
+    if (redeemPaymentState != RedeemPaymentStates.Collateralizing) {
+      console.log("Incorrect payment state, expected Collateralizing, got", RedeemPaymentStates[redeemPaymentState]);
+      this.setState({ redeemPaymentState: RedeemPaymentStates.OtherError })
+      return;
+    }
+
+    let hasCollateral = false
+    await interval(
+      async (iteration, stop) => {
+        // check if the channel has sufficient collateral
+        // if you are awaiting a collateral request, return
+        if (connextState.runtime.awaitingOnchainTransaction) {
+          return
+        }
+        // eval channel collateral
+        hasCollateral = new BN(channelState.balanceTokenHub).gte(
+          new BN(amount.amountToken)
+        )
+
+        if (hasCollateral || iteration > 30) {
+          stop();
+        }
+      },
+      5000,
+      { iterations: 30 }
+    );
+
+    // still needs collateral to facilitate payment, exit
+    if (!hasCollateral) {
+      this.setState({
+        showReceipt: true,
+        redeemPaymentStates: RedeemPaymentStates.Timeout,
+      });
+    }
+
+    this.setState({
+      showReceipt: true,
+      redeemPaymentStates: RedeemPaymentStates.Redeeming,
+    });
+  }
+
+  async redeemPayment() {
+    const {
+      secret,
+      purchaseId,
+      amount,
+      redeemPaymentState,
+    } = this.state;
+    const { connext, channelState, connextState } = this.props;
+    if (!connext || !channelState || !connextState) {
+      return;
+    }
+
+    // only proceed if status is redeeming
+    if (redeemPaymentState != RedeemPaymentStates.Redeeming) {
+      console.log("Incorrect payment state, expected Redeeming, got", Object.keys(RedeemPaymentStates)[redeemPaymentState]);
+      this.setState({ 
+        showReceipt: true,
+      })
+      return;
+    }
+
     if (!secret) {
       console.log("No secret detected, cannot redeem payment.");
-      return;
-    }
-
-    // make sure you don't update the timer on a linked payment confirmation
-    if (isConfirm) {
-      return;
-    }
-
-    if (purchaseId) {
-      return;
-    }
-
-    // return if the payment has already been redeemed
-    if (previouslyRedeemed) {
-      this.setState({
-        purchaseId: "failed",
-        sendError: true,
-        showReceipt: true
-      });
-      return;
-    }
-
-    // check if the time has already elapsed based on time mounted
-    if (Date.now() - redeemStarted > 300 * 1000) {
-      // set the purchase to failed, show send error and receipt
-      this.setState({
-        purchaseId: "failed",
-        sendError: true,
-        showReceipt: true
-      });
-      return;
-    }
-    // check if the channel has collateral, otherwise display loading
-    if (
-      new BigNumber(channelState.balanceTokenHub).lt(
-        new BigNumber(amount.amountToken)
-      ) &&
-      !connextState.runtime.awaitingOnChainTransaction
-    ) {
-      // channel does not have collateral
-      await connext.requestCollateral();
-      this.setState({requestedCollateral: true})
-      // if you already requested collateral, return
+      this.setState({ 
+        redeemPaymentState: RedeemPaymentStates.SecretError,
+        showReceipt: true,
+      })
       return;
     }
 
@@ -235,20 +390,45 @@ class RedeemCard extends Component {
         // make sure hub isnt silently failing by returning null purchase id
         // as it processes collateral
         if (!updated.purchaseId || !updated.amount) {
+          // allows for retry logic
+          this.setState({ redeemPaymentState: RedeemPaymentStates.Redeeming })
           return;
         }
 
         this.setState({
           purchaseId: updated.purchaseId,
           amount: updated.amount,
-          showReceipt: true
+          showReceipt: true,
+          redeemPaymentState: RedeemPaymentStates.Success
         });
       }
     } catch (e) {
+      // known potential failures: not collateralized, or
+      // already redeemed
       if (e.message.indexOf("Payment has been redeemed") !== -1) {
-        this.setState({ previouslyRedeemed: true });
+        this.setState({ 
+          // red: true, 
+          redeemPaymentState: RedeemPaymentStates.PaymentAlreadyRedeemed,
+          showReceipt: true,
+        });
         return;
       }
+
+      // check if the channel has collateral, otherwise display loading
+      if (
+        new BN(channelState.balanceTokenHub).lt(
+          new BN(amount.amountToken))
+        ) {
+        // channel does not have collateral
+        this.setState({ redeemPaymentState: RedeemPaymentStates.Collateralizing })
+        await this.collateralizeChannel();
+        return;
+      }
+
+      this.setState({ 
+        redeemPaymentState: RedeemPaymentStates.OtherError,
+        showReceipt: true,
+      })
     }
   }
 
@@ -257,16 +437,12 @@ class RedeemCard extends Component {
       secret,
       showReceipt,
       amount,
-      requestedCollateral
+      redeemPaymentState,
     } = this.state;
 
-    const { classes, connextState } = this.props;
+    const { classes, connextState, history } = this.props;
     const url = this.generateQrUrl(secret, amount);
 
-    const status = getStatus(this.state)
-    // if you are not the sender, AND the purchase ID is not set
-    // render a loading sign, then a check mark once the purchaseID
-    // is set in the state
     return (
       <Grid>
       <Grid
@@ -281,98 +457,28 @@ class RedeemCard extends Component {
           justifyContent: "center",
         }}
       >
-      <Dialog
-          open={showReceipt && status !== RedeemPaymentStates.IsSender}
-          onBackdropClick={() =>
-            this.setState({ showReceipt: false, sendError: false })
-          }
-          fullWidth
-          style={{
-              justify: "center",
-              alignItems: "center",
-              textAlign: "center",
-              margin: "auto",
-            }}
-          className={classes.center}
-        >
-          <Grid
-            container
-            style={{
-              backgroundColor: "#FFF",
-              paddingTop: "10%",
-              paddingBottom: "10%"
-            }}
-            justify="center"
-          >
-            {RedeemPaymentDialogContent(status, amount, connextState)}
-            <DialogActions>
-              <Button
-                style={{
-                  background: "#FFF",
-                  border: "1px solid #F22424",
-                  color: "#F22424",
-                }}
-                variant="outlined"
-                size="small"
-                onClick={() => this.props.history.push("/")}
-              >
-                Home
-              </Button>
-            </DialogActions>
-          </Grid>
-        </Dialog>
+        <Grid item xs={12}>
+          <RedeemConfirmationDialog
+            open={showReceipt}
+            amount={amount}
+            redeemPaymentState={redeemPaymentState}
+            history={history}
+            connextState={connextState}
+          />
+        </Grid>
       
         <Grid item xs={12}>
           <ReceiveIcon className={classes.icon} />
         </Grid>
+
         <Grid item xs={12}>
           <Typography noWrap variant="h5">
-            {status === RedeemPaymentStates.IsSender && <span>{"Scan to Redeem"}</span>}
-            {(status === RedeemPaymentStates.Timeout || status === RedeemPaymentStates.PaymentAlreadyRedeemed) && <span>{"Uh Oh! Payment Failed"}</span>}
-            {status === RedeemPaymentStates.Success && (
-              <span>{"Payment Redeemed!"}</span>
-            )}
-            {status === RedeemPaymentStates.Redeeming && <span>{"Redeeming Payment..."}</span>}
+            <span>{getTitle(redeemPaymentState)}</span>
           </Typography>
         </Grid>
+
         <Grid item xs={12}>
-          {status === RedeemPaymentStates.IsSender && <QRGenerate value={url} />}
-        </Grid>
-        {status === RedeemPaymentStates.IsSender && (
-          <Grid item xs={12}>
-            <CopyToClipboard text={url}>
-              <Button variant="outlined" fullWidth>
-                <Typography noWrap variant="body1">
-                  <Tooltip
-                    disableFocusListener
-                    disableTouchListener
-                    title="Click to Copy"
-                  >
-                    <span>{url}</span>
-                  </Tooltip>
-                </Typography>
-              </Button>
-            </CopyToClipboard>
-          </Grid>
-        )}
-        <Grid
-          item
-          xs={12}
-          style={{
-            paddingTop: "10%",
-          }}
-        >
-          {(status === RedeemPaymentStates.Timeout || status === RedeemPaymentStates.PaymentAlreadyRedeemed) && <ErrorIcon className={classes.icon} />}
-          {status === RedeemPaymentStates.Success && (
-            <DoneIcon className={classes.icon} />
-          )}
-          <Typography noWrap variant="body1" style={{marginBottom: "1.5em"}} color="primary">
-            {status === RedeemPaymentStates.IsSender && <span>{"Make sure to copy this link!"}</span>}
-          </Typography>
-          <Typography noWrap variant="body1" style={{marginBottom: "1.5em"}}>
-            {status === RedeemPaymentStates.Redeeming && requestedCollateral && <span>{"Setting up your card too. This will take 30-40s."}</span>}
-          </Typography>
-          {status === RedeemPaymentStates.Redeeming && <CircularProgress />}
+          {RedeemCardContent(redeemPaymentState, url, classes)}
         </Grid>
 
         <Grid item xs={12}>
@@ -382,6 +488,7 @@ class RedeemCard extends Component {
               background: "#FFF",
               border: "1px solid #F22424",
               color: "#F22424",
+              margin: "1.5em"
             }}
             size="medium"
             onClick={() => this.props.history.push("/")}
