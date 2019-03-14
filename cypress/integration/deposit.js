@@ -10,6 +10,7 @@ describe('Deposit', () => {
     cy.get('button').contains(/next/i).click()
     cy.get('button').contains(/next/i).click()
     cy.get('button').contains(/next/i).click()
+    cy.get('button').contains(/next/i).click()
     cy.get('button').contains(/got it/i).click()
     // wait until the startup modal closes
     cy.get('span#message-id').should('not.exist')
