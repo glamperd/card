@@ -501,7 +501,7 @@ class RedeemCard extends Component {
               background: "#FFF",
               border: "1px solid #F22424",
               color: "#F22424",
-              margin: "1.5em"
+              marginTop: "10%"
             }}
             size="medium"
             onClick={() => this.props.history.push("/")}
