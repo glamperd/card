@@ -1,4 +1,4 @@
-import { withStyles, Button, CircularProgress, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, Icon } from "@material-ui/core";
+import { withStyles, Button, CircularProgress, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, Icon, } from "@material-ui/core";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
 import DoneIcon from "@material-ui/icons/Done";
 import ErrorIcon from "@material-ui/icons/ErrorOutline";
@@ -12,6 +12,7 @@ import BN from "bn.js";
 import Web3 from "web3";
 import { getAmountInUSD } from "../utils/currencyFormatting";
 import interval from "interval-promise";
+import Snackbar from "../components/snackBar";
 
 const queryString = require("query-string");
 
@@ -115,7 +116,8 @@ const RedeemConfirmationDialog = props => (
   </Dialog>
 );
 
-function RedeemCardContent(redeemPaymentState, url, classes) {
+const RedeemCardContent = (props) => {
+  const {redeemPaymentState, url, classes, validateUrl, onCopy} = props
   if (!classes) {
     return
   }
@@ -124,11 +126,11 @@ function RedeemCardContent(redeemPaymentState, url, classes) {
     case RedeemPaymentStates.IsSender:
       senderInfo = (
         <Grid container>
-          <Grid item xs={12} style={{paddingBottom: "10%"}}>
+          <Grid item xs={12} style={{paddingBottom: "5%"}}>
             <QRGenerate value={url} />
           </Grid>
           <Grid item xs={12}>
-            <CopyToClipboard text={url}>
+            <CopyToClipboard text={url} onCopy={onCopy}>
               <Button variant="outlined" fullWidth>
                 <Typography noWrap variant="body1">
                   <Tooltip
@@ -144,26 +146,27 @@ function RedeemCardContent(redeemPaymentState, url, classes) {
           </Grid>
         </Grid>
       )
-      warnings = "Make sure to copy this link!"
+      const urlErrs = validateUrl()
+      warnings = ["Make sure to copy this link!"].concat(urlErrs)
       break
     case RedeemPaymentStates.PaymentAlreadyRedeemed:
       icon = (<ErrorIcon className={classes.icon} />)
-      warnings = "Payment has already been redeemed."
+      warnings = ["Payment has already been redeemed."]
       break
     case RedeemPaymentStates.Timeout:
       icon = (<ErrorIcon className={classes.icon} />)
-      warnings = "Payment timed out"
+      warnings = ["Payment timed out"]
       break
     case RedeemPaymentStates.SecretError:
       icon = (<ErrorIcon className={classes.icon} />)
-      warnings = "Are you sure your secret is right?"
+      warnings = ["Are you sure your secret is right?"]
       break
     case RedeemPaymentStates.OtherError:
       icon = (<ErrorIcon className={classes.icon} />)
-      warnings = "Something went wrong"
+      warnings = ["Something went wrong"]
       break
     case RedeemPaymentStates.Collateralizing:
-      warnings = "Setting up your card too. This will take 30-40s."
+      warnings = ["Setting up your card too. This will take 30-40s."]
     case RedeemPaymentStates.Success:
       icon = (<DoneIcon className={classes.icon} />)
       break
@@ -173,18 +176,26 @@ function RedeemCardContent(redeemPaymentState, url, classes) {
       break
   }
 
+  const finalWarnings = warnings ? warnings.map(w => {
+    return (
+      <Typography variant="body1" style={{margin: "1em"}}>
+        <span>{w}</span>
+      </Typography>
+    )
+  }) : warnings
+
   return (
+    <div>
     <Grid container>
       <Grid item xs={12}>{senderInfo}</Grid>
       <Grid item xs={12} color="primary" style={{
           paddingTop: "10%",
         }}>{icon}</Grid>
       <Grid item xs={12}>
-        <Typography variant="body1" style={{margin: "1.5em"}}>
-          <span>{warnings}</span>
-        </Typography>
+        {finalWarnings}
       </Grid>
     </Grid>
+    </div>
   )
 }
 
@@ -254,6 +265,7 @@ class RedeemCard extends Component {
       purchaseId: null,
       showReceipt: false,
       amount: null,
+      copied: false,
     };
   }
 
@@ -265,7 +277,7 @@ class RedeemCard extends Component {
       secret: query.secret,
       amount: {
         amountToken: Web3.utils.toWei(query.amountToken, "ether"),
-        amountWei: query.amountWei
+        amountWei: "0" // TODO: add wei
       }
     });
 
@@ -444,12 +456,57 @@ class RedeemCard extends Component {
     this.setState({ showReceipt: false })
   }
 
+  closeSnackBar = () => {
+    this.setState({ copied: false })
+  }
+
+  validateUrl = () => {
+    // called by the sender of the redeemed payment as
+    // they click to copy. should display a warning text
+    // if the secret or if the amount token is not valid
+    // or does not correspond to the generated URL
+    const { secret, amount, copied } = this.state
+    const { connextState } = this.props
+    let errs = []
+    // state not yet set
+    if (!connextState || !secret || !amount) {
+      return errs
+    }
+    // valid secret
+    if (!Web3.utils.isHex(secret)) {
+      errs.push("Secret copied is invalid")
+    }
+    // valid amount
+    if (!amount.amountToken || amount.amountWei != "0") {
+      console.log("Invalid amount:", amount)
+      errs.push("Invalid amount")
+      return errs
+    }
+    const token = new BN(amount.amountToken)
+    if (token.isNeg()) {
+      errs.push("Copied token balance is negative")
+    }
+    // print amount for easy confirmation
+    // TODO: display more helpful messages here
+    if (copied) {
+      errs.push(`Amount: ${getAmountInUSD(amount, connextState)}`)
+      errs.push(`Secret: ${secret.substr(0, 10)}...`)
+    }
+    
+    return errs
+  }
+
+  handleCopy = () => {
+    this.setState({ copied: true })
+  }
+
   render() {
     const {
       secret,
       showReceipt,
       amount,
       redeemPaymentState,
+      copied,
     } = this.state;
 
     const { classes, connextState, history } = this.props;
@@ -469,6 +526,13 @@ class RedeemCard extends Component {
           justifyContent: "center",
         }}
       >
+      <Snackbar
+          handleClick={this.closeSnackBar}
+          onClose={this.closeSnackBar}
+          open={copied}
+          text="Copied!"
+        />
+      <Grid container>
         <Grid item xs={12}>
           <RedeemConfirmationDialog
             open={showReceipt}
@@ -490,8 +554,14 @@ class RedeemCard extends Component {
           </Typography>
         </Grid>
 
-        <Grid item xs={12}>
-          {RedeemCardContent(redeemPaymentState, url, classes)}
+        <Grid item xs={12} style={{marginTop: "10%"}}>
+          <RedeemCardContent
+            url={url}
+            onCopy={this.handleCopy}
+            classes={classes}
+            validateUrl={this.validateUrl}
+            redeemPaymentState={redeemPaymentState}
+          />
         </Grid>
 
         <Grid item xs={12}>
@@ -509,6 +579,7 @@ class RedeemCard extends Component {
             Back
           </Button>
         </Grid>
+       </Grid>
        </Grid>
        </Grid>
     );
