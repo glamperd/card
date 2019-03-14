@@ -29,18 +29,19 @@ fi
 echo "Deploying to server at: $prod_server"
 echo "Before yolo deploying the card, let's go through a small checklist. Did you test all of the following flows:"
 
-makePrompt "User depositing eth?"
-makePrompt "User getting refunded eth deposit to browser wallet?"
-makePrompt "User depositing below the minimum eth?"
-makePrompt "User depositing tokens?"
-makePrompt "User making payments to collateralized and uncollateralized channels?"
-makePrompt "User redeeming payments?" 
-makePrompt "User receiving payments? (collateralized? near maximum? above maximum collateral? multiple?)"
-makePrompt "User withdrawing?"
-makePrompt "Did you try faulty inputs in these flows? (large payments, non-addresses, etc)"
-makePrompt "Did you test this on Brave, Firefox, Chrome, and Safari? Or at least more than one of them?"
-makePrompt "If these are big changes, did more than 1 person perform these tests?"
+echo;
+makePrompt "Have you run the e2e tests yet? Hint, try running: make start && make start-test (you'll need to run npm start in Indra first)"
+echo && sleep 3 # Make sure people take a sec to read the above message
 
+if [[ "$MODE" == "prod" ]]
+then
+  echo;
+  makePrompt "You're about to deploy to production!? Have you deployed to staging yet?"
+  makePrompt "After deploying to staging, have you manually tested the basic user flow (deposit, pay, withdraw)?"
+  makePrompt "If these are big changes, did more than 1 person perform these manual tests?"
+fi
+
+makePrompt "Do you realize that the yolo deploy script may be deleted soon and the CI pipeline will be the only way to deploy?"
 echo
 makePrompt "Are you sure you want to deploy without any additional testing?"
 
