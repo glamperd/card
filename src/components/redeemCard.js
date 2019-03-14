@@ -1,4 +1,4 @@
-import { withStyles, Button, CircularProgress, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions } from "@material-ui/core";
+import { withStyles, Button, CircularProgress, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, Icon } from "@material-ui/core";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
 import DoneIcon from "@material-ui/icons/Done";
 import ErrorIcon from "@material-ui/icons/ErrorOutline";
@@ -60,7 +60,9 @@ const RedeemConfirmationDialog = props => (
   <Dialog
     open={props.open}
     onBackdropClick={() =>
-      this.setState({ showReceipt: false, sendError: false })
+      props.redeemPaymentState == RedeemPaymentStates.Collateralizing
+        ? null
+        : props.closeModal()
     }
     fullWidth
     style={{
@@ -71,10 +73,12 @@ const RedeemConfirmationDialog = props => (
   >
     <Grid
       container
+      spacing={16}
+      direction="column"
       style={{
+        textAlign: "center",
+        justifyContent: "center",
         backgroundColor: "#FFF",
-        paddingTop: "10%",
-        paddingBottom: "10%"
       }}
       justify="center"
     >
@@ -86,13 +90,17 @@ const RedeemConfirmationDialog = props => (
       {props.redeemPaymentState === RedeemPaymentStates.Collateralizing ? (
         <></>
       ) : (
-        <DialogActions>
+        <DialogActions 
+          style={{
+            textAlign: "center",
+            justifyContent: "center",
+          }}
+        >
           <Button
             style={{
-              background: "#FFF",
               border: "1px solid #F22424",
               color: "#F22424",
-              marginLeft: "5%"
+              marginBottom: "1.5em"
             }}
             variant="outlined"
             size="medium"
@@ -167,11 +175,11 @@ function RedeemCardContent(redeemPaymentState, url, classes) {
   return (
     <Grid container>
       <Grid item xs={12}>{senderInfo}</Grid>
-      <Grid item xs={12} style={{
+      <Grid item xs={12} color="primary" style={{
           paddingTop: "10%",
         }}>{icon}</Grid>
       <Grid item xs={12}>
-        <Typography noWrap variant="body1" style={{marginBottom: "1.5em"}} color="primary">
+        <Typography variant="body1" style={{margin: "1.5em"}}>
           <span>{warnings}</span>
         </Typography>
       </Grid>
@@ -432,6 +440,10 @@ class RedeemCard extends Component {
     }
   }
 
+  closeModal = () => {
+    this.setState({ showReceipt: false })
+  }
+
   render() {
     const {
       secret,
@@ -464,6 +476,7 @@ class RedeemCard extends Component {
             redeemPaymentState={redeemPaymentState}
             history={history}
             connextState={connextState}
+            closeModal={this.closeModal}
           />
         </Grid>
       
