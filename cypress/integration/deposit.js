@@ -1,12 +1,11 @@
 const eth = require('ethers')
 const provider = new eth.providers.JsonRpcProvider(Cypress.env('provider'))
 const wallet = eth.Wallet.fromMnemonic(Cypress.env('mnemonic')).connect(provider)
-const publicUrl = Cypress.env('publicUrl')
 
 describe('Deposit', () => {
   beforeEach(() => {
     // close intro modal
-    cy.visit(publicUrl)
+    cy.visit(Cypress.env('publicUrl'))
     cy.get('button').contains(/next/i).click()
     cy.get('button').contains(/next/i).click()
     cy.get('button').contains(/next/i).click()
@@ -24,12 +23,12 @@ describe('Deposit', () => {
 
   it('Accepts a deposit to displayed address', () => {
     cy.get('button').contains(/0[Xx]/).invoke('text').then(address => {
-      cy.get('button').contains("Back").click()
-      cy.log(`Sending 0.03 eth to ${address}`)
+      cy.log(`Sending 0.03 eth from ${wallet.address} to ${address}`)
       return wallet.sendTransaction({
         to: address,
         value: eth.utils.parseEther('0.03')
       }).then(tx => {
+        cy.get('button').contains("Back").click()
         cy.log(`Transaction sent, waiting for it to get mined..`)
         return wallet.provider.waitForTransaction(tx.hash).then(() => {
           cy.log(`Transaction mined, waiting for the deposit to be accepted..`)
@@ -37,6 +36,5 @@ describe('Deposit', () => {
         })
       })
     })
-
   })
 })

@@ -1,9 +1,9 @@
 {
   "ignoreTestFiles": "**/examples/**",
   "env": {
-    "publicUrl": "http://localhost",
     "mnemonic": "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-    "provider": "http://localhost:8545"
+    "provider": "/api/mainnet/eth",
+    "publicUrl": "http://localhost"
   },
   "defaultCommandTimeout": 60000,
   "viewportWidth": 600,
