@@ -34,8 +34,8 @@ jobs:
               git clone https://github.com/ConnextProject/card.git || true
               cd card
               git fetch
-              git reset --hard origin/$CIRCLE_BRANCH
-              export DOMAINNAME="$STAGING_URL
+              git reset --hard "origin/$CIRCLE_BRANCH"
+              export DAICARD_DOMAINNAME="$STAGING_URL
               bash ops/restart.sh prod
             EOF
 
@@ -44,13 +44,13 @@ jobs:
     steps:
       - run:
           command: |
-            ssh ubuntu@$STAGING_URL "bash -s" <<EOF
+            ssh ubuntu@$PRODUCTION_URL "bash -s" <<EOF
               git clone https://github.com/ConnextProject/card.git || true
               cd card
               git fetch
               git reset --hard "origin/$CIRCLE_BRANCH"
-              export DOMAINNAME="$PRODUCTION_URL"
-              export MODE="live"
+              export DAICARD_DOMAINNAME="$PRODUCTION_URL"
+              export DAICARD_MODE="live"
               bash ops/restart.sh prod
             EOF
 

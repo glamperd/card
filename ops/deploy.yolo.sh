@@ -63,4 +63,4 @@ echo;echo
 sleep 2 # Give the user one last chance to ctrl-c before we pull the trigger
 
 # Deploy!
-ssh -i $ssh_key $user@$prod_server "bash -c 'cd card && DOMAINNAME=$prod_server bash ops/restart.sh prod'"
+ssh -i $ssh_key $user@$prod_server "bash -c 'cd card && DAICARD_DOMAINNAME=$prod_server bash ops/restart.sh prod'"
