@@ -9,6 +9,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import QRGenerate from "./qrGenerate";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import BN from "bn.js";
+import Web3 from "web3";
 import { getAmountInUSD } from "../utils/currencyFormatting";
 import interval from "interval-promise";
 
@@ -263,7 +264,7 @@ class RedeemCard extends Component {
     this.setState({
       secret: query.secret,
       amount: {
-        amountToken: query.amountToken,
+        amountToken: Web3.utils.toWei(query.amountToken, "ether"),
         amountWei: query.amountWei
       }
     });
@@ -301,11 +302,10 @@ class RedeemCard extends Component {
 
   generateQrUrl(secret, amount) {
     const { publicUrl } = this.props;
+    // TODO: add wei
     const url = `${publicUrl}/redeem?secret=${
       secret ? secret : ""
-    }&amountToken=${amount ? amount.amountToken : "0"}&amountWei=${
-      amount ? amount.amountWei : "0"
-    }`;
+    }&amountToken=${amount ? Web3.utils.fromWei(amount.amountToken, "ether") : "0"}`;
     return url;
   }
 
