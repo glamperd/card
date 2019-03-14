@@ -71,15 +71,15 @@ const screens = (classes, minEth, minDai, maxEth, maxDai) => [
   {
     title: "Deposit Boundaries",
     message: `The card needs a minimum deposit of ${
-      minEth || "?.??"} eth ($${
+      minEth || "?.??"} eth (${
       minDai || "?.??"}) to cover the gas costs of getting setup. Cards only accept deposits of ${
-      maxEth || "?.??"} eth ($${
+      maxEth || "?.??"} eth (${
       maxDai || "?.??"}) or less, with any excess eth getting refunded.`
   },
   {
     title: "Depositing Tokens",
     message: `If you want to deposit dai directly, there are no deposit maximums enforced! Just make sure to send at least ${
-      minEth || "?.??"} eth ($${
+      minEth || "?.??"} eth (${
       minDai || "?.??"}) for gas to your new wallet.`
   }
 ];
