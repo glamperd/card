@@ -15,6 +15,7 @@ import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography, CircularProgress } from "@material-ui/core";
 import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
+import interval from "interval-promise";
 
 const styles = theme => ({
   icon: {
@@ -147,14 +148,18 @@ class CashOutCard extends Component {
   }
 
   poller = async () => {
-    var interval = setInterval(async () => {
-      const { runtime } = this.props;
-      if (!runtime.awaitingOnchainTransaction) {
-        this.setState({ withdrawing: false });
-        clearInterval(interval);
-        this.props.history.push("/");
-      }
-    }, 1000);
+    await interval(
+      async (iteration, stop) => {
+        const { runtime } = this.props
+
+        if (!runtime.awaitingOnchainTransaction) {
+          stop()
+        }
+      },
+      1000,
+    )
+    this.setState({ withdrawing: false })
+    this.props.history.push("/")
   };
 
   async withdrawalHandler(withdrawEth) {
@@ -342,7 +347,7 @@ class CashOutCard extends Component {
           >
             Back
           </Button>
-          <Grid item xs={12} paddingTop="10%">
+          <Grid item xs={12} style={{paddingTop:"10%"}}>
             {this.state.withdrawing && <CircularProgress color="primary" />}
           </Grid>
         </Grid>
