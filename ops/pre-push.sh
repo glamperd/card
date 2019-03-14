@@ -16,7 +16,7 @@ echo "Pre-push hook activated for $branch branch (package.json version: $version
 
 echo "Checking docker hub image tags..."
 # Thanks to https://stackoverflow.com/a/39731444 for url to query
-if curl -sflL "$registry/indra_$image/tags/$version" > /dev/null
+if curl -sflL "$registry/$image/tags/$version" > /dev/null
 then echo "connextproject/$image:$version already exists on docker hub" && wegood="no"
 else echo "connextproject/$image:$version does not exist on docker hub yet"
 fi
