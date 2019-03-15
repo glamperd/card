@@ -56,9 +56,9 @@ const styles = theme => ({
   paper: {
     height: "100%",
     width: "100%",
-    [theme.breakpoints.up('sm')]: {
-      width: "50vw",
-      height: "100vh",
+    [theme.breakpoints.up('md')]: {
+      width: "75vw",
+      width: "75vh",
     },
     zIndex: 1000,
     margin: "0px"
@@ -72,12 +72,10 @@ const styles = theme => ({
     backgroundColor: "#FFF",
     width: "100%",
     margin: "0px",
-    [theme.breakpoints.up('sm')]: {
-      height: "100%"
+    height: "100vh",
+    [theme.breakpoints.up('md')]: {
+      height: "75vh",
     },
-    [theme.breakpoints.down('sm')]: {
-      height: "100vh"
-    }
   },
   zIndex: 1000,
   grid: {}
