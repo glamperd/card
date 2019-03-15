@@ -262,13 +262,30 @@ class PayCard extends Component {
   }
 
   async updatePaymentHandler(value) {
+    // if there are more than 18 digits after the decimal, do not
+    // count them.
+    // throw a warning in the address error
+    let balanceError = null
+    const decimal = (
+      value.startsWith('.') ? value.substr(1) : value.split('.')[1]
+    )
+
+    let tokenVal = value
+    if (decimal && decimal.length > 18) {
+      tokenVal = value.startsWith('.') ? value.substr(0, 19) : value.split('.')[0] + '.' + decimal.substr(0, 18)
+      balanceError = `Value too precise! Using ${tokenVal}`
+    }    
     await this.setState(oldState => {
       oldState.paymentVal.payments[0].amount.amountToken = value
-        ? Web3.utils.toWei(`${value}`)
+        ? Web3.utils.toWei(`${tokenVal}`, "ether")
         : "0";
+      if (balanceError) {
+        oldState.balanceError = balanceError;
+      }
       return oldState;
     });
-    this.setState({ displayVal: value });
+
+    this.setState({ displayVal: value, });
   }
 
   handleQRData = async scanResult => {
@@ -501,9 +518,10 @@ class PayCard extends Component {
         const amount = paymentVal.payments[0].amount;
         this.props.history.push({
           pathname: "/redeem",
+          // TODO: add wei
           search: `?secret=${secret}&amountToken=${
-            amount.amountToken
-          }&amountWei=${amount.amountWei}`,
+            Web3.utils.fromWei(amount.amountToken, "ether")
+          }`,
           state: { isConfirm: true, secret, amount }
         });
       } else {

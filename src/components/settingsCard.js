@@ -22,6 +22,7 @@ import SubmitIcon from "@material-ui/icons/ArrowRight";
 import { createWallet, createWalletFromMnemonic } from "../walletGen";
 import SettingsIcon from "@material-ui/icons/Settings";
 import Snackbar from "./snackBar";
+import interval from "interval-promise";
 
 const styles = {
   card: {
@@ -84,14 +85,20 @@ class SettingsCard extends Component {
   };
 
   burnRefreshPoller = async () => {
-    setInterval(async () => {
-      const { runtime } = this.props
-      if (!runtime.awaitingOnchainTransaction) {
-        // Then refresh the page
-        this.props.history.push("/");
-        window.location.reload();
-      }
-    }, 400);
+    await interval(
+      async (iteration, stop) => {
+        const { runtime } = this.props
+          if (!runtime.awaitingOnchainTransaction) {
+            stop()
+          }
+      },
+      1000,
+      { iterations: 50 }
+    );
+    
+    // Then refresh the page
+    this.props.history.push("/");
+    window.location.reload();
   };
 
   async recoverAddressFromMnemonic() {
