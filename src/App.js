@@ -25,6 +25,7 @@ import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
 import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
 import getExchangeRates from "connext/dist/lib/getExchangeRates";
 import Snackbar from "./components/snackBar";
+import interval from "interval-promise";
 
 export const store = createStore(setWallet, null);
 
@@ -305,17 +306,27 @@ class App extends React.Component {
     await this.autoDeposit();
     await this.autoSwap();
 
-    setInterval(async () => {
-      await this.autoDeposit();
-    }, 5000);
+    interval(
+      async (iteration, stop) => {
+        await this.autoDeposit();
+      },
+      5000
+    )
 
-    setInterval(async () => {
-      await this.autoSwap();
-    }, 1000);
+    interval(
+      async (iteration, stop) => {
+        await this.autoSwap();
+      },
+      1000
+    )
 
-    setInterval(async () => {
-      await this.checkStatus();
-    }, 400);
+    interval(
+      async (iteration, stop) => {
+        await this.checkStatus();
+      },
+      400
+    )
+
   }
 
   async setBrowserWalletMinimumBalance() {
@@ -511,7 +522,7 @@ class App extends React.Component {
         value: wei
       });
       const tx = await customWeb3.eth.getTransaction(res.transactionHash);
-      console.log(`Returned deposit overflow: ${tx}`)
+      console.log(`Returned deposit tx: ${JSON.stringify(tx, null, 2)}`)
       // calculate expected balance after transaction and set in local
       // storage. once the tx is submitted, the wallet balance should
       // always be lower than the expected balance, because of added
@@ -522,7 +533,7 @@ class App extends React.Component {
       localStorage.removeItem("maxBalanceAfterRefund");
     }
     localStorage.removeItem("refunding");
-    await this.setWeb3(localStorage.getItem("rpc"));
+    // await this.setWeb3(localStorage.getItem("rpc-prod"));
   }
 
   // returns a BigNumber
