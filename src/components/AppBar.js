@@ -16,7 +16,7 @@ const noAddrBlocky = require("../assets/noAddress.png");
 const AppBarComponent = props => (
   <Grid>
     <Grid container spacing={16}>
-      <AppBar position="sticky" color="secondary" elevation={0} style={{ paddingTop: "2%", paddingRight: "5%"}}>
+      <AppBar position="sticky" color="secondary" elevation={0} style={{ paddingTop: "2%"}}>
         <Toolbar>
           <Grid
             container

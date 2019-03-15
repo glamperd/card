@@ -57,8 +57,10 @@ const styles = theme => ({
     width: "100%",
     padding: `0px ${theme.spacing.unit}px 0 ${theme.spacing.unit}px`,
     [theme.breakpoints.up('sm')]: {
-      height: 700,
-      width: "auto"
+      width: "450px",
+      height: "650px",
+      marginTop: "5%",
+      borderRadius: "4px"
     },
     [theme.breakpoints.down(600)]: {
       "box-shadow": "0px 0px"
@@ -73,11 +75,6 @@ const styles = theme => ({
     backgroundColor: "#FFF",
     width: "100%",
     margin: "0px",
-    [theme.breakpoints.up('sm')]: {
-      height: 700,
-      marginLeft: 'auto',
-      marginRight: 'auto'
-    },
   },
   zIndex: 1000,
   grid: {}
@@ -674,10 +671,6 @@ class App extends React.Component {
       <Router>
         <Grid className={classes.app}>
           <Paper elevation={1} className={classes.paper}>
-          <Grid 
-          container
-          direction="column"
-          >
             <Snackbar
               handleClick={() => this.handleClick()}
               onClose={() => this.handleClick()}
@@ -805,7 +798,6 @@ class App extends React.Component {
                 <SupportCard {...props} channelState={channelState} />
               )}
             />
-          </Grid>
           </Paper>
         </Grid>
       </Router>
