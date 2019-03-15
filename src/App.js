@@ -54,14 +54,15 @@ const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 3
 
 const styles = theme => ({
   paper: {
-    height: "100%",
     width: "100%",
-    [theme.breakpoints.up('md')]: {
-      width: "75vw",
-      width: "75vh",
+    padding: `0px ${theme.spacing.unit}px 0 ${theme.spacing.unit}px`,
+    [theme.breakpoints.up('sm')]: {
+      height: 700,
+      width: "auto"
     },
-    zIndex: 1000,
-    margin: "0px"
+    [theme.breakpoints.down(600)]: {
+      "box-shadow": "0px 0px"
+    },
   },
   app: {
     display: "flex",
@@ -72,9 +73,10 @@ const styles = theme => ({
     backgroundColor: "#FFF",
     width: "100%",
     margin: "0px",
-    height: "100vh",
-    [theme.breakpoints.up('md')]: {
-      height: "75vh",
+    [theme.breakpoints.up('sm')]: {
+      height: 700,
+      marginLeft: 'auto',
+      marginRight: 'auto'
     },
   },
   zIndex: 1000,
@@ -674,11 +676,8 @@ class App extends React.Component {
           <Paper elevation={1} className={classes.paper}>
           <Grid 
           container
-          spacing={16}
           direction="column"
-          className={classes.paper}
           >
-          <Grid item xs={12}>
             <Snackbar
               handleClick={() => this.handleClick()}
               onClose={() => this.handleClick()}
@@ -698,7 +697,7 @@ class App extends React.Component {
                 runtime && runtime.channelStatus !== "CS_OPEN" ? (
                   <Redirect to="/support" />
                 ) : (
-                  <div>
+                  <Grid>
                     <Home
                       {...props}
                       address={address}
@@ -714,8 +713,7 @@ class App extends React.Component {
                       maxTokenDeposit={CHANNEL_DEPOSIT_MAX.toString()}
                       connextState={connextState}
                     />
-                  </div>
-                  
+                  </Grid>
                 )
               }
             />
@@ -807,7 +805,6 @@ class App extends React.Component {
                 <SupportCard {...props} channelState={channelState} />
               )}
             />
-          </Grid>          
           </Grid>
           </Paper>
         </Grid>
