@@ -9,15 +9,20 @@ import {
   TextField,
   InputAdornment,
   withStyles,
-  Modal
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from "@material-ui/core";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import CopyIcon from "@material-ui/icons/FileCopy";
 import SubmitIcon from "@material-ui/icons/ArrowRight";
 import { createWallet, createWalletFromMnemonic } from "../walletGen";
 import SettingsIcon from "@material-ui/icons/Settings";
-import Snackbar from './snackBar';
-
+import Snackbar from "./snackBar";
+import interval from "interval-promise";
 
 const styles = {
   card: {
@@ -37,10 +42,9 @@ const styles = {
   input: {
     width: "100%"
   },
-  button:{
-    marginBottom:"0px"
+  button: {
+    marginBottom: "0px"
   }
-
 };
 
 class SettingsCard extends Component {
@@ -50,25 +54,52 @@ class SettingsCard extends Component {
     this.state = {
       showRecovery: false,
       inputRecovery: false,
-      rpc: localStorage.getItem("rpc"),
+      rpc: localStorage.getItem("rpc-prod"),
       mnemonic: null,
       copied: null,
       showWarning: false
     };
   }
 
-  handleClick = async() => {
-    await this.setState({copied:false});
-  }
+  handleClick = async () => {
+    await this.setState({ copied: false });
+  };
 
-  async generateNewAddress() {
-    // NOTE: DelegateSigner is always recoveredwhic from browser storage.
-    //       It is ONLY set to state from within app on load.
-    await createWallet(this.state.web3);
-    localStorage.setItem("collateralize", true)
+  generateNewAddress = async () => {
+    this.setState({ isBurning: true });
+    try {
+      await this.props.connext.withdraw({
+        withdrawalWeiUser: "0",
+        tokensToSell: "0",
+        withdrawalTokenUser: "0",
+        weiToSell: "0",
+        recipient: this.props.address,
+        exchangeRate: this.props.exchangeRate
+      });
+    } catch (e) {
+      console.log("Error withdrawing, creating new address anyway", e.message);
+    } finally {
+      await createWallet(this.state.web3);
+      this.burnRefreshPoller();
+    }
+  };
+
+  burnRefreshPoller = async () => {
+    await interval(
+      async (iteration, stop) => {
+        const { runtime } = this.props
+          if (!runtime.awaitingOnchainTransaction) {
+            stop()
+          }
+      },
+      1000,
+      { iterations: 50 }
+    );
+    
     // Then refresh the page
+    this.props.history.push("/");
     window.location.reload();
-  }
+  };
 
   async recoverAddressFromMnemonic() {
     await createWalletFromMnemonic(this.state.mnemonic);
@@ -88,7 +119,7 @@ class SettingsCard extends Component {
     return (
       <Grid
         container
-        spacing={24}
+        spacing={16}
         direction="column"
         style={{
           paddingLeft: 12,
@@ -99,12 +130,13 @@ class SettingsCard extends Component {
           justifyContent: "center"
         }}
       >
-      <Snackbar 
-            handleClick={() => this.handleClick()}
-            onClose={() => this.handleClick()}
-            open={copied}
-            text="Copied!"/>
-        <Grid item xs={12} style={{justifyContent: "center"}}>
+        <Snackbar
+          handleClick={() => this.handleClick()}
+          onClose={() => this.handleClick()}
+          open={copied}
+          text="Copied!"
+        />
+        <Grid item xs={12} style={{ justifyContent: "center" }}>
           <SettingsIcon className={classes.icon} />
         </Grid>
         <Grid item xs={12}>
@@ -122,9 +154,7 @@ class SettingsCard extends Component {
             disableUnderline
             IconComponent={() => null}
           >
-            <MenuItem disabled={true} value={"MAINNET"}>
-              MAINNET
-            </MenuItem>
+            <MenuItem value={"MAINNET"}>MAINNET</MenuItem>
             <MenuItem value={"RINKEBY"}>RINKEBY</MenuItem>
             <MenuItem value={"LOCALHOST"}>LOCALHOST</MenuItem>
           </Select>
@@ -137,10 +167,14 @@ class SettingsCard extends Component {
               border: "1px solid #7289da",
               color: "#7289da"
             }}
-            onClick={() => {window.open('https://discord.gg/q2cakRc','_blank');window.close();return false}}
+            onClick={() => {
+              window.open("https://discord.gg/q2cakRc", "_blank");
+              window.close();
+              return false;
+            }}
             size="large"
           >
-            Discord
+            Support
           </Button>
         </Grid>
         <Grid item xs={12} className={classes.button}>
@@ -157,8 +191,8 @@ class SettingsCard extends Component {
             </Button>
           ) : (
             <CopyToClipboard
-            text={localStorage.getItem("mnemonic")}
-            color="primary"
+              text={localStorage.getItem("mnemonic")}
+              color="primary"
             >
               <Button
                 fullWidth
@@ -169,15 +203,15 @@ class SettingsCard extends Component {
                 onClick={() => this.setState({ showRecovery: true })}
               >
                 <CopyIcon style={{ marginRight: "5px" }} />
-                  <Typography noWrap variant="body1" color="primary">
-                    <Tooltip
-                      disableFocusListener
-                      disableTouchListener
-                      title="Click to Copy"
-                    >
-                      <span>{localStorage.getItem("mnemonic")}</span>
-                    </Tooltip>
-                  </Typography>
+                <Typography noWrap variant="body1" color="primary">
+                  <Tooltip
+                    disableFocusListener
+                    disableTouchListener
+                    title="Click to Copy"
+                  >
+                    <span>{localStorage.getItem("mnemonic")}</span>
+                  </Tooltip>
+                </Typography>
               </Button>
             </CopyToClipboard>
           )}
@@ -225,85 +259,104 @@ class SettingsCard extends Component {
         </Grid>
         <Grid item xs={12} className={classes.button}>
           <Button
-          fullWidth
-          style={{
-            background: "#FFF",
-            border: "1px solid #F22424",
-            color: "#F22424"
-          }}
-          size="large"
-          onClick={() => this.setState({ showWarning: true })}
+            fullWidth
+            style={{
+              background: "#FFF",
+              border: "1px solid #F22424",
+              color: "#F22424"
+            }}
+            size="large"
+            onClick={() => this.setState({ showWarning: true })}
           >
             Burn Card
           </Button>
-          <Modal
+          <Dialog
             open={this.state.showWarning}
-            onBackdropClick={() => this.setState({showWarning: false})}
+            onBackdropClick={() => this.setState({ showWarning: false })}
+            fullWidth
             style={{
-              justifyContent: "center", 
-              alignItems: "center", 
-              textAlign: "center", 
-              position: "absolute", 
-              top: "25%", 
-              width: "375px",
-              marginLeft: "auto",
-              marginRight: "auto",
-              left: "0",
-              right: "0",
+              justifyContent: "center",
+              alignItems: "center",
+              textAlign: "center",
             }}
           >
-            <Grid container style={{backgroundColor: "#FFF", padding: "3% 3% 3% 3%", flexDirection: "column"}}>
-              <Grid item style={{margin: "1em"}}>
-                <Typography variant="h5" style={{color:"#F22424"}}>
-                  Are you sure you want to burn your Card? 
+            <Grid
+              container
+              style={{
+                backgroundColor: "#FFF",
+                padding: "3% 3% 3% 3%",
+                flexDirection: "column"
+              }}
+            >
+              <DialogTitle disableTypography>
+                <Typography variant="h5" style={{ color: "#F22424" }}>
+                Are you sure you want to burn your Card?
                 </Typography>
-              </Grid>
-              <Grid item style={{margin: "1em"}}>
-                <Typography variant="body1" style={{color:"#F22424"}}>
-                  You will lose access to your funds unless you save your backup phrase!
-                </Typography>
-              </Grid>
-              <Grid item style={{margin: "1em"}}>
-                <Button
-                  style={{
-                    background: "#F22424",
-                    border: "1px solid #F22424",
-                    color: "#FFF",
-                  }}
-                  variant="contained"
-                  size="small"
-                  onClick={() => this.generateNewAddress()}
-                >
-                Burn
-                </Button>
-                <Button
-                  style={{
-                    background: "#FFF",
-                    border: "1px solid #F22424",
-                    color: "#F22424",
-                    marginLeft: "5%",
-                  }}
-                  variant="outlined"
-                  size="small"
-                  onClick={() => this.setState({ showWarning: false })}
-                >
-                Cancel
-                </Button>
-              </Grid>
+              </DialogTitle>
+              <DialogContent>
+              {this.state.isBurning ? (
+                <Grid item xs={12}>
+                  <DialogContentText variant="body1">
+                    Burning. Please do not refresh or navigate away. This page
+                    with refresh automatically when it's done.
+                  </DialogContentText>
+                  <CircularProgress style={{ marginTop: "1em" }} />
+                  </Grid>
+              ) : (
+                <Grid container alignItems="center" justify="center" direction="column">
+                <Grid item xs={12}>
+                    <DialogContentText variant="body1" style={{ color: "#F22424" }}>
+                      You will lose access to your funds unless you save your
+                      backup phrase!
+                    </DialogContentText>
+                    </Grid>
+                    <Grid item xs={12}>
+                  <DialogActions>
+                    <Button
+                      style={{
+                        background: "#F22424",
+                        border: "1px solid #F22424",
+                        color: "#FFF"
+                      }}
+                      variant="contained"
+                      size="small"
+                      onClick={() => this.generateNewAddress()}
+                    >
+                      Burn
+                    </Button>
+                    <Button
+                      style={{
+                        background: "#FFF",
+                        border: "1px solid #F22424",
+                        color: "#F22424",
+                        marginLeft: "5%"
+                      }}
+                      variant="outlined"
+                      size="small"
+                      onClick={() => this.setState({ showWarning: false })}
+                    >
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                  </Grid>
+                  </Grid>
+              )}
+              </DialogContent>
+
             </Grid>
-          </Modal>
+          </Dialog>
         </Grid>
         <Grid item xs={12}>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             style={{
               background: "#FFF",
               border: "1px solid #F22424",
               color: "#F22424",
-              width: "15%",
+              width: "15%"
             }}
-            size="medium" 
-            onClick={()=>this.props.history.push("/")}
+            size="medium"
+            onClick={() => this.props.history.push("/")}
           >
             Back
           </Button>

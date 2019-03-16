@@ -1,48 +1,48 @@
 import React, { Component } from "react";
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
-import Button from '@material-ui/core/Button';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import ErrorIcon from '@material-ui/icons/Error';
-import InfoIcon from '@material-ui/icons/Info';
-import CloseIcon from '@material-ui/icons/Close';
-import green from '@material-ui/core/colors/green';
-import amber from '@material-ui/core/colors/amber';
-import red from '@material-ui/core/colors/red'
-import IconButton from '@material-ui/core/IconButton';
-import Snackbar from '@material-ui/core/Snackbar';
-import SnackbarContent from '@material-ui/core/SnackbarContent';
-import HourglassIcon from '@material-ui/icons/HourglassFull';
-import { withStyles } from '@material-ui/core/styles';
+import PropTypes from "prop-types";
+import classNames from "classnames";
+//import Button from '@material-ui/core/Button';
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import ErrorIcon from "@material-ui/icons/Error";
+import InfoIcon from "@material-ui/icons/Info";
+import CloseIcon from "@material-ui/icons/Close";
+import green from "@material-ui/core/colors/green";
+import amber from "@material-ui/core/colors/amber";
+import red from "@material-ui/core/colors/red";
+import IconButton from "@material-ui/core/IconButton";
+import Snackbar from "@material-ui/core/Snackbar";
+import SnackbarContent from "@material-ui/core/SnackbarContent";
+import HourglassIcon from "@material-ui/icons/HourglassFull";
+import { withStyles } from "@material-ui/core/styles";
 
 const variantIcon = {
   success: CheckCircleIcon,
   warning: HourglassIcon,
   error: ErrorIcon,
-  info: InfoIcon,
+  info: InfoIcon
 };
 
 const styles1 = theme => ({
   success: {
-    backgroundColor: green[600],
+    backgroundColor: green[600]
   },
   error: {
-    backgroundColor: red[600],
+    backgroundColor: red[600]
   },
   warning: {
-    backgroundColor: amber[700],
+    backgroundColor: amber[700]
   },
   icon: {
-    fontSize: 20,
+    fontSize: 20
   },
   iconVariant: {
     opacity: 0.9,
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing.unit
   },
   message: {
-    display: 'flex',
-    alignItems: 'center',
-  },
+    display: "flex",
+    alignItems: "center"
+  }
 });
 
 function MySnackbarContent(props) {
@@ -68,7 +68,7 @@ function MySnackbarContent(props) {
           onClick={onClose}
         >
           <CloseIcon className={classes.icon} />
-        </IconButton>,
+        </IconButton>
       ]}
       {...other}
     />
@@ -80,34 +80,50 @@ MySnackbarContent.propTypes = {
   className: PropTypes.string,
   message: PropTypes.node,
   onClose: PropTypes.func,
-  variant: PropTypes.oneOf(['success', 'warning', 'error']).isRequired,
+  variant: PropTypes.oneOf(["success", "warning", "error"]).isRequired
 };
 
 const MySnackbarContentWrapper = withStyles(styles1)(MySnackbarContent);
 
 const styles2 = theme => ({
   margin: {
-    margin: theme.spacing.unit,
-  },
+    margin: theme.spacing.unit
+  }
 });
 
 class Confirmations extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
-    const { deposit, withdraw, payment } = this.props.status;
+    const { deposit, withdraw, hasRefund } = this.props.status;
     return (
       <div>
         <Snackbar
           anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'middle',
+            vertical: "bottom",
+            horizontal: "center"
           }}
-          open={deposit === "PENDING"}
+          open={!!hasRefund}
           autoHideDuration={30000}
           onClose={() => this.props.closeConfirmations()}
+        >
+          <MySnackbarContentWrapper
+            onClose={this.handleClose}
+            variant="warning"
+            message={`Refunding ${
+              !!hasRefund && hasRefund[0] ? hasRefund[0].substr(0, 6) : ""
+            } finney to ${
+              !!hasRefund && hasRefund[1]
+                ? hasRefund[1].substr(0, 5).toLowerCase() + "..."
+                : ""
+            }.`}
+          />
+        </Snackbar>
+        <Snackbar
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "center"
+          }}
+          open={deposit === "PENDING"}
+          onClose={() => this.props.closeConfirmations("deposit")}
         >
           <MySnackbarContentWrapper
             onClose={this.handleClose}
@@ -117,12 +133,11 @@ class Confirmations extends Component {
         </Snackbar>
         <Snackbar
           anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'middle',
+            vertical: "bottom",
+            horizontal: "center"
           }}
           open={withdraw === "PENDING"}
-          autoHideDuration={30000}
-          onClose={() => this.props.closeConfirmations()}
+          onClose={() => this.props.closeConfirmations("withdraw")}
         >
           <MySnackbarContentWrapper
             onClose={this.handleClose}
@@ -132,17 +147,32 @@ class Confirmations extends Component {
         </Snackbar>
         <Snackbar
           anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'middle',
+            vertical: "bottom",
+            horizontal: "center"
           }}
-          open={withdraw === "SUCCESS"}
-          autoHideDuration={4000}
+          open={deposit === "SUCCESS"}
+          autoHideDuration={6000}
           onClose={() => this.props.closeConfirmations()}
         >
           <MySnackbarContentWrapper
             onClose={this.handleClose}
             variant="success"
-            message="Pending transaction confirmed!"
+            message="Pending deposit confirmed!"
+          />
+        </Snackbar>
+        <Snackbar
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "center"
+          }}
+          open={withdraw === "SUCCESS"}
+          autoHideDuration={6000}
+          onClose={() => this.props.closeConfirmations()}
+        >
+          <MySnackbarContentWrapper
+            onClose={this.handleClose}
+            variant="success"
+            message="Pending withdraw confirmed!"
           />
         </Snackbar>
       </div>
@@ -151,7 +181,7 @@ class Confirmations extends Component {
 }
 
 Confirmations.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles2)(Confirmations);

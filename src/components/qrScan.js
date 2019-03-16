@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import QrReader from "react-qr-reader";
-import {Grid, Button} from "@material-ui/core";
- 
+import {Typography} from "@material-ui/core";
+
 class QRScan extends Component {
   constructor(props) {
     super(props);
@@ -9,23 +9,28 @@ class QRScan extends Component {
     this.state = {
       delay: 300,
       result: "No result",
-      error: null,
+      error: null
     };
   }
-  handleScan = (data) => {
+  handleScan = data => {
     if (data) {
-      this.props.handleResult(data)
+      this.props.handleResult(data);
     }
-  }
+  };
 
   render() {
     return (
-      <QrReader
-        delay={this.state.delay}
-        onError={(error) => this.setState({error})}
-        onScan={this.handleScan}
-        style={{ width: "100%" }}
-      />
+      <div>
+        <QrReader
+          delay={this.state.delay}
+          onError={error => this.setState({ error })}
+          onScan={this.handleScan}
+          style={{ width: "100%" }}
+        />
+        <Typography style={{padding: "2%", backgroundColor: "#FFF"}}>
+          Not currently supported on Brave and iOS 11 browsers other than Safari.
+        </Typography>
+      </div>
     );
   }
 }

@@ -4,6 +4,7 @@ set -e
 
 hostname="$1"
 user="ubuntu"
+pubkey="$HOME/.ssh/circleci.pub"
 prvkey="$HOME/.ssh/connext-aws"
 
 # Sanity checks
@@ -13,6 +14,10 @@ fi
 
 if [[ ! -f "$prvkey" ]]
 then echo "Couldn't find the ssh private key: $prvkey" && exit
+fi
+
+if [[ ! -f "$pubkey" ]]
+then echo "Couldn't find the CI public key: $pubkey" && exit
 fi
 
 if ssh -q -i $prvkey ubuntu@$hostname exit 2> /dev/null
@@ -67,9 +72,15 @@ else
 	echo "root login disabled, skipping user setup"
 fi
 
+scp -i $prvkey $pubkey $user@$hostname:~/.ssh/another_authorized_key
+
 ssh -i $prvkey $user@$hostname "sudo -S bash -s" <<EOF
 $password
 set -e
+
+# add the circle ci key to guest list
+cat ~/.ssh/another_authorized_key >> ~/.ssh/authorized_keys
+rm -f ~/.ssh/another_authorized_key
 
 # Remove stale apt cache & lock files
 sudo rm -rf /var/lib/apt/lists/*
