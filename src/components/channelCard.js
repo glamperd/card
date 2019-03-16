@@ -21,10 +21,10 @@ class ChannelCard extends Component {
   render() {
     const { classes, channelState, connextState } = this.props;
     const display = getChannelBalanceInUSD(channelState, connextState);
-    const substr = channelState ? getDollarSubstring(channelState.balanceTokenUser) : ["0","00"]
-    const userWei = channelState ? getDollarSubstring(channelState.balanceWeiUser) : ["0","00"]
-    const hubToken = channelState ? getDollarSubstring(channelState.balanceTokenHub) : ["0","00"]
-    const hubWei = channelState ? getDollarSubstring(channelState.balanceWeiHub) : ["0","00"];
+    const substr = channelState ? [channelState.balanceTokenUser, "00"] : ["0","00"]
+    const userWei = channelState ? [channelState.balanceWeiUser, "00"] : ["0","00"]
+    const hubToken = channelState ? [channelState.balanceTokenHub, "00"] : ["0","00"]
+    const hubWei = channelState ? [channelState.balanceWeiHub, "00"] : ["0","00"];
 
     return (
       <Card className={classes.card}>
@@ -58,7 +58,7 @@ class ChannelCard extends Component {
             </span>
         </Grid>
         </Grid>
-      </Grid>
+      </Card>
     );
   }
 }

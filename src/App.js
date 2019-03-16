@@ -10,7 +10,7 @@ import ProviderOptions from "./utils/ProviderOptions.ts";
 import clientProvider from "./utils/web3/clientProvider.ts";
 import { createWalletFromMnemonic } from "./walletGen";
 import axios from "axios";
-import { Paper, withStyles, Button } from "@material-ui/core";
+import { Paper, withStyles, Button, Grid } from "@material-ui/core";
 import AppBarComponent from "./components/AppBar";
 import SettingsCard from "./components/settingsCard";
 import ReceiveCard from "./components/receiveCard";
@@ -608,43 +608,6 @@ class App extends React.Component {
   // ************************************************* //
   //                    Handlers                       //
   // ************************************************* //
-
-  async authorizeHandler() {
-    const hubUrl = this.state.hubUrl;
-    const web3 = this.state.customWeb3;
-    const challengeRes = await axios.post(`${hubUrl}/auth/challenge`, {}, opts);
-
-    const hash = web3.utils.sha3(`${HASH_PREAMBLE} ${web3.utils.sha3(challengeRes.data.nonce)} ${web3.utils.sha3("localhost")}`);
-
-    const signature = await web3.eth.personal.sign(hash, this.state.address);
-    console.log('signature ', signature, ' nonce ', challengeRes.data.nonce)
-
-    try {
-      let authRes = await axios.post(
-        `${hubUrl}/auth/response`,
-        {
-          nonce: challengeRes.data.nonce,
-          address: this.state.address,
-          origin: "localhost",
-          signature
-        },
-        opts
-      );
-      const token = authRes.data.token;
-      document.cookie = `hub.sid=${token}`;
-      console.log(`hub authentication cookie set: ${token}`);
-      const res = await axios.get(`${hubUrl}/auth/status`, opts);
-      if (res.data.success) {
-        this.setState({ authorized: true });
-        return res.data.success;
-      } else {
-        this.setState({ authorized: false });
-      }
-      console.log(`Auth status: ${JSON.stringify(res.data)}`);
-    } catch (e) {
-      console.log(e);
-    }
-  }
 
   updateApprovalHandler(evt) {
     this.setState({
