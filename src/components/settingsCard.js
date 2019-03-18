@@ -21,7 +21,7 @@ import CopyIcon from "@material-ui/icons/FileCopy";
 import SubmitIcon from "@material-ui/icons/ArrowRight";
 import { createWallet, createWalletFromMnemonic } from "../walletGen";
 import SettingsIcon from "@material-ui/icons/Settings";
-import Snackbar from "./snackBar";
+import MySnackbar from "./snackBar";
 import interval from "interval-promise";
 
 const styles = {
@@ -56,12 +56,12 @@ class SettingsCard extends Component {
       inputRecovery: false,
       rpc: localStorage.getItem("rpc-prod"),
       mnemonic: null,
-      copied: null,
+      copied: false,
       showWarning: false
     };
   }
 
-  handleClick = async () => {
+  closeModal = async () => {
     await this.setState({ copied: false });
   };
 
@@ -130,11 +130,11 @@ class SettingsCard extends Component {
           justifyContent: "center"
         }}
       >
-        <Snackbar
-          handleClick={() => this.handleClick()}
-          onClose={() => this.handleClick()}
-          open={copied}
-          text="Copied!"
+        <MySnackbar
+          variant="success"
+          openWhen={copied}
+          onClose={() => this.closeModal()}
+          message="Copied!"
         />
         <Grid item xs={12} style={{ justifyContent: "center" }}>
           <SettingsIcon className={classes.icon} />
@@ -191,6 +191,7 @@ class SettingsCard extends Component {
             </Button>
           ) : (
             <CopyToClipboard
+              onCopy={() => this.setState({ copied: true })}
               text={localStorage.getItem("mnemonic")}
               color="primary"
             >

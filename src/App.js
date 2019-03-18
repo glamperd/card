@@ -24,7 +24,7 @@ import BigNumber from "bignumber.js";
 import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
 import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
 import getExchangeRates from "connext/dist/lib/getExchangeRates";
-import Snackbar from "./components/snackBar";
+import MySnackbar from "./components/snackBar";
 import interval from "interval-promise";
 
 export const store = createStore(setWallet, null);
@@ -650,7 +650,7 @@ class App extends React.Component {
     this.setState({ status: { deposit, depositHistory, withdraw, withdrawHistory, hasRefund } });
   }
 
-  async handleClick() {
+  async closeModal() {
     await this.setState({ loadingConnext: false });
   };
 
@@ -671,12 +671,12 @@ class App extends React.Component {
       <Router>
         <Grid className={classes.app}>
           <Paper elevation={1} className={classes.paper}>
-            <Snackbar
-              handleClick={() => this.handleClick()}
-              onClose={() => this.handleClick()}
-              open={this.state.loadingConnext}
-              duration={100000}
-              text="Starting Channel Controllers.."
+            <MySnackbar
+              variant="warning"
+              openWhen={this.state.loadingConnext}
+              onClose={() => this.closeModal()}
+              message="Starting Channel Controllers.."
+              duration={30000}
             />
             <Confirmations
               status={this.state.status}

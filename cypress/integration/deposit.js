@@ -33,7 +33,6 @@ const deposit = (value) => {
 describe('Deposit', () => {
   beforeEach(() => {
     closeIntroModal()
-    // click link to deposit page
     cy.get('a[href="/deposit"]').click()
   })
 
