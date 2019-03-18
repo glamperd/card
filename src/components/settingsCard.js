@@ -19,7 +19,7 @@ import {
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import CopyIcon from "@material-ui/icons/FileCopy";
 import SubmitIcon from "@material-ui/icons/ArrowRight";
-import { createWallet, createWalletFromMnemonic } from "../walletGen";
+import { createWallet, createWalletFromMnemonic } from "../utils/walletGen";
 import SettingsIcon from "@material-ui/icons/Settings";
 import MySnackbar from "./snackBar";
 import interval from "interval-promise";
@@ -55,7 +55,7 @@ class SettingsCard extends Component {
       showRecovery: false,
       inputRecovery: false,
       rpc: localStorage.getItem("rpc-prod"),
-      mnemonic: null,
+      mnemonic: '',
       copied: false,
       showWarning: false
     };
@@ -299,7 +299,7 @@ class SettingsCard extends Component {
                 <Grid item xs={12}>
                   <DialogContentText variant="body1">
                     Burning. Please do not refresh or navigate away. This page
-                    with refresh automatically when it's done.
+                    will refresh automatically when it's done.
                   </DialogContentText>
                   <CircularProgress style={{ marginTop: "1em" }} />
                   </Grid>
