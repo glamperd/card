@@ -9,17 +9,17 @@ const wallet = eth.Wallet.fromMnemonic(Cypress.env('mnemonic')).connect(provider
 const deposit = (value) => {
   getAddress().then(address => {
     cy.log(`Sending 0.03 eth from ${wallet.address} to ${address}`)
-    return wallet.sendTransaction({
+    return cy.wrap(wallet.sendTransaction({
       to: address,
       value: eth.utils.parseEther(value)
-    }).then(tx => {
-      cy.get('button').contains("Back").click()
+    })).then(tx => {
+      cy.get('button').contains(/back/i).click()
       cy.log(`Transaction sent, waiting for it to get mined..`)
-      return wallet.provider.waitForTransaction(tx.hash).then(() => {
+      return cy.wrap(wallet.provider.waitForTransaction(tx.hash)).then(() => {
         cy.log(`Transaction mined, waiting for the deposit to be accepted..`)
-        cy.get('span').contains('Processing').should('exist')
-        cy.get('h3').children('span').contains('00').should('not.exist')
-        cy.get('span').contains('Processing').should('not.exist')
+        cy.get('span').should('contain', 'Processing')
+        cy.get('h3').children('span').should('not.contain', '00')
+        cy.get('span').should('not.contain', 'Processing')
       })
     })
   })
