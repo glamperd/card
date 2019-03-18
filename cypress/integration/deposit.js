@@ -1,6 +1,5 @@
-const { closeIntroModal } = require('./common.js')
+const { closeIntroModal, getAddress } = require('./common.js')
 const eth = require('ethers')
-
 const provider = new eth.providers.JsonRpcProvider(Cypress.env('provider'))
 const wallet = eth.Wallet.fromMnemonic(Cypress.env('mnemonic')).connect(provider)
 
@@ -8,8 +7,7 @@ const wallet = eth.Wallet.fromMnemonic(Cypress.env('mnemonic')).connect(provider
 // Define exportable helper functions
 
 const deposit = (value) => {
-  cy.get('a[href="/deposit"]').click()
-  cy.get('button').contains(/0[Xx]/).invoke('text').then(address => {
+  getAddress().then(address => {
     cy.log(`Sending 0.03 eth from ${wallet.address} to ${address}`)
     return wallet.sendTransaction({
       to: address,
@@ -31,19 +29,8 @@ const deposit = (value) => {
 // Run tests
 
 describe('Deposit', () => {
-  beforeEach(() => {
-    cy.visit(Cypress.env('publicUrl'))
-    closeIntroModal()
-  })
-
-  it('Displays a valid deposit address', () => {
-    cy.get('a[href="/deposit"]').click()
-    cy.get('button').contains(/0[Xx]/).invoke('text').should('match', /0[xX][0-9a-zA-Z]{40}/)
-    // TODO: test for copy snackbar once cypress fixes: github.com/cypress-io/cypress/issues/2739
-    //cy.get('button').contains(/0[Xx]/).click();cy.get('span').contains('Copied').should('exist')
-  })
-
   it('Accepts a deposit to displayed address', () => {
+    closeIntroModal()
     deposit('0.03')
   })
 })

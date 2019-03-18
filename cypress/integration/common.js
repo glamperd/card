@@ -3,6 +3,7 @@
 // Define exportable helper functions
 
 const closeIntroModal = () => {
+  cy.visit(Cypress.env('publicUrl'))
   // Click through intro modal
   cy.get('button').contains(/next/i).click()
   cy.get('button').contains(/next/i).click()
@@ -16,44 +17,67 @@ const closeIntroModal = () => {
   cy.get('span').contains('Starting').should('not.exist')
 }
 
+const getAddress = () => {
+  return new Cypress.Promise((resolve, reject) => {
+    cy.visit(`${Cypress.env('publicUrl')}/deposit`)
+    cy.get('button').contains(/0[Xx]/).invoke('text').then(address => {
+      cy.log(`address=${address}`)
+      resolve(address)
+    })
+  })
+}
+
+const getMnemonic = () => {
+  return new Cypress.Promise((resolve, reject) => {
+    cy.visit(`${Cypress.env('publicUrl')}/settings`)
+    cy.get('button').contains(/([a-zA-Z]{3,}\s?){12}/).should('not.exist')
+    cy.get('button').contains(/backup phrase/i).click()
+    cy.get('button').contains(/([a-zA-Z]{3,}\s?){12}/).invoke('text').then(mnemonic => {
+      cy.log(`mnemonic=${mnemonic}`)
+      resolve(mnemonic)
+    })
+  })
+}
+
+const burnCard = () => {
+  cy.visit(`${Cypress.env('publicUrl')}/settings`)
+  cy.get('button').contains(/burn card/i).click()
+  cy.get('button').contains(/burn$/i).click()
+  cy.get('p').contains(/burning/i).should('not.exist')
+  closeIntroModal()
+}
+
+const restoreMnemonic = (mnemonic) => {
+  cy.visit(`${Cypress.env('publicUrl')}/settings`)
+  cy.get('button').contains(/import/i).click()
+  cy.get('input[type="text"]').type(mnemonic)
+  cy.get('button').find('svg').click()
+}
+
 ////////////////////////////////////////
 // Run tests
 
 describe('Common', () => {
   it('Should display an intro modal that can be closed', () => {
-    cy.visit(Cypress.env('publicUrl'))
     closeIntroModal()
   })
 
-  it('Should display our backup mnemonic', () => {
-    cy.visit(Cypress.env('publicUrl'))
+  it('Should display our address on the deposit page', () => {
     closeIntroModal()
-    cy.get('a[href="/settings"]').click()
-    cy.get('button').contains(/([a-zA-Z]{3,}\s?){12}/).should('not.exist')
-    cy.get('button').contains(/backup phrase/i).click()
-    cy.get('button').contains(/([a-zA-Z]{3,}\s?){12}/).should('exist')
+    getAddress()
   })
 
-  it.only('Should restore the same card from mnemonic after burning', () => {
-    cy.visit(Cypress.env('publicUrl'))
+  it('Should display our backup mnemonic in the settings', () => {
     closeIntroModal()
-    cy.get('a[href="/deposit"]').click()
-    cy.get('button').contains(/0[Xx]/).invoke('text').then(address => {
-      cy.log(`address=${address}`)
-      cy.get('a[href="/settings"]').click()
-      cy.get('button').contains(/([a-zA-Z]{3,}\s?){12}/).should('not.exist')
-      cy.get('button').contains(/backup phrase/i).click()
-      cy.get('button').contains(/([a-zA-Z]{3,}\s?){12}/).invoke('text').then(mnemonic => {
-        cy.log(`mnemonic=${mnemonic}`)
-        cy.get('button').contains(/burn card/i).click()
-        cy.get('button').contains(/burn$/i).click()
-        cy.get('p').contains(/burning/i).should('not.exist')
-        cy.reload()
-        closeIntroModal()
-        cy.get('a[href="/settings"]').click()
-        cy.get('button').contains(/import/i).click()
-        cy.get('input[type="text"]').type(mnemonic)
-        cy.get('button').find('svg').click()
+    getMnemonic()
+  })
+
+  it('Should restore the same card from mnemonic after burning', () => {
+    closeIntroModal()
+    getAddress().then(address => {
+      getMnemonic().then(mnemonic => {
+        burnCard()
+        restoreMnemonic(mnemonic)
         cy.get('a[href="/deposit"]').click()
         cy.get('button').contains(/0[Xx]/).invoke('text').should('eql', address)
       })
@@ -65,5 +89,9 @@ describe('Common', () => {
 // Export helpers to be used in other tests
 
 module.exports = {
-  closeIntroModal
+  closeIntroModal,
+  getAddress,
+  getMnemonic,
+  burnCard,
+  restoreMnemonic
 }
