@@ -45,3 +45,31 @@ export function getAmountInUSD(amount, connextState, onlyTokens = true) {
 
   return totalBalance
 }
+
+export function getBalanceEth(amount, connextState) {
+  if (!amount || !connextState) {
+    return "$0.00"
+  }
+
+  const balance = new CurrencyConvertable(CurrencyType.WEI, amount, () => getExchangeRates(connextState))
+
+  const totalBalance = Currency.ETH(
+    balance.toETH().amountBigNumber
+  ).format({})
+
+  return totalBalance
+}
+
+export function getBalanceToken(amount, connextState) {
+  if (!amount || !connextState) {
+    return "$0.00"
+  }
+
+  const balance = new CurrencyConvertable(CurrencyType.BEI, amount, () => getExchangeRates(connextState))
+
+  const totalBalance = Currency.BOOTY(
+    balance.toBOOTY().amountBigNumber
+  ).format({})
+
+  return totalBalance
+}
