@@ -17,12 +17,13 @@ const pay = (to, value) => {
   cy.get('button').contains(/home/i).click()
 }
 
+// TODO: don't skip these
 describe('Payments', (done) => {
-  it('Can send a payment to a card that has not been collateralized', () => {
+  it.skip('Can send a payment to a card that has not been collateralized', () => {
     // Does this even work?
   })
 
-  it('Can send a payment to a card that has already been collateralized', () => {
+  it.skip('Can send a payment to a card that has already been collateralized', () => {
     closeIntroModal()
     deposit('0.05').then(() => {
       cy.log('deposit successful')
