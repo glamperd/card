@@ -33,14 +33,11 @@ describe('Daicard', () => {
   })
 
   describe('Payments', (done) => {
-    it('Can send a payment to a card that has not been collateralized', () => {
-      // Does this even work?
-    })
-
-    it.only('Can send a payment to a card that has already been collateralized', () => {
+    // I don't think this is possible yet w/out the other card being online during payment
+    it.skip('Can send a payment to a card that has already been collateralized', () => {
       my.getAccount().then(sender => {
         my.deposit(sender.address, '0.05').then(() => {
-          my.burnCard()
+          my.burnCard() // also decollateralizes the channel
           my.getAccount().then(recipient => {
             my.deposit(recipient.address, '0.02').then(() => {
               cy.get('h3').children('span').invoke('text').then(prevBalance => {

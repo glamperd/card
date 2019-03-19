@@ -26,7 +26,8 @@ my.closeIntroModal = () => {
 }
 
 my.burnCard = () => {
-  cy.visit(`${Cypress.env('publicUrl')}/settings`)
+  cy.get(`a[href="/settings"]`).click()
+  cy.contains('span', /starting/i).should('not.exist')
   cy.contains('button', /burn card/i).click()
   cy.contains('button', /burn$/i).click()
   cy.contains('p', /burning/i).should('not.exist')
@@ -34,20 +35,20 @@ my.burnCard = () => {
 }
 
 my.restoreMnemonic = (mnemonic) => {
-  cy.visit(`${Cypress.env('publicUrl')}/settings`)
+  cy.get(`a[href="/settings"]`).click()
+  cy.contains('span', /starting/i).should('not.exist')
   cy.contains('button', /import/i).click()
   cy.get('input[type="text"]').type(mnemonic)
   cy.get('button').find('svg').click()
 }
 
 my.pay = (to, value) => {
-  cy.visit(`${Cypress.env('publicUrl')}/send`)
+  cy.get(`a[href="/send"]`).click()
+  cy.contains('span', /starting/i).should('not.exist')
   cy.get('input[type="string"]').type(to)
   cy.get('input[type="number"]').type(value)
   cy.get('button').contains(/send/i).click()
   cy.get('h5').contains(/in progress/i).should('exist')
-  cy.get('div').contains(/payment success/i).should('exist')
-  cy.get('button').contains(/home/i).click()
 }
 
 ////////////////////////////////////////
@@ -59,9 +60,11 @@ my.pay = (to, value) => {
 
 my.getAddress = () => {
   return new Cypress.Promise((resolve, reject) => {
-    cy.visit(`${Cypress.env('publicUrl')}/deposit`)
+    cy.get(`a[href="/deposit"]`).click()
+    cy.contains('span', /starting/i).should('not.exist')
     cy.contains('button', /0x/i).invoke('text').then(address => {
       cy.log(`Got address: ${address}`)
+      cy.contains('button', /back/i).click()
       resolve(address)
     })
   })
@@ -69,12 +72,14 @@ my.getAddress = () => {
 
 my.getMnemonic = () => {
   return new Cypress.Promise((resolve, reject) => {
-    cy.visit(`${Cypress.env('publicUrl')}/settings`)
+    cy.get(`a[href="/settings"]`).click()
+    cy.contains('span', /starting/i).should('not.exist')
     cy.contains('button', mnemonicRegex).should('not.exist')
     cy.contains('button', /backup phrase/i).click()
     cy.contains('button', mnemonicRegex).should('exist')
     cy.contains('button', mnemonicRegex).invoke('text').then(mnemonic => {
       cy.log(`Got mnemonic: ${mnemonic}`)
+      cy.contains('button', /back/i).click()
       resolve(mnemonic)
     })
   })
@@ -97,7 +102,6 @@ my.deposit = (to, value) => {
       to: to,
       value: eth.utils.parseEther(value)
     })).then(tx => {
-      cy.contains('button', /back/i).click()
       cy.log(`Transaction sent, waiting for it to get mined..`)
       return cy.wrap(wallet.provider.waitForTransaction(tx.hash).then(() => {
         cy.log(`Transaction mined, waiting for the deposit to be accepted..`)
