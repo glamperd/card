@@ -20,7 +20,7 @@ describe('Daicard', () => {
         my.burnCard()
         my.restoreMnemonic(mnemonic)
         cy.get('a[href="/deposit"]').click()
-        cy.contains('button', /0x/i).invoke('text').should('eql', account.address)
+        cy.contains('button', my.addressRegex).invoke('text').should('eql', account.address)
       })
     })
   })

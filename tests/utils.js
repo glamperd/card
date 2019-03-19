@@ -2,18 +2,20 @@ const eth = require('ethers')
 const provider = new eth.providers.JsonRpcProvider(Cypress.env('provider'))
 const wallet = eth.Wallet.fromMnemonic(Cypress.env('mnemonic')).connect(provider)
 
-const mnemonicRegex = /([A-Za-z]{3,}\s?){12}/
-const addressRegex = /.*0x[0-9a-z]{40}.*/i
+// Exported object, attach stuff to this hat you want available in tests
 const my = {}
 
 ////////////////////////////////////////
 // Vanilla cypress compilations
 
+my.mnemonicRegex = /([A-Za-z]{3,}\s?){12}/
+my.addressRegex = /.*0x[0-9a-z]{40}.*/i
+
 my.closeIntroModal = () => {
   // Click through intro modal
   cy.contains('button', /^next$/i).click()
   cy.contains('button', /^next$/i).click()
-  cy.contains('button', mnemonicRegex).should('exist')
+  cy.contains('button', my.mnemonicRegex).should('exist')
   cy.contains('button', /^next$/i).click()
   // Make sure $?.?? placeholders have been replaced with real values
   cy.contains('p', '??').should('not.exist')
@@ -61,7 +63,7 @@ my.getAddress = () => {
   return new Cypress.Promise((resolve, reject) => {
     cy.get(`a[href="/deposit"]`).click()
     cy.contains('span', /starting/i).should('not.exist')
-    cy.contains('button', /0x/i).invoke('text').then(address => {
+    cy.contains('button', my.addressRegex).invoke('text').then(address => {
       cy.log(`Got address: ${address}`)
       cy.contains('button', /back/i).click()
       resolve(address)
@@ -73,10 +75,10 @@ my.getMnemonic = () => {
   return new Cypress.Promise((resolve, reject) => {
     cy.get(`a[href="/settings"]`).click()
     cy.contains('span', /starting/i).should('not.exist')
-    cy.contains('button', mnemonicRegex).should('not.exist')
+    cy.contains('button', my.mnemonicRegex).should('not.exist')
     cy.contains('button', /backup phrase/i).click()
-    cy.contains('button', mnemonicRegex).should('exist')
-    cy.contains('button', mnemonicRegex).invoke('text').then(mnemonic => {
+    cy.contains('button', my.mnemonicRegex).should('exist')
+    cy.contains('button', my.mnemonicRegex).invoke('text').then(mnemonic => {
       cy.log(`Got mnemonic: ${mnemonic}`)
       cy.contains('button', /back/i).click()
       resolve(mnemonic)
