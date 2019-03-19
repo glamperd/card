@@ -2,6 +2,7 @@ import my from './utils'
 
 describe('Daicard', () => {
   beforeEach(() => {
+    cy.visit(Cypress.env('publicUrl'))
     my.closeIntroModal()
   })
 

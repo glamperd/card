@@ -10,7 +10,6 @@ const my = {}
 // Vanilla cypress compilations
 
 my.closeIntroModal = () => {
-  cy.visit(Cypress.env('publicUrl'))
   // Click through intro modal
   cy.contains('button', /^next$/i).click()
   cy.contains('button', /^next$/i).click()
