@@ -1,26 +1,34 @@
 
+// In general, we shouldn't ever need to do: cy.get('element').contains('text')
+// A more robust way of doing the same thing: cy.contains('element', 'text')
+// See: https://github.com/cypress-io/cypress/issues/3747#issuecomment-474292167
+
 ////////////////////////////////////////
 // Define exportable helper functions
+
+const mnemonicRegex = /([A-Za-z]{3,}\s?){12}/
+const addressRegex = /.*0x[0-9a-z]{40}.*/i
 
 const closeIntroModal = () => {
   cy.visit(Cypress.env('publicUrl'))
   // Click through intro modal
-  cy.get('button').contains(/^next$/i).click()
-  cy.get('button').contains(/^next$/i).click()
-  cy.get('button').contains(/^next$/i).click()
-  // Make sure $?.?? placeholders are replaced with real values
-  cy.get('p').should('not.contain', '??')
-  cy.get('button').contains(/^next$/i).click()
-  cy.get('p').should('not.contain', '??')
-  cy.get('button').contains(/^got it!$/i).click()
+  cy.contains('button', /^next$/i).click()
+  cy.contains('button', /^next$/i).click()
+  cy.contains('button', mnemonicRegex).should('exist')
+  cy.contains('button', /^next$/i).click()
+  // Make sure $?.?? placeholders have been replaced with real values
+  cy.contains('p', '??').should('not.exist')
+  cy.contains('button', /^next$/i).click()
+  cy.contains('p', '??').should('not.exist')
+  cy.contains('button', /^got it!$/i).click()
   // wait until the startup modal closes
-  cy.get('span').should('not.contain', 'Starting')
+  cy.contains('span', /starting/i).should('not.exist')
 }
 
 const getAddress = () => {
   return new Cypress.Promise((resolve, reject) => {
     cy.visit(`${Cypress.env('publicUrl')}/deposit`)
-    cy.get('button').contains(/0x/i).invoke('text').then(address => {
+    cy.contains('button', /0x/i).invoke('text').then(address => {
       cy.log(`address=${address}`)
       resolve(address)
     })
@@ -30,10 +38,10 @@ const getAddress = () => {
 const getMnemonic = () => {
   return new Cypress.Promise((resolve, reject) => {
     cy.visit(`${Cypress.env('publicUrl')}/settings`)
-    cy.get('button').should('not.match', /([a-z]{3,}\s?){12}/i) // TODO: this is probably broken
-    cy.get('button').contains(/backup phrase/i).click()
-    //cy.get('button').should('match', /([a-z]{4,}\s?){12}/i) // TODO: why is this broken?
-    cy.get('button').contains(/([a-z]{3,}\s?){12}/i).invoke('text').then(mnemonic => {
+    cy.contains('button', mnemonicRegex).should('not.exist')
+    cy.contains('button', /backup phrase/i).click()
+    cy.contains('button', mnemonicRegex).should('exist')
+    cy.contains('button', mnemonicRegex).invoke('text').then(mnemonic => {
       cy.log(`mnemonic=${mnemonic}`)
       resolve(mnemonic)
     })
@@ -42,54 +50,58 @@ const getMnemonic = () => {
 
 const burnCard = () => {
   cy.visit(`${Cypress.env('publicUrl')}/settings`)
-  cy.get('button').contains(/burn card/i).click()
-  cy.get('button').contains(/burn$/i).click()
-  cy.get('p').should('not.match', /burning/i) // TODO: also probably broken
+  cy.contains('button', /burn card/i).click()
+  cy.contains('button', /burn$/i).click()
+  cy.contains('p', /burning/i).should('not.exist')
   closeIntroModal()
 }
 
 const restoreMnemonic = (mnemonic) => {
   cy.visit(`${Cypress.env('publicUrl')}/settings`)
-  cy.get('button').contains(/import/i).click()
+  cy.contains('button', /import/i).click()
   cy.get('input[type="text"]').type(mnemonic)
   cy.get('button').find('svg').click()
 }
 
 ////////////////////////////////////////
-// Run tests
+// Export test function to be run in the index
+// To prevent re-running tests from imported modules
 
-describe('Common', () => {
-  it('Should display an intro modal that can be closed', () => {
-    closeIntroModal()
-  })
+const testCommon = () => {
+  describe('Common', () => {
+    it('Should display an intro modal that can be closed', () => {
+      closeIntroModal()
+    })
 
-  it('Should display our address on the deposit page', () => {
-    closeIntroModal()
-    getAddress()
-  })
+    it('Should display our address on the deposit page', () => {
+      closeIntroModal()
+      getAddress()
+    })
 
-  it('Should display our backup mnemonic in the settings', () => {
-    closeIntroModal()
-    getMnemonic()
-  })
+    it('Should display our backup mnemonic in the settings', () => {
+      closeIntroModal()
+      getMnemonic()
+    })
 
-  it('Should restore the same card from mnemonic after burning', () => {
-    closeIntroModal()
-    getAddress().then(address => {
-      getMnemonic().then(mnemonic => {
-        burnCard()
-        restoreMnemonic(mnemonic)
-        cy.get('a[href="/deposit"]').click()
-        cy.get('button').contains(/0x/i).invoke('text').should('eql', address)
+    it('Should restore the same card from mnemonic after burning', () => {
+      closeIntroModal()
+      getAddress().then(address => {
+        getMnemonic().then(mnemonic => {
+          burnCard()
+          restoreMnemonic(mnemonic)
+          cy.get('a[href="/deposit"]').click()
+          cy.contains('button', /0x/i).invoke('text').should('eql', address)
+        })
       })
     })
   })
-})
+}
 
 ////////////////////////////////////////
-// Export helpers to be used in other tests
+// Export helpers to be used in other tests & tests to run in index
 
 module.exports = {
+  testCommon,
   closeIntroModal,
   getAddress,
   getMnemonic,

@@ -6,6 +6,9 @@ const wallet = eth.Wallet.fromMnemonic(Cypress.env('mnemonic')).connect(provider
 ////////////////////////////////////////
 // Define exportable helper functions
 
+// cypress needs control over the order things run, so normal async/promises don't work right
+// Gotta wrap traditional promises in `cy.wrap(promise)` so cypress can handle it properly
+
 const deposit = (value) => {
   getAddress().then(address => {
     cy.log(`Sending 0.03 eth from ${wallet.address} to ${address}`)
@@ -13,31 +16,35 @@ const deposit = (value) => {
       to: address,
       value: eth.utils.parseEther(value)
     })).then(tx => {
-      cy.get('button').contains(/back/i).click()
+      cy.contains('button', /back/i).click()
       cy.log(`Transaction sent, waiting for it to get mined..`)
       return cy.wrap(wallet.provider.waitForTransaction(tx.hash)).then(() => {
         cy.log(`Transaction mined, waiting for the deposit to be accepted..`)
-        cy.get('span').should('contain', 'Processing')
+        cy.contains('span', /processing/i).should('exist')
         cy.get('h3').children('span').should('not.contain', '00')
-        cy.get('span').should('not.contain', 'Processing')
+        cy.contains('span', /processing/i).should('not.exist')
       })
     })
   })
 }
 
 ////////////////////////////////////////
-// Run tests
+// Export test function to be run in the index
+// To prevent re-running tests from imported modules
 
-describe('Deposit', () => {
-  it('Accepts a deposit to displayed address', () => {
-    closeIntroModal()
-    deposit('0.03')
+const testDeposit = () => {
+  describe('Deposit', () => {
+    it.only('Accepts a deposit to displayed address', () => {
+      closeIntroModal()
+      deposit('0.03')
+    })
   })
-})
+}
 
 ////////////////////////////////////////
-// Export helpers to be used in other tests
+// Export helpers to be used in other tests & tests to run in index
 
 module.exports = {
+  testDeposit,
   deposit
 }
