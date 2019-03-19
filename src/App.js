@@ -603,7 +603,7 @@ class App extends React.Component {
           }
           break;
         default:
-          console.log(`Nothing to do for update type: ${runtime.syncResultsFromHub[0].update.reason}`)
+          console.log(`Nothing to do for update of type: ${runtime.syncResultsFromHub[0].update.reason}`)
       }
     }
     this.setState({ status });

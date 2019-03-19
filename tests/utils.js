@@ -51,50 +51,63 @@ my.pay = (to, value) => {
 }
 
 ////////////////////////////////////////
-// Data handling functions
+// Data handling & external promise functions
 
 // Cypress needs control over the order things run in, so normal async/promises don't work right
-// Gotta return data in a Cypress.Promise & make sure you return promises
+// Gotta return data in a Cypress.Promise
 // Gotta wrap traditional promises in `cy.wrap(promise)` so cypress can handle it properly
 
-
 my.getAddress = () => {
-  return cy.wrap(new Cypress.Promise((resolve, reject) => {
+  return new Cypress.Promise((resolve, reject) => {
     cy.visit(`${Cypress.env('publicUrl')}/deposit`)
     cy.contains('button', /0x/i).invoke('text').then(address => {
-      cy.log(`address=${address}`)
+      cy.log(`Got address: ${address}`)
       resolve(address)
     })
-  }))
+  })
 }
 
 my.getMnemonic = () => {
-  return cy.wrap(new Cypress.Promise((resolve, reject) => {
+  return new Cypress.Promise((resolve, reject) => {
     cy.visit(`${Cypress.env('publicUrl')}/settings`)
     cy.contains('button', mnemonicRegex).should('not.exist')
     cy.contains('button', /backup phrase/i).click()
     cy.contains('button', mnemonicRegex).should('exist')
     cy.contains('button', mnemonicRegex).invoke('text').then(mnemonic => {
-      cy.log(`mnemonic=${mnemonic}`)
+      cy.log(`Got mnemonic: ${mnemonic}`)
       resolve(mnemonic)
     })
-  }))
+  })
+}
+
+my.getAccount = () => {
+  return new Cypress.Promise((resolve, reject) => {
+    return my.getMnemonic().then(mnemonic => {
+      return my.getAddress().then(address => {
+        return resolve({ address, mnemonic })
+      })
+    })
+  })
 }
 
 my.deposit = (to, value) => {
-  return wallet.sendTransaction({
-    to: address,
-    value: eth.utils.parseEther(value)
-  }).then(tx => {
-    cy.contains('button', /back/i).click()
-    cy.log(`Transaction sent, waiting for it to get mined..`)
-    return wallet.provider.waitForTransaction(tx.hash).then(() => {
-      cy.log(`Transaction mined, waiting for the deposit to be accepted..`)
-      cy.contains('span', /processing/i).should('exist')
-      cy.get('h3').children('span').should('not.contain', '00')
-      cy.contains('span', /processing/i).should('not.exist')
+  return cy.wrap(new Cypress.Promise((resolve, reject) => {
+    cy.log(`Depositing ${value} eth into channel ${to}`)
+    return cy.wrap(wallet.sendTransaction({
+      to: to,
+      value: eth.utils.parseEther(value)
+    })).then(tx => {
+      cy.contains('button', /back/i).click()
+      cy.log(`Transaction sent, waiting for it to get mined..`)
+      return cy.wrap(wallet.provider.waitForTransaction(tx.hash).then(() => {
+        cy.log(`Transaction mined, waiting for the deposit to be accepted..`)
+        cy.contains('span', /processing/i).should('exist')
+        cy.get('h3').children('span').should('not.contain', '00')
+        cy.contains('span', /processing/i).should('not.exist')
+        return resolve()
+      }))
     })
-  })
+  }))
 }
 
 export default my
