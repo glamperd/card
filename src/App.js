@@ -292,6 +292,7 @@ class App extends React.Component {
           ? state.runtime.exchangeRate.rates.USD
           : 0
       });
+      this.checkStatus();
     });
     // start polling
     await connext.start();
@@ -314,13 +315,6 @@ class App extends React.Component {
         await this.autoSwap();
       },
       1000
-    )
-
-    interval(
-      async (iteration, stop) => {
-        await this.checkStatus();
-      },
-      400
     )
 
   }
@@ -567,40 +561,52 @@ class App extends React.Component {
   }
 
   async checkStatus() {
-    const { runtime } = this.state;
+    const { runtime, status } = this.state;
     const refundStr = localStorage.getItem("refunding");
-    const hasRefund = !!refundStr ? refundStr.split(",") : null;
+    status.hasRefund = !!refundStr ? refundStr.split(",") : null;
     if (runtime.syncResultsFromHub[0]) {
-      let deposit;
-      let withdraw;
+      console.log(`Hub Sync results: ${JSON.stringify(runtime.syncResultsFromHub[0],null,2)}`)
       switch (runtime.syncResultsFromHub[0].update.reason) {
         case "ProposePendingDeposit":
           if(runtime.syncResultsFromHub[0].update.args.depositTokenUser !== "0" ||
             runtime.syncResultsFromHub[0].update.args.depositWeiUser !== "0" ) {
             this.closeConfirmations()
-            deposit = "PENDING";
+            status.deposit = "PENDING";
+            status.depositHistory = "PENDING";
+            console.log(`ProposePendingDeposit! New status: ${JSON.stringify(status)}`)
+          } else {
+            console.log(`ProposePendingDeposit! Nothing to do`)
           }
           break;
         case "ProposePendingWithdrawal":
           if(runtime.syncResultsFromHub[0].update.args.withdrawalTokenUser !== "0" ||
             runtime.syncResultsFromHub[0].update.args.withdrawalWeiUser !== "0" ) {
             this.closeConfirmations()
-            withdraw = "PENDING";
+            status.withdraw = "PENDING";
+            status.withdrawHistory = "PENDING";
+            console.log(`ProposePendingWithdrawal! New status: ${JSON.stringify(status)}`)
+          } else {
+            console.log(`ProposePendingWithdrawal! Nothing to do`)
           }
           break;
         case "ConfirmPending":
           if(this.state.status.depositHistory === "PENDING") {
             this.closeConfirmations("deposit")
-            deposit = "SUCCESS";
+            status.deposit = "SUCCESS";
+            console.log(`New status: ${JSON.stringify(status)}`)
           } else if(this.state.status.withdrawHistory === "PENDING") {
             this.closeConfirmations("withdraw")
-            withdraw = "SUCCESS";
+            status.withdraw = "SUCCESS";
+            console.log(`ConfirmPending! New status: ${JSON.stringify(status)}`)
+          } else {
+            console.log(`ConfirmPending! Nothing to do`)
           }
           break;
         default:
+          console.log(`Nothing to do for update type: ${runtime.syncResultsFromHub[0].update.reason}`)
       }
-      this.setState({ status: { deposit, withdraw, hasRefund } });
     }
+    this.setState({ status });
   }
 
   // ************************************************* //
@@ -631,22 +637,20 @@ class App extends React.Component {
   }
 
   async closeConfirmations(type) {
-    let deposit = null;
-    let withdraw = null;
-    let hasRefund = null;
-    let depositHistory, withdrawHistory;
+    const { status } = this.state
     if(!type) {
-      depositHistory = null;
-      withdrawHistory = null;
+      status.depositHistory = '';
+      status.withdrawHistory = '';
     }
     // Hack to keep deposit/withdraw context for confirm pending notifications
     if(type === "deposit") {
-      depositHistory = this.state.status.deposit
+      status.depositHistory = status.deposit
     }
     if(type === "withdraw") {
-      withdrawHistory = this.state.status.withdraw
+      status.withdrawHistory = status.withdraw
     }
-    this.setState({ status: { deposit, depositHistory, withdraw, withdrawHistory, hasRefund } });
+    console.log(`New status: ${JSON.stringify(status)}`)
+    this.setState({ status });
   }
 
   async closeModal() {
