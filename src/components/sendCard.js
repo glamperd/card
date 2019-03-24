@@ -593,51 +593,6 @@ class PayCard extends Component {
     await this._sendPayment(paymentVal);
   }
 
-  async closeThreadHandler() {
-    const { connext } = this.props;
-    const { paymentVal } = this.state;
-    // check if the recipient needs collateral
-    const needsCollateral = await connext.recipientNeedsCollateral(
-      paymentVal.payments[0].recipient,
-      convertPayment("str", paymentVal.payments[0].amount)
-    );
-    // do not send collateral request if it is not valid
-    // check if the values are reasonable
-    // before beginning the request for collateral
-    const { balanceError, addressError } = this.validatePaymentInput(
-      paymentVal
-    );
-    if (addressError || balanceError) {
-      return;
-    }
-
-    // needs collateral can indicate that the recipient does
-    // not have a channel, or that it does not have current funds
-    // in either case, you need to send a failed payment
-    // to begin auto collateralization process
-    if (needsCollateral) {
-      // this can have 3 potential outcomes:
-      // - collateralization failed (return)
-      // - payment succeeded (return)
-      // - channel collateralized
-      const collateralizationStatus = await this.collateralizeRecipient(
-        paymentVal
-      );
-      switch (collateralizationStatus) {
-        // setting state for these cases done in collateralize
-        case CollateralStates.PaymentMade:
-        case CollateralStates.Timeout:
-          return;
-        case CollateralStates.Success:
-        default:
-        // send payment via fall through
-      }
-    }
-
-    // send payment
-    await this._sendPayment(paymentVal);
-  }
-
   closeModal = () => {
     this.setState({ showReceipt: false, paymentState: PaymentStates.None });
   };
@@ -805,18 +760,6 @@ class PayCard extends Component {
               >
                 Open Thread
                 <LinkIcon style={{ marginLeft: "5px" }} />
-              </Button>
-            </Grid>
-            <Grid item xs={6}>
-              <Button
-                fullWidth
-                className={classes.button}
-                variant="contained"
-                size="large"
-                onClick={() => {this.closeThreadHandler()}}
-              >
-                Close Thread
-                <SendIcon style={{ marginLeft: "5px" }} />
               </Button>
             </Grid>
           </Grid>
