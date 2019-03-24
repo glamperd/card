@@ -77,7 +77,7 @@ function ConfirmationDialogText(paymentState, amountToken, recipient) {
               Recipient's Card is being set up. This should take 20-30 seconds.
             </DialogContentText>
             <DialogContentText variant="body1" style={{ color: "#0F1012" }}>
-              If you stay on this page, your payment will be retried automatically. 
+              If you stay on this page, your payment will be retried automatically.
               If you navigate away or refresh the page, you will have to attempt the payment again yourself.
             </DialogContentText>
           <CircularProgress style={{ marginTop: "1em" }} />
@@ -274,7 +274,7 @@ class PayCard extends Component {
     if (decimal && decimal.length > 18) {
       tokenVal = value.startsWith('.') ? value.substr(0, 19) : value.split('.')[0] + '.' + decimal.substr(0, 18)
       balanceError = `Value too precise! Using ${tokenVal}`
-    }    
+    }
     await this.setState(oldState => {
       oldState.paymentVal.payments[0].amount.amountToken = value
         ? Web3.utils.toWei(`${tokenVal}`, "ether")
@@ -546,6 +546,98 @@ class PayCard extends Component {
     }
   }
 
+  async openThreadHandler() {
+    const { connext } = this.props;
+    const { paymentVal } = this.state;
+    // check if the recipient needs collateral
+    paymentVal.payments[0].type = "PT_THREAD";
+    // TODO - need this?
+    const needsCollateral = await connext.recipientNeedsCollateral(
+      paymentVal.payments[0].recipient,
+      convertPayment("str", paymentVal.payments[0].amount)
+    );
+    // do not send collateral request if it is not valid
+    // check if the values are reasonable
+    // before beginning the request for collateral
+    const { balanceError, addressError } = this.validatePaymentInput(
+      paymentVal
+    );
+    if (addressError || balanceError) {
+      return;
+    }
+
+    // needs collateral can indicate that the recipient does
+    // not have a channel, or that it does not have current funds
+    // in either case, you need to send a failed payment
+    // to begin auto collateralization process
+    if (needsCollateral) {
+      // this can have 3 potential outcomes:
+      // - collateralization failed (return)
+      // - payment succeeded (return)
+      // - channel collateralized
+      const collateralizationStatus = await this.collateralizeRecipient(
+        paymentVal
+      );
+      switch (collateralizationStatus) {
+        // setting state for these cases done in collateralize
+        case CollateralStates.PaymentMade:
+        case CollateralStates.Timeout:
+          return;
+        case CollateralStates.Success:
+        default:
+        // send payment via fall through
+      }
+    }
+
+    // send payment
+    await this._sendPayment(paymentVal);
+  }
+
+  async closeThreadHandler() {
+    const { connext } = this.props;
+    const { paymentVal } = this.state;
+    // check if the recipient needs collateral
+    const needsCollateral = await connext.recipientNeedsCollateral(
+      paymentVal.payments[0].recipient,
+      convertPayment("str", paymentVal.payments[0].amount)
+    );
+    // do not send collateral request if it is not valid
+    // check if the values are reasonable
+    // before beginning the request for collateral
+    const { balanceError, addressError } = this.validatePaymentInput(
+      paymentVal
+    );
+    if (addressError || balanceError) {
+      return;
+    }
+
+    // needs collateral can indicate that the recipient does
+    // not have a channel, or that it does not have current funds
+    // in either case, you need to send a failed payment
+    // to begin auto collateralization process
+    if (needsCollateral) {
+      // this can have 3 potential outcomes:
+      // - collateralization failed (return)
+      // - payment succeeded (return)
+      // - channel collateralized
+      const collateralizationStatus = await this.collateralizeRecipient(
+        paymentVal
+      );
+      switch (collateralizationStatus) {
+        // setting state for these cases done in collateralize
+        case CollateralStates.PaymentMade:
+        case CollateralStates.Timeout:
+          return;
+        case CollateralStates.Success:
+        default:
+        // send payment via fall through
+      }
+    }
+
+    // send payment
+    await this._sendPayment(paymentVal);
+  }
+
   closeModal = () => {
     this.setState({ showReceipt: false, paymentState: PaymentStates.None });
   };
@@ -700,6 +792,30 @@ class PayCard extends Component {
                 onClick={() => {this.paymentHandler()}}
               >
                 Send
+                <SendIcon style={{ marginLeft: "5px" }} />
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button
+                fullWidth
+                className={classes.button}
+                variant="contained"
+                size="large"
+                onClick={() => {this.openThreadHandler()}}
+              >
+                Open Thread
+                <LinkIcon style={{ marginLeft: "5px" }} />
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button
+                fullWidth
+                className={classes.button}
+                variant="contained"
+                size="large"
+                onClick={() => {this.closeThreadHandler()}}
+              >
+                Close Thread
                 <SendIcon style={{ marginLeft: "5px" }} />
               </Button>
             </Grid>

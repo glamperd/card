@@ -798,9 +798,6 @@ class App extends React.Component {
                   <SupportCard {...props} channelState={channelState} />
                 )}
               />
-              <Button variant="outlined" onClick={() => { this.collateralHandler(); }} >
-                Collateralize Channel
-              </Button>
             </Paper>
           </Grid>
         </Router>
