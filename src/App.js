@@ -180,25 +180,6 @@ class App extends React.Component {
       // Then refresh the page
       window.location.reload();
     }
-
-
-    // Websocket
-    const port = 1337
-    var io = require('socket.io')(port);
-
-    io.on('connection', function (socket) {
-      io.emit('advertiser', { is: 'online'});
-
-      socket.on('payment_request', function (payee, amount, locId) {
-        console.log('I received a payment request for ', amount, ' to ', payee, ' from ', locId);
-      });
-
-      socket.on('disconnect', function () {
-        io.emit('user disconnected');
-      });
-    });
-
-
   }
 
   // ************************************************* //
