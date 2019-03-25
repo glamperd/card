@@ -44,6 +44,8 @@ const overrides = {
   localEth: process.env.REACT_APP_LOCAL_ETH_OVERRIDE,
   rinkebyHub: process.env.REACT_APP_RINKEBY_HUB_OVERRIDE,
   rinkebyEth: process.env.REACT_APP_RINKEBY_ETH_OVERRIDE,
+  ropstenHub: process.env.REACT_APP_ROPSTEN_HUB_OVERRIDE,
+  ropstenEth: process.env.REACT_APP_ROPSTEN_ETH_OVERRIDE,
   mainnetHub: process.env.REACT_APP_MAINNET_HUB_OVERRIDE,
   mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE
 };
@@ -208,6 +210,10 @@ class App extends React.Component {
       case "RINKEBY":
         rpcUrl = overrides.rinkebyEth || `${publicUrl}/api/rinkeby/eth`;
         hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
+        break;
+      case "ROPSTEN":
+        rpcUrl = overrides.ropstenEth || `${publicUrl}/api/mainnet/eth`;
+        hubUrl = overrides.ropstenHub || `${publicUrl}/api/mainnet/hub`;
         break;
       case "MAINNET":
         rpcUrl = overrides.mainnetEth || `${publicUrl}/api/mainnet/eth`;
