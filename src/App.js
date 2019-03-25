@@ -27,7 +27,6 @@ import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
 import getExchangeRates from "connext/dist/lib/getExchangeRates";
 import Snackbar from "./components/snackBar";
 import interval from "interval-promise";
-import socketIo from 'socket.io';
 
 export const store = createStore(setWallet, null);
 
