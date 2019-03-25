@@ -27,6 +27,7 @@ import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
 import getExchangeRates from "connext/dist/lib/getExchangeRates";
 import Snackbar from "./components/snackBar";
 import interval from "interval-promise";
+import socketIo from 'socket.io';
 
 export const store = createStore(setWallet, null);
 
@@ -179,6 +180,25 @@ class App extends React.Component {
       // Then refresh the page
       window.location.reload();
     }
+
+
+    // Websocket
+    const port = 1337
+    var io = require('socket.io')(port);
+
+    io.on('connection', function (socket) {
+      io.emit('advertiser', { is: 'online'});
+
+      socket.on('payment_request', function (payee, amount, locId) {
+        console.log('I received a payment request for ', amount, ' to ', payee, ' from ', locId);
+      });
+
+      socket.on('disconnect', function () {
+        io.emit('user disconnected');
+      });
+    });
+
+
   }
 
   // ************************************************* //
