@@ -95,7 +95,7 @@ class SettingsCard extends Component {
       1000,
       { iterations: 50 }
     );
-    
+
     // Then refresh the page
     this.props.history.push("/");
     window.location.reload();
@@ -157,6 +157,7 @@ class SettingsCard extends Component {
             <MenuItem value={"MAINNET"}>MAINNET</MenuItem>
             <MenuItem value={"RINKEBY"}>RINKEBY</MenuItem>
             <MenuItem value={"LOCALHOST"}>LOCALHOST</MenuItem>
+            <MenuItem value={"ROPSTEN"}>ROPSTEN</MenuItem>
           </Select>
         </Grid>
         <Grid item xs={12} className={classes.button}>
