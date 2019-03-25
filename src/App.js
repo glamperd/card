@@ -212,8 +212,8 @@ class App extends React.Component {
         hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
         break;
       case "ROPSTEN":
-        rpcUrl = overrides.ropstenEth || `${publicUrl}/api/mainnet/eth`;
-        hubUrl = overrides.ropstenHub || `${publicUrl}/api/mainnet/hub`;
+        rpcUrl = overrides.ropstenEth || `${publicUrl}/api/ropsten/eth`;
+        hubUrl = overrides.ropstenHub || `${publicUrl}/api/ropsten/hub`;
         break;
       case "MAINNET":
         rpcUrl = overrides.mainnetEth || `${publicUrl}/api/mainnet/eth`;
