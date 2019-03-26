@@ -2,7 +2,7 @@ const eth = require('ethers')
 const provider = new eth.providers.JsonRpcProvider(Cypress.env('provider'))
 const wallet = eth.Wallet.fromMnemonic(Cypress.env('mnemonic')).connect(provider)
 
-// Exported object, attach stuff to this hat you want available in tests
+// Exported object, attach stuff to this that you want available in tests
 const my = {}
 
 ////////////////////////////////////////
@@ -56,8 +56,8 @@ my.pay = (to, value) => {
 // Data handling & external promise functions
 
 // Cypress needs control over the order things run in, so normal async/promises don't work right
-// Gotta return data in a Cypress.Promise
 // Gotta wrap traditional promises in `cy.wrap(promise)` so cypress can handle it properly
+// Also need to return data via a Cypress.Promise
 
 my.getAddress = () => {
   return new Cypress.Promise((resolve, reject) => {
