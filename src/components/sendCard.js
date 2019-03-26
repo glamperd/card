@@ -400,9 +400,7 @@ class PayCard extends Component {
     // recipient to empty address
     const payment = {
       ...paymentVal.payments[0],
-      type: "PT_CUSTODIAL",
-      recipient: emptyAddress,
-      secret: connext.generateSecret()
+      type: "PT_CUSTODIAL"
     };
 
     const updatedPaymentVal = {
@@ -805,7 +803,6 @@ class PayCard extends Component {
                 onClick={() => {this.custodialPaymentHandler()}}
               >
                 Custodial Payment
-                <LinkIcon style={{ marginLeft: "5px" }} />
               </Button>
             </Grid>
           </Grid>
