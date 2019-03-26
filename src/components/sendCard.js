@@ -69,7 +69,7 @@ function ConfirmationDialogText(paymentState, amountToken, recipient) {
         <Grid>
           <DialogTitle disableTypography>
             <Typography variant="h5" color="primary">
-              Payment In Process
+              Payment In Progress
             </Typography>
           </DialogTitle>
           <DialogContent>

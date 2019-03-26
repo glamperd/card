@@ -8,7 +8,7 @@ import DepositCard from "./components/depositCard";
 import { getConnextClient } from "connext/dist/Connext.js";
 import ProviderOptions from "./utils/ProviderOptions.ts";
 import clientProvider from "./utils/web3/clientProvider.ts";
-import { createWalletFromMnemonic } from "./walletGen";
+import { createWalletFromMnemonic, createWallet } from "./utils/walletGen";
 import { Paper, withStyles, Grid } from "@material-ui/core";
 import AppBarComponent from "./components/AppBar";
 import SettingsCard from "./components/settingsCard";
@@ -16,7 +16,6 @@ import ReceiveCard from "./components/receiveCard";
 import SendCard from "./components/sendCard";
 import CashOutCard from "./components/cashOutCard";
 import SupportCard from "./components/supportCard";
-import { createWallet } from "./walletGen";
 import RedeemCard from "./components/redeemCard";
 import SetupCard from "./components/setupCard";
 import Confirmations from "./components/Confirmations";
@@ -24,7 +23,7 @@ import BigNumber from "bignumber.js";
 import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
 import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
 import getExchangeRates from "connext/dist/lib/getExchangeRates";
-import Snackbar from "./components/snackBar";
+import MySnackbar from "./components/snackBar";
 import interval from "interval-promise";
 
 export const store = createStore(setWallet, null);
@@ -293,6 +292,7 @@ class App extends React.Component {
           ? state.runtime.exchangeRate.rates.USD
           : 0
       });
+      this.checkStatus();
     });
     // start polling
     await connext.start();
@@ -315,13 +315,6 @@ class App extends React.Component {
         await this.autoSwap();
       },
       1000
-    )
-
-    interval(
-      async (iteration, stop) => {
-        await this.checkStatus();
-      },
-      400
     )
 
   }
@@ -568,40 +561,52 @@ class App extends React.Component {
   }
 
   async checkStatus() {
-    const { runtime } = this.state;
+    const { runtime, status } = this.state;
     const refundStr = localStorage.getItem("refunding");
-    const hasRefund = !!refundStr ? refundStr.split(",") : null;
+    status.hasRefund = !!refundStr ? refundStr.split(",") : null;
     if (runtime.syncResultsFromHub[0]) {
-      let deposit;
-      let withdraw;
+      console.log(`Hub Sync results: ${JSON.stringify(runtime.syncResultsFromHub[0],null,2)}`)
       switch (runtime.syncResultsFromHub[0].update.reason) {
         case "ProposePendingDeposit":
           if(runtime.syncResultsFromHub[0].update.args.depositTokenUser !== "0" ||
             runtime.syncResultsFromHub[0].update.args.depositWeiUser !== "0" ) {
             this.closeConfirmations()
-            deposit = "PENDING";
+            status.deposit = "PENDING";
+            status.depositHistory = "PENDING";
+            console.log(`ProposePendingDeposit! New status: ${JSON.stringify(status)}`)
+          } else {
+            console.log(`ProposePendingDeposit! Nothing to do`)
           }
           break;
         case "ProposePendingWithdrawal":
           if(runtime.syncResultsFromHub[0].update.args.withdrawalTokenUser !== "0" ||
             runtime.syncResultsFromHub[0].update.args.withdrawalWeiUser !== "0" ) {
             this.closeConfirmations()
-            withdraw = "PENDING";
+            status.withdraw = "PENDING";
+            status.withdrawHistory = "PENDING";
+            console.log(`ProposePendingWithdrawal! New status: ${JSON.stringify(status)}`)
+          } else {
+            console.log(`ProposePendingWithdrawal! Nothing to do`)
           }
           break;
         case "ConfirmPending":
           if(this.state.status.depositHistory === "PENDING") {
             this.closeConfirmations("deposit")
-            deposit = "SUCCESS";
+            status.deposit = "SUCCESS";
+            console.log(`New status: ${JSON.stringify(status)}`)
           } else if(this.state.status.withdrawHistory === "PENDING") {
             this.closeConfirmations("withdraw")
-            withdraw = "SUCCESS";
+            status.withdraw = "SUCCESS";
+            console.log(`ConfirmPending! New status: ${JSON.stringify(status)}`)
+          } else {
+            console.log(`ConfirmPending! Nothing to do`)
           }
           break;
         default:
+          console.log(`Nothing to do for update of type: ${runtime.syncResultsFromHub[0].update.reason}`)
       }
-      this.setState({ status: { deposit, withdraw, hasRefund } });
     }
+    this.setState({ status });
   }
 
   // ************************************************* //
@@ -632,25 +637,23 @@ class App extends React.Component {
   }
 
   async closeConfirmations(type) {
-    let deposit = null;
-    let withdraw = null;
-    let hasRefund = null;
-    let depositHistory, withdrawHistory;
+    const { status } = this.state
     if(!type) {
-      depositHistory = null;
-      withdrawHistory = null;
+      status.depositHistory = '';
+      status.withdrawHistory = '';
     }
     // Hack to keep deposit/withdraw context for confirm pending notifications
     if(type === "deposit") {
-      depositHistory = this.state.status.deposit
+      status.depositHistory = status.deposit
     }
     if(type === "withdraw") {
-      withdrawHistory = this.state.status.withdraw
+      status.withdrawHistory = status.withdraw
     }
-    this.setState({ status: { deposit, depositHistory, withdraw, withdrawHistory, hasRefund } });
+    console.log(`New status: ${JSON.stringify(status)}`)
+    this.setState({ status });
   }
 
-  async handleClick() {
+  async closeModal() {
     await this.setState({ loadingConnext: false });
   };
 
@@ -671,12 +674,12 @@ class App extends React.Component {
       <Router>
         <Grid className={classes.app}>
           <Paper elevation={1} className={classes.paper}>
-            <Snackbar
-              handleClick={() => this.handleClick()}
-              onClose={() => this.handleClick()}
-              open={this.state.loadingConnext}
-              duration={100000}
-              text="Starting Channel Controllers.."
+            <MySnackbar
+              variant="warning"
+              openWhen={this.state.loadingConnext}
+              onClose={() => this.closeModal()}
+              message="Starting Channel Controllers.."
+              duration={30000}
             />
             <Confirmations
               status={this.state.status}

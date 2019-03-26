@@ -11,7 +11,7 @@ import QRGenerate from "./qrGenerate";
 //import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 //import { withRouter } from "react-router-dom";
 import { withStyles, Grid } from "@material-ui/core";
-import Snackbar from "./snackBar";
+import MySnackbar from "./snackBar";
 import BN from "bn.js";
 import Web3 from "web3";
 import { getAmountInUSD } from "../utils/currencyFormatting";
@@ -37,7 +37,7 @@ class ReceiveCard extends Component {
     };
   }
 
-  handleClick = async () => {
+  closeModal = async () => {
     this.setState({ copied: false });
   };
 
@@ -77,8 +77,6 @@ class ReceiveCard extends Component {
   }
 
   updatePaymentHandler = async value => {
-    // appears to be just value
-    const token = value ? value : "0"
     // protect against precision errors
     const decimal = (
       value.startsWith('.') ? value.substr(1) : value.split('.')[1]
@@ -125,11 +123,11 @@ class ReceiveCard extends Component {
           justifyContent: "center"
         }}
       >
-        <Snackbar
-          handleClick={this.handleClick}
-          onClose={this.handleClick}
-          open={copied}
-          text="Copied!"
+        <MySnackbar
+          variant="success"
+          openWhen={copied}
+          onClose={this.closeModal}
+          message="Copied!"
         />
         <Grid
           container
@@ -152,7 +150,7 @@ class ReceiveCard extends Component {
             margin="normal"
             variant="outlined"
             onChange={evt => this.updatePaymentHandler(evt.target.value)}
-            error={error != null}
+            error={error !== null}
             helperText={error}
           />
         </Grid>
@@ -163,7 +161,7 @@ class ReceiveCard extends Component {
           {/* <CopyIcon style={{marginBottom: "2px"}}/> */}
           <CopyToClipboard
             onCopy={this.handleCopy}
-            text={error == null || error.indexOf('too precise') != -1 && amountToken != null ? qrUrl : ''}
+            text={(error == null || error.indexOf('too precise') !== -1) && amountToken != null ? qrUrl : ''}
           >
             <Button variant="outlined" fullWidth onClick={this.validatePayment}>
               <Typography noWrap variant="body1">

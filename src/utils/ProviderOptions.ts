@@ -2,7 +2,7 @@ const ethUtil = require("ethereumjs-util");
 const sigUtil = require("eth-sig-util");
 import Tx from "ethereumjs-tx";
 import { Buffer } from "buffer";
-import { getStore } from "../walletGen";
+import { getStore } from "./walletGen";
 import store from "../App";
 require("dotenv").config();
 
