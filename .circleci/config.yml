@@ -11,7 +11,7 @@ jobs:
             cd indra
             make start
             cd ..
-            npm run test
+            make test-prod
 
   push-images:
     machine: true
