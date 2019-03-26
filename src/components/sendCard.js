@@ -392,6 +392,42 @@ class PayCard extends Component {
     await this._sendPayment(updatedPaymentVal);
   }
 
+  async custodialPaymentHandler() {
+    const { connext } = this.props;
+    const { paymentVal } = this.state;
+
+    // generate secret, set type, and set
+    // recipient to empty address
+    const payment = {
+      ...paymentVal.payments[0],
+      type: "PT_CUSTODIAL",
+      recipient: emptyAddress,
+      secret: connext.generateSecret()
+    };
+
+    const updatedPaymentVal = {
+      ...paymentVal,
+      payments: [payment]
+    };
+
+    // unconditionally set state
+    this.setState({
+      paymentVal: updatedPaymentVal
+    });
+
+    // check for validity of input fields
+    const { balanceError, addressError } = this.validatePaymentInput(
+      updatedPaymentVal
+    );
+
+    if (addressError || balanceError) {
+      return;
+    }
+
+    // send payment
+    await this._sendPayment(updatedPaymentVal);
+  }
+
   async paymentHandler() {
     const { connext } = this.props;
     const { paymentVal } = this.state;
@@ -759,6 +795,16 @@ class PayCard extends Component {
                 onClick={() => {this.openThreadHandler()}}
               >
                 Open Thread
+                <LinkIcon style={{ marginLeft: "5px" }} />
+              </Button>
+              <Button
+                fullWidth
+                className={classes.button}
+                variant="contained"
+                size="large"
+                onClick={() => {this.custodialPaymentHandler()}}
+              >
+                Custodial Payment
                 <LinkIcon style={{ marginLeft: "5px" }} />
               </Button>
             </Grid>
