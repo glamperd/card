@@ -166,6 +166,7 @@ const RedeemCardContent = (props) => {
       warnings = ["Something went wrong"]
       break
     case RedeemPaymentStates.Collateralizing:
+      icon = (<CircularProgress className={classes.icon} />)
       warnings = ["Setting up your card too. This will take 30-40s."]
       break
     case RedeemPaymentStates.Success:
@@ -177,9 +178,9 @@ const RedeemCardContent = (props) => {
       break
   }
 
-  const finalWarnings = warnings ? warnings.map(w => {
+  const finalWarnings = warnings ? warnings.map((w, index) => {
     return (
-      <Typography variant="body1" style={{margin: "1em"}}>
+      <Typography key={index} variant="body1" style={{margin: "1em"}}>
         <span>{w}</span>
       </Typography>
     )
