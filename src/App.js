@@ -639,7 +639,9 @@ class App extends React.Component {
   async closeConfirmations(type) {
     const { status } = this.state
     if(!type) {
+      status.deposit = '';
       status.depositHistory = '';
+      status.withdraw = '';
       status.withdrawHistory = '';
     }
     // Hack to keep deposit/withdraw context for confirm pending notifications

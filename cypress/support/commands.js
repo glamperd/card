@@ -23,3 +23,10 @@
 //
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+
+Cypress.Commands.add('resolve', { prevSubject: 'optional' }, (subject, fn, options={}) => {
+    const resolve = () => {
+      fn(subject).then(res => cy.verifyUpcomingAssertions(res, options, { onRetry: resolve }))
+    }
+    return resolve();
+});

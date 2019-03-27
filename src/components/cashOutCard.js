@@ -173,7 +173,7 @@ class CashOutCard extends Component {
       const addressError = `${
         withdrawalVal.recipient === "0x0..."
           ? "Must provide address."
-          : withdrawalVal.recipient + " is not a valid address"
+          : withdrawalVal.recipient + " is an invalid address"
       }`;
       this.setState({ addressError });
       return;

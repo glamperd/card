@@ -342,7 +342,7 @@ class PayCard extends Component {
       (isLink ? address === emptyAddress : address !== emptyAddress);
 
     if (!isValidRecipient) {
-      addressError = "Please choose a valid address";
+      addressError = address + " is an invalid address";
     }
 
     // linked payments also have a maximum enforced
