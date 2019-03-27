@@ -12,9 +12,6 @@
 // You can read more here:
 // https://on.cypress.io/configuration
 // ***********************************************************
-require('cypress-failed-log')
-// Import commands.js using ES2015 syntax:
+import 'cypress-failed-log'
 import './commands'
-
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
+chai.use(require('chai-bn')(require('bn.js')))

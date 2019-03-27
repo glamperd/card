@@ -12,7 +12,6 @@ my.addressRegex = /.*0x[0-9a-z]{40}.*/i
 // Vanilla cypress compilations
 // These functions behave a lot like cy.whatever functions
 
-// wait until the startup modal closes
 my.doneStarting = () => cy.contains('span', /starting/i).should('not.exist')
 
 my.goToDeposit = () => cy.get(`a[href="/deposit"]`).click() && my.doneStarting()
@@ -73,7 +72,7 @@ my.cashout = () => {
   cy.contains('button', /cash out eth/i).click()
   cy.contains('span', /processing withdrawal/i).should('exist')
   cy.contains('span', /processing withdrawal/i).should('not.exist')
-  cy.wait(3000)
+  cy.contains('span', /withdraw confirmed/i).should('exist')
   my.getBalance().should('contain', '0.00')
 }
 
@@ -123,6 +122,15 @@ my.getAccount = () => {
   }))
 }
 
+my.getOnchainBalance = () => {
+  return cy.wrap(new Cypress.Promise((resolve, reject) => {
+    return cy.wrap(wallet.provider.getBalance(wallet.address)).then(balance => {
+      cy.log(`Onchain balance is ${balance.toString()} for ${wallet.address}`)
+      resolve(balance.toString())
+    })
+  }))
+}
+
 my.getBalance = () => {
   return cy.wrap(new Cypress.Promise((resolve, reject) => {
     cy.get('h1').children('span').invoke('text').then(whole => {
@@ -142,9 +150,7 @@ my.deposit = (value) => {
         to: address,
         value: eth.utils.parseEther(value)
       })).then(tx => {
-        cy.log(`Transaction sent, waiting for it to get mined..`)
         return cy.wrap(wallet.provider.waitForTransaction(tx.hash).then(() => {
-          cy.log(`Transaction mined, waiting for the deposit to be accepted..`)
           cy.contains('span', /processing deposit/i).should('exist')
           cy.contains('span', /processing deposit/i).should('not.exist')
           cy.contains('span', /deposit confirmed/i).should('exist')

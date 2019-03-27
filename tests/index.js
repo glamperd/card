@@ -1,7 +1,8 @@
 import my from './utils'
+import BN from 'bn.js'
 
-const depositEth = '0.05'
-const payTokens = '3.14'
+const depositEth = '0.05' // = 5e16 wei
+const payTokens = '3.14' // ~= 2e16 eth wei
 
 describe('Daicard', () => {
   beforeEach(() => {
@@ -169,9 +170,14 @@ describe('Daicard', () => {
       })
     })
 
-    it.only(`Should withdraw to a valid address`, () => {
+    it(`Should withdraw to a valid address`, () => {
       my.deposit(depositEth).then(tokensDeposited => {
-        my.cashout()
+        my.getOnchainBalance().then(balanceBefore => {
+          my.cashout()
+          cy.resolve(my.getOnchainBalance).should(balanceAfter => {
+            expect(new BN(balanceAfter)).to.be.a.bignumber.greaterThan(new BN(balanceBefore))
+          })
+        })
       })
     })
   })
