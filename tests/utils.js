@@ -29,9 +29,9 @@ my.closeIntroModal = () => {
   my.goNextIntro()
   cy.contains('button', my.mnemonicRegex).should('exist')
   my.goNextIntro()
-  cy.contains('p', '$?.??').should('not.exist')
+  cy.contains('p', '??').should('not.exist')
   my.goNextIntro()
-  cy.contains('p', '$?.??').should('not.exist')
+  cy.contains('p', '??').should('not.exist')
   my.goCloseIntro()
   my.doneStarting()
 }
