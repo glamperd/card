@@ -1,7 +1,7 @@
 import my from './utils'
 
-const depositAmount = '0.05' // ETH
-const payAmount = '3.14' // Tokens
+const depositEth = '0.05'
+const payTokens = '3.14'
 
 describe('Daicard', () => {
   beforeEach(() => {
@@ -35,21 +35,19 @@ describe('Daicard', () => {
     })
 
     it(`Should display our backup mnemonic`, () => {
-      my.getMnemonic()
+      my.getMnemonic().should('match', my.mnemonicRegex)
     })
 
     it(`Should not decollateralize before burning an uncollateralized card`, () => {
       my.burnCard()
     })
 
-    it(`Should decollateralize & preserve balance while burning`, () => {
-      my.getAccount().then(account => {
-        my.deposit(account.address, depositAmount).then(deposited => {
+    it(`Should decollateralize while burning a card with non-zero balance`, () => {
+      my.getMnemonic().then(mnemonic => {
+        my.deposit(depositEth).then(tokensDeposited => {
           my.burnCard(true)
-          my.restoreMnemonic(account.mnemonic)
-          my.getBalance.then(balance => {
-            expect(balance).to.equal(depositAmount)
-          })
+          my.restoreMnemonic(mnemonic)
+          cy.resolve(my.getBalance).should('contain', tokensDeposited)
         })
       })
     })
@@ -66,13 +64,11 @@ describe('Daicard', () => {
 
   describe('Deposit', () => {
     it(`Should display our card's address`, () => {
-      my.getAddress()
+      my.getAddress().should('match', my.addressRegex)
     })
 
     it(`Should accept a deposit to displayed address`, () => {
-      my.getAddress().then(address => {
-        my.deposit(address, depositAmount)
-      })
+      my.deposit(depositEth)
     })
   })
 
@@ -80,21 +76,21 @@ describe('Daicard', () => {
     it(`Should generate a request link w recipient & amount in url params`, () => {
       my.getAddress().then(address => {
         my.goToReceive()
-        cy.get('input[type="number"]').type(payAmount)
+        cy.get('input[type="number"]').clear().type(payTokens)
         cy.contains('button', `recipient=${address}`).should('exist')
-        cy.contains('button', `amountToken=${payAmount}`).should('exist') // TODO: rm leading 0
+        cy.contains('button', `amountToken=${payTokens}`).should('exist')
       })
     })
 
     it(`Should properly populate the send page when opening a request link`, () => {
-      my.getAccount().then(account => {
+      my.getAddress().then(address => {
         my.goToReceive()
-        cy.get('input[type="number"]').type(payAmount)
-        cy.contains('button', `amountToken=${payAmount}`).invoke('text').then(requestLink => {
+        cy.get('input[type="number"]').clear().type(payTokens)
+        cy.contains('button', `amountToken=${payTokens}`).invoke('text').then(requestLink => {
           my.burnCard()
           cy.visit(requestLink)
-          cy.get(`input[value="${payAmount}"]`).should('exist')
-          cy.get(`input[value="${account.address}"]`).should('exist')
+          cy.get(`input[value="${payTokens}"]`).should('exist')
+          cy.get(`input[value="${address}"]`).should('exist')
         })
       })
     })
@@ -102,69 +98,60 @@ describe('Daicard', () => {
 
   describe('Send', (done) => {
     it(`Should not generate a payment link if the amount provided is invalid`, () => {
-      my.getAccount().then(sender => {
-        my.deposit(sender.address, depositAmount).then(tokensDeposited => {
-          my.goToSend()
-          // No negative numbers
-          cy.get('input[type="number"]').clear().type('-1')
-          cy.contains('button', /link/i).click()
-          cy.contains('p', /above 0/i).should('exist')
-          // No zero payments
-          cy.get('input[type="number"]').clear().type('0')
-          cy.contains('button', /link/i).click()
-          cy.contains('p', /above 0/i).should('exist')
-          // No payments above card's balance
-          cy.get('input[type="number"]').clear().type('1' + tokensDeposited)
-          cy.contains('button', /link/i).click()
-          cy.contains('p', /insufficient balance/i).should('exist')
-        })
+      my.deposit(depositEth).then(tokensDeposited => {
+        my.goToSend()
+        // No negative payments
+        cy.get('input[type="number"]').clear().type('-1')
+        cy.contains('button', /link/i).click()
+        cy.contains('p', /above 0/i).should('exist')
+        // No zero payments
+        cy.get('input[type="number"]').clear().type('0')
+        cy.contains('button', /link/i).click()
+        cy.contains('p', /above 0/i).should('exist')
+        // No payments greater than the card's balance
+        cy.get('input[type="number"]').clear().type('1' + tokensDeposited)
+        cy.contains('button', /link/i).click()
+        cy.contains('p', /insufficient balance/i).should('exist')
       })
     })
 
     it(`Should send a payment when a link payment is opened in another card`, () => {
-      my.getAccount().then(recipient => {
+      my.getMnemonic().then(recipientMnemonic => {
         my.burnCard() // also decollateralizes the channel
-        my.getAccount().then(sender => {
-          my.deposit(sender.address, depositAmount).then(tokensDeposited => {
-            my.linkPay(amount).then(redeemLink => {
-              my.restoreMnemonic(recipient.mnemonic)
-              cy.visit(redeemLink)
-              cy.contains('span', /redeeming/i).should('exist')
-              cy.contains('h5', /redeemed successfully/i).should('exist')
-              cy.contains('p', amount).should('exist')
-              my.goHome()
-              cy.wait(3000) // TODO: remove race condition
-              my.getBalance().then(balance => {
-                expect(balance).to.equal(depositAmount)
-              })
-            })
+        my.deposit(depositEth).then(tokensDeposited => {
+          my.linkPay(payTokens).then(redeemLink => {
+            my.restoreMnemonic(recipientMnemonic)
+            cy.visit(redeemLink)
+            cy.contains('span', /redeeming/i).should('exist')
+            cy.contains('h5', /redeemed successfully/i).should('exist')
+            cy.contains('p', payTokens).should('exist')
+            my.goHome()
+            cy.resolve(my.getBalance).should('contain', payTokens)
           })
         })
       })
     })
 
     it(`Should not send a payment when input invalid`, () => {
-      my.getAccount().then(sender => {
-        my.deposit(sender.address, depositAmount).then(tokensDeposited => {
-          my.goToSend()
-          cy.get('input[type="number"]').should('exist')
-          // No negative numbers
-          cy.get('input[type="number"]').clear().type('-1')
-          cy.contains('button', /send/i).click()
-          cy.contains('p', /above 0/i).should('exist')
-          // No zero payments
-          cy.get('input[type="number"]').clear().type('0')
-          cy.contains('button', /send/i).click()
-          cy.contains('p', /above 0/i).should('exist')
-          // No payments above card's balance
-          cy.get('input[type="number"]').clear().type('1' + tokensDeposited)
-          cy.contains('button', /send/i).click()
-          cy.contains('p', /insufficient balance/i).should('exist')
-          // No invalid addresses
-          cy.get('input[type="string"]').clear().type('0xabc123')
-          cy.contains('button', /send/i).click()
-          cy.contains('p', /invalid address/i).should('exist')
-        })
+      my.deposit(depositEth).then(tokensDeposited => {
+        my.goToSend()
+        cy.get('input[type="number"]').should('exist')
+        // No negative numbers
+        cy.get('input[type="number"]').clear().type('-1')
+        cy.contains('button', /send/i).click()
+        cy.contains('p', /above 0/i).should('exist')
+        // No zero payments
+        cy.get('input[type="number"]').clear().type('0')
+        cy.contains('button', /send/i).click()
+        cy.contains('p', /above 0/i).should('exist')
+        // No payments above card's balance
+        cy.get('input[type="number"]').clear().type('1' + tokensDeposited)
+        cy.contains('button', /send/i).click()
+        cy.contains('p', /insufficient balance/i).should('exist')
+        // No invalid addresses
+        cy.get('input[type="string"]').clear().type('0xabc123')
+        cy.contains('button', /send/i).click()
+        cy.contains('p', /invalid address/i).should('exist')
       })
     })
 
@@ -174,21 +161,17 @@ describe('Daicard', () => {
 
   describe('Withdraw', () => {
     it(`Should not withdraw to an invalid address`, () => {
-      my.getAccount().then(account => {
-        my.deposit(account.address, depositAmount).then((balance) => {
-          my.goToCashout()
-          cy.get('input[type="text"]').type('0xabc123')
-          cy.contains('button', /cash out eth/i).click()
-          cy.contains('p', /invalid address/i).should('exist')
-        })
+      my.deposit(depositEth).then(tokensDeposited => {
+        my.goToCashout()
+        cy.get('input[type="text"]').clear().type('0xabc123')
+        cy.contains('button', /cash out eth/i).click()
+        cy.contains('p', /invalid address/i).should('exist')
       })
     })
 
-    it(`Should withdraw to a valid address`, () => {
-      my.getAccount().then(sender => {
-        my.deposit(sender.address, depositAmount).then((balance) => {
-          my.cashout()
-        })
+    it.only(`Should withdraw to a valid address`, () => {
+      my.deposit(depositEth).then(tokensDeposited => {
+        my.cashout()
       })
     })
   })
