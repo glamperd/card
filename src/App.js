@@ -625,7 +625,7 @@ class App extends React.Component {
 
   async getCustodialBalance() {
     const { hubUrl, opts, address } = this.state;
-    const custodialBalance = await axios.post(`${hubUrl}/custodial/${address}/balance`, {}, opts);
+    const custodialBalance = await axios.get(`${hubUrl}/custodial/${address}/balance`, {}, opts);
     console.log('custodial balance ', custodialBalance)
   }
 
@@ -636,7 +636,7 @@ class App extends React.Component {
   async authorizeHandler() {
     const { customWeb3, hubUrl, opts } = this.state;
     const web3 = customWeb3;
-    const challengeRes = await axios.post(`${hubUrl}/auth/challenge`, {}, opts);
+    const challengeRes = await axios.post(`${hubUrl}/auth/challenge`, opts);
     console.log('authorizeHandler ', challengeRes)
 
     const ORIGIN = "hub.spankchain.com"
