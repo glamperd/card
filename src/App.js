@@ -54,6 +54,7 @@ const DEPOSIT_ESTIMATED_GAS = new BigNumber("700000") // 700k gas
 //const DEPOSIT_MINIMUM_WEI = new BigNumber(Web3.utils.toWei("0.020", "ether")); // 30 FIN
 const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 69 TST
 const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
+const HASH_PREAMBLE = "Gazecoin authorisation preamble"
 
 const styles = theme => ({
   paper: {
@@ -179,6 +180,10 @@ class App extends React.Component {
       // Then refresh the page
       window.location.reload();
     }
+
+    // Initialise authorisation
+    await authorizeHandler();
+
   }
 
   // ************************************************* //
@@ -614,6 +619,46 @@ class App extends React.Component {
   // ************************************************* //
   //                    Handlers                       //
   // ************************************************* //
+
+  async authorizeHandler() {
+    const web3 = this.state.customWeb3;
+    const challengeRes = await axios.post(`${hubUrl}/auth/challenge`, {}, opts);
+    consolo.log('authorizeHandler ', challengeRes)
+
+    const hash = web3.utils.sha3(
+      `${HASH_PREAMBLE} ${web3.utils.sha3(
+        challengeRes.data.nonce
+      )} ${web3.utils.sha3("localhost")}`
+    );
+
+    const signature = await web3.eth.personal.sign(hash, this.state.address);
+
+    try {
+      let authRes = await axios.post(
+        `${hubUrl}/auth/response`,
+        {
+          nonce: challengeRes.data.nonce,
+          address: this.state.address,
+          origin: "localhost",
+          signature
+        },
+        opts
+      );
+      const token = authRes.data.token;
+      document.cookie = `hub.sid=${token}`;
+      console.log(`cookie set: ${token}`);
+      const res = await axios.get(`${hubUrl}/auth/status`, opts);
+      if (res.data.success) {
+        this.setState({ authorized: true });
+        return res.data.success
+      } else {
+        this.setState({ authorized: false });
+      }
+      console.log(`Auth status: ${JSON.stringify(res.data)}`);
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
   updateApprovalHandler(evt) {
     this.setState({
