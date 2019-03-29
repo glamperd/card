@@ -336,6 +336,13 @@ class App extends React.Component {
       400
     )
 
+    interval(
+      async (iteration, stop) => {
+        await this.getCustodialBalance();
+      },
+      5000
+    )
+
   }
 
   async setBrowserWalletMinimumBalance() {
@@ -616,13 +623,19 @@ class App extends React.Component {
     }
   }
 
+  async getCustodialBalance() {
+    const { hubUrl, opts, address } = this.state;
+    const custodialBalance = await axios.post(`${hubUrl}/custodial/${address}/balance`, {}, opts);
+    console.log('custodial balance ', custodialBalance)
+  }
+
   // ************************************************* //
   //                    Handlers                       //
   // ************************************************* //
 
   async authorizeHandler() {
-    const { customeWeb3, hubUrl, opts, } = this.state;
-    const web3 = this.state.customWeb3;
+    const { customWeb3, hubUrl, opts } = this.state;
+    const web3 = customWeb3;
     const challengeRes = await axios.post(`${hubUrl}/auth/challenge`, {}, opts);
     console.log('authorizeHandler ', challengeRes)
 
