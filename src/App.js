@@ -182,7 +182,7 @@ class App extends React.Component {
     }
 
     // Initialise authorisation
-    await authorizeHandler();
+    await this.authorizeHandler();
 
   }
 
@@ -621,9 +621,10 @@ class App extends React.Component {
   // ************************************************* //
 
   async authorizeHandler() {
+    const { customeWeb3, hubUrl, opts, } = this.state;
     const web3 = this.state.customWeb3;
     const challengeRes = await axios.post(`${hubUrl}/auth/challenge`, {}, opts);
-    consolo.log('authorizeHandler ', challengeRes)
+    console.log('authorizeHandler ', challengeRes)
 
     const hash = web3.utils.sha3(
       `${HASH_PREAMBLE} ${web3.utils.sha3(
