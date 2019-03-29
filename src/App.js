@@ -626,7 +626,7 @@ class App extends React.Component {
     const challengeRes = await axios.post(`${hubUrl}/auth/challenge`, {}, opts);
     console.log('authorizeHandler ', challengeRes)
 
-    const ORIGIN = "https://card.gazecoin.xyz"
+    const ORIGIN = "hub.spankchain.com"
     const hash = web3.utils.sha3(
       `${HASH_PREAMBLE} ${web3.utils.sha3(
         challengeRes.data.nonce

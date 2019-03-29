@@ -793,7 +793,6 @@ class PayCard extends Component {
                 onClick={() => {this.openThreadHandler()}}
               >
                 Open Thread
-                <LinkIcon style={{ marginLeft: "5px" }} />
               </Button>
               <Button
                 fullWidth
