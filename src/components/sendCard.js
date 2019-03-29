@@ -802,7 +802,7 @@ class PayCard extends Component {
                 size="large"
                 onClick={() => {this.custodialPaymentHandler()}}
               >
-                Custodial Payment
+                Custodial
               </Button>
             </Grid>
           </Grid>
