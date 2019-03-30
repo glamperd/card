@@ -164,11 +164,15 @@ class App extends React.Component {
 
       console.log('setting web3')
       await this.setWeb3(rpc);
+      console.log('setting connext')
       await this.setConnext();
+      console.log('setting token contract')
       await this.setTokenContract();
 
+      console.log('starting pollConnextState')
       await this.pollConnextState();
       await this.setBrowserWalletMinimumBalance();
+      console.log('starting poller')
       await this.poller();
       console.log('loaded')
     } else {
