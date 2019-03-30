@@ -591,12 +591,12 @@ class App extends React.Component {
     const refundStr = localStorage.getItem("refunding");
     const hasRefund = !!refundStr ? refundStr.split(",") : null;
     if (runtime.syncResultsFromHub[0]) {
+      let deposit;
+      let withdraw;
       if (runtime.syncResultsFromHub[0].type === 'thread') {
         // Handle thread requests
         await this.state.connext.stateUpdateController.handelSyncItem(runtime.syncResultsFromHub[0]);
       } else {
-        let deposit;
-        let withdraw;
         switch (runtime.syncResultsFromHub[0].update.reason) {
           case "ProposePendingDeposit":
             if(runtime.syncResultsFromHub[0].update.args.depositTokenUser !== "0" ||
@@ -623,8 +623,8 @@ class App extends React.Component {
             break;
           default:
         }
-        this.setState({ status: { deposit, withdraw, hasRefund } });
       }
+      this.setState({ status: { deposit, withdraw, hasRefund } });
     }
   }
 
