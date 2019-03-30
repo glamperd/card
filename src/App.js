@@ -594,6 +594,7 @@ class App extends React.Component {
       let deposit;
       let withdraw;
       if (runtime.syncResultsFromHub[0].type === 'thread') {
+        console.log('Handling thread event in sync results...', runtime.syncResultsFromHub[0])
         // Handle thread requests
         await this.state.connext.stateUpdateController.handleSyncItem(runtime.syncResultsFromHub[0]);
       } else {
