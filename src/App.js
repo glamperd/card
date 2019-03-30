@@ -162,19 +162,13 @@ class App extends React.Component {
         text: delegateSigner
       });
 
-      console.log('setting web3')
       await this.setWeb3(rpc);
-      console.log('setting connext')
       await this.setConnext();
-      console.log('setting token contract')
       await this.setTokenContract();
 
-      console.log('starting pollConnextState')
       await this.pollConnextState();
       await this.setBrowserWalletMinimumBalance();
-      console.log('starting poller')
       await this.poller();
-      console.log('loaded')
     } else {
       // Else, we create a new address
       const delegateSigner = await createWallet(this.state.web3);
@@ -601,11 +595,11 @@ class App extends React.Component {
     if (runtime.syncResultsFromHub[0]) {
       let deposit;
       let withdraw;
-      //if (runtime.syncResultsFromHub[0].type === 'thread') {
-        //console.log('Handling thread event in sync results...', runtime.syncResultsFromHub[0])
+      if (runtime.syncResultsFromHub[0].type === 'thread') {
+        console.log('Handling thread event in sync results...', runtime.syncResultsFromHub[0])
         // Handle thread requests
-        //await this.state.connext.stateUpdateController.handleSyncItem(runtime.syncResultsFromHub[0]);
-      //} else {
+        await this.state.connext.stateUpdateController.handleSyncItem(runtime.syncResultsFromHub[0]);
+      } else {
         switch (runtime.syncResultsFromHub[0].update.reason) {
           case "ProposePendingDeposit":
             if(runtime.syncResultsFromHub[0].update.args.depositTokenUser !== "0" ||
@@ -632,7 +626,7 @@ class App extends React.Component {
             break;
           default:
         }
-      //}
+      }
       this.setState({ status: { deposit, withdraw, hasRefund } });
     }
   }
