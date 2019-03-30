@@ -595,7 +595,7 @@ class App extends React.Component {
     if (runtime.syncResultsFromHub[0]) {
       let deposit;
       let withdraw;
-      if (runtime.syncResultsFromHub[0].type === 'thread') {
+      /* if (runtime.syncResultsFromHub[0].type === 'thread') {
         let syncResult = runtime.syncResultsFromHub[0]
         console.log('Handling thread event in sync results...', syncResult)
         if (syncResult.update.state.txCount == 0) {
@@ -605,6 +605,7 @@ class App extends React.Component {
         await this.state.connext.stateUpdateController.handleSyncItem(syncResult);
 
       } else {
+        */
         // Non-thread updates
         switch (runtime.syncResultsFromHub[0].update.reason) {
           case "ProposePendingDeposit":
@@ -632,7 +633,7 @@ class App extends React.Component {
             break;
           default:
         }
-      }
+      //}
       this.setState({ status: { deposit, withdraw, hasRefund } });
     }
   }
