@@ -639,9 +639,16 @@ class App extends React.Component {
   }
 
   async getCustodialBalance() {
-    const { hubUrl, opts, address } = this.state;
+    const { hubUrl, address } = this.state;
+    const opts = {
+          web3: customWeb3,
+          hubUrl: hubUrl, // in dev-mode: http://localhost:8080,
+          user: address,
+          origin: "localhost", // TODO: what should this be
+          cookie: document.cookie
+        };
+
     try {
-      opts.cookie = document.cookie
       //const custodialBalance = await axios.get(`${hubUrl}/channel/${address}/sync?lastChanTx=27&lastThreadUpdateId=0`, opts);
       const custodialBalance = await axios.get(`${hubUrl}/custodial/${address}/balance`, opts);
       console.log('custodial balance ', custodialBalance)
