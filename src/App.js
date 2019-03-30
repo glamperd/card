@@ -591,43 +591,52 @@ class App extends React.Component {
     const refundStr = localStorage.getItem("refunding");
     const hasRefund = !!refundStr ? refundStr.split(",") : null;
     if (runtime.syncResultsFromHub[0]) {
-      let deposit;
-      let withdraw;
-      switch (runtime.syncResultsFromHub[0].update.reason) {
-        case "ProposePendingDeposit":
-          if(runtime.syncResultsFromHub[0].update.args.depositTokenUser !== "0" ||
-            runtime.syncResultsFromHub[0].update.args.depositWeiUser !== "0" ) {
-            this.closeConfirmations()
-            deposit = "PENDING";
-          }
-          break;
-        case "ProposePendingWithdrawal":
-          if(runtime.syncResultsFromHub[0].update.args.withdrawalTokenUser !== "0" ||
-            runtime.syncResultsFromHub[0].update.args.withdrawalWeiUser !== "0" ) {
-            this.closeConfirmations()
-            withdraw = "PENDING";
-          }
-          break;
-        case "ConfirmPending":
-          if(this.state.status.depositHistory === "PENDING") {
-            this.closeConfirmations("deposit")
-            deposit = "SUCCESS";
-          } else if(this.state.status.withdrawHistory === "PENDING") {
-            this.closeConfirmations("withdraw")
-            withdraw = "SUCCESS";
-          }
-          break;
-        default:
+      if (runtime.syncResultsFromHub[0].type === 'thread') {
+        // Handle thread requests
+        await this.state.connext.stateUpdateController.handelSyncItem(runtime.syncResultsFromHub[0]);
+      } else {
+        let deposit;
+        let withdraw;
+        switch (runtime.syncResultsFromHub[0].update.reason) {
+          case "ProposePendingDeposit":
+            if(runtime.syncResultsFromHub[0].update.args.depositTokenUser !== "0" ||
+              runtime.syncResultsFromHub[0].update.args.depositWeiUser !== "0" ) {
+              this.closeConfirmations()
+              deposit = "PENDING";
+            }
+            break;
+          case "ProposePendingWithdrawal":
+            if(runtime.syncResultsFromHub[0].update.args.withdrawalTokenUser !== "0" ||
+              runtime.syncResultsFromHub[0].update.args.withdrawalWeiUser !== "0" ) {
+              this.closeConfirmations()
+              withdraw = "PENDING";
+            }
+            break;
+          case "ConfirmPending":
+            if(this.state.status.depositHistory === "PENDING") {
+              this.closeConfirmations("deposit")
+              deposit = "SUCCESS";
+            } else if(this.state.status.withdrawHistory === "PENDING") {
+              this.closeConfirmations("withdraw")
+              withdraw = "SUCCESS";
+            }
+            break;
+          default:
+        }
+        this.setState({ status: { deposit, withdraw, hasRefund } });
       }
-      this.setState({ status: { deposit, withdraw, hasRefund } });
     }
   }
 
   async getCustodialBalance() {
     const { hubUrl, opts, address } = this.state;
-    const custodialBalance = await axios.get(`${hubUrl}/channel/${address}/sync?lastChanTx=27&lastThreadUpdateId=0`, opts);
-    //const custodialBalance = await axios.get(`${hubUrl}/custodial/${address}/balance`, opts);
-    console.log('custodial balance ', custodialBalance)
+    try {
+      //const custodialBalance = await axios.get(`${hubUrl}/channel/${address}/sync?lastChanTx=27&lastThreadUpdateId=0`, opts);
+      const custodialBalance = await axios.get(`${hubUrl}/custodial/${address}/balance`, opts);
+      console.log('custodial balance ', custodialBalance)
+    } catch (err) {
+      console.log(err.message)
+    }
   }
 
   // ************************************************* //

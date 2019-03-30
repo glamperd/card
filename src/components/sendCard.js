@@ -586,24 +586,26 @@ class PayCard extends Component {
     // check if the recipient needs collateral
     paymentVal.payments[0].type = "PT_THREAD";
     // TODO - need this?
-    const needsCollateral = await connext.recipientNeedsCollateral(
-      paymentVal.payments[0].recipient,
-      convertPayment("str", paymentVal.payments[0].amount)
-    );
+    //const needsCollateral = await connext.recipientNeedsCollateral(
+    //  paymentVal.payments[0].recipient,
+    //  convertPayment("str", paymentVal.payments[0].amount)
+    //);
+
     // do not send collateral request if it is not valid
     // check if the values are reasonable
     // before beginning the request for collateral
-    const { balanceError, addressError } = this.validatePaymentInput(
-      paymentVal
-    );
-    if (addressError || balanceError) {
-      return;
-    }
+    //const { balanceError, addressError } = this.validatePaymentInput(
+    //  paymentVal
+    //);
+    //if (addressError || balanceError) {
+    //  return;
+    //}
 
     // needs collateral can indicate that the recipient does
     // not have a channel, or that it does not have current funds
     // in either case, you need to send a failed payment
     // to begin auto collateralization process
+    /*
     if (needsCollateral) {
       // this can have 3 potential outcomes:
       // - collateralization failed (return)
@@ -622,6 +624,7 @@ class PayCard extends Component {
         // send payment via fall through
       }
     }
+    */
 
     // send payment
     await this._sendPayment(paymentVal);
