@@ -596,10 +596,16 @@ class App extends React.Component {
       let deposit;
       let withdraw;
       if (runtime.syncResultsFromHub[0].type === 'thread') {
-        console.log('Handling thread event in sync results...', runtime.syncResultsFromHub[0])
+        let syncResult = runtime.syncResultsFromHub[0]
+        console.log('Handling thread event in sync results...', syncResult)
+        if (syncResult.update.state.txCount == 0) {
+          syncResult.update.state.txCount = 1
+        }
         // Handle thread requests
-        await this.state.connext.stateUpdateController.handleSyncItem(runtime.syncResultsFromHub[0]);
+        await this.state.connext.stateUpdateController.handleSyncItem(syncResult);
+
       } else {
+        // Non-thread updates
         switch (runtime.syncResultsFromHub[0].update.reason) {
           case "ProposePendingDeposit":
             if(runtime.syncResultsFromHub[0].update.args.depositTokenUser !== "0" ||
