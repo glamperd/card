@@ -639,7 +639,7 @@ class App extends React.Component {
   }
 
   async getCustodialBalance() {
-    const { hubUrl, address } = this.state;
+    const { hubUrl, address, customWeb3 } = this.state;
     const opts = {
           web3: customWeb3,
           hubUrl: hubUrl, // in dev-mode: http://localhost:8080,
