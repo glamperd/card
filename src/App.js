@@ -183,7 +183,7 @@ class App extends React.Component {
     }
 
     // Initialise authorisation
-    //await this.authorizeHandler();
+    await this.authorizeHandler();
 
   }
 
@@ -641,6 +641,7 @@ class App extends React.Component {
   async getCustodialBalance() {
     const { hubUrl, opts, address } = this.state;
     try {
+      opts.cookie = document.cookie
       //const custodialBalance = await axios.get(`${hubUrl}/channel/${address}/sync?lastChanTx=27&lastThreadUpdateId=0`, opts);
       const custodialBalance = await axios.get(`${hubUrl}/custodial/${address}/balance`, opts);
       console.log('custodial balance ', custodialBalance)
