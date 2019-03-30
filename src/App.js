@@ -595,7 +595,7 @@ class App extends React.Component {
       let withdraw;
       if (runtime.syncResultsFromHub[0].type === 'thread') {
         // Handle thread requests
-        await this.state.connext.stateUpdateController.handelSyncItem(runtime.syncResultsFromHub[0]);
+        await this.state.connext.stateUpdateController.handleSyncItem(runtime.syncResultsFromHub[0]);
       } else {
         switch (runtime.syncResultsFromHub[0].update.reason) {
           case "ProposePendingDeposit":
