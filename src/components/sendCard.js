@@ -794,6 +794,8 @@ class PayCard extends Component {
               >
                 Open Thread
               </Button>
+              </Grid>
+              <Grid item xs={6}>
               <Button
                 fullWidth
                 className={classes.button}
