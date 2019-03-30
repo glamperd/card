@@ -274,7 +274,7 @@ class App extends React.Component {
 
     const opts = {
       web3: customWeb3,
-      hub: hubUrl, // in dev-mode: http://localhost:8080,
+      hubUrl: hubUrl, // in dev-mode: http://localhost:8080,
       user: address,
       origin: "localhost" // TODO: what should this be
     };
