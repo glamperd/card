@@ -139,6 +139,7 @@ class App extends React.Component {
   async componentDidMount() {
     // set public url
     publicUrl = window.location.origin.toLowerCase();
+    console.log(publicUrl)
 
     // Set up state
     const mnemonic = localStorage.getItem("mnemonic");
@@ -161,6 +162,7 @@ class App extends React.Component {
         text: delegateSigner
       });
 
+      console.log('setting web3')
       await this.setWeb3(rpc);
       await this.setConnext();
       await this.setTokenContract();
@@ -168,6 +170,7 @@ class App extends React.Component {
       await this.pollConnextState();
       await this.setBrowserWalletMinimumBalance();
       await this.poller();
+      console.log('loaded')
     } else {
       // Else, we create a new address
       const delegateSigner = await createWallet(this.state.web3);
