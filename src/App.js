@@ -274,12 +274,13 @@ class App extends React.Component {
 
     const opts = {
       web3: customWeb3,
-      hubUrl, // in dev-mode: http://localhost:8080,
+      hub: hubUrl, // in dev-mode: http://localhost:8080,
       user: address,
       origin: "localhost" // TODO: what should this be
     };
 
     // *** Instantiate the connext client ***
+    console.log('getting Connext client', opts)
     const connext = await getConnextClient(opts);
     console.log(`Successfully set up connext! Connext config:`);
     console.log(`  - tokenAddress: ${connext.opts.tokenAddress}`);
