@@ -569,11 +569,11 @@ class PayCard extends Component {
         const tokenAmtPerTx = totalAmt.amountToken / numPayments
         const weiAmountPerTx = totalAmt.amountWei / numPayments
         const delay = parseInt(paymentVal.timeSeparation)
-        paymentVal.payments[0].amount.amountToken=tokenAmtPerTx
-        paymentVal.payments[0].amount.amountWei=weiAmountPerTx
+        paymentVal.payments[0].amount.amountToken=new BigNumber(tokenAmtPerTx)
+        paymentVal.payments[0].amount.amountWei=new BigNumber(weiAmountPerTx)
         for (let i=0; i<numPayments; i++) {
           setTimeout(function() {
-              console.log('sending micropayment ', tokenAmtPerTx)
+              console.log('sending micropayment ', paymentVal.payments[0].amount.amountToken)
               // TODO - await doesn't seem to work here. Is it needed?
               connext.buy(paymentVal);
           }, delay)
