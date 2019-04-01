@@ -556,6 +556,7 @@ class PayCard extends Component {
     // you can call the appropriate type here
     try {
 
+      console.log('_sendPayment', paymentVal.numberOfPayments)
       if (parseInt(paymentVal.numberOfPayments) == 1 ) {
         await connext.buy(paymentVal);
       } else {
