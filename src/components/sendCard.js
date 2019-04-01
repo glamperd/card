@@ -237,7 +237,9 @@ class PayCard extends Component {
       paymentState: PaymentStates.None,
       scan: false,
       displayVal: props.scanArgs.amount ? props.scanArgs.amount : "0",
-      showReceipt: false
+      showReceipt: false,
+      numberOfPayments: 1,
+      timeSeparation: 0
     };
   }
 
@@ -286,6 +288,14 @@ class PayCard extends Component {
     });
 
     this.setState({ displayVal: value, });
+  }
+
+  async updateNumPaymentsHandler(value) {
+    this.setState({ numberOfPayments: value, });
+  }
+
+  async updateTimeSeparationHandler(value) {
+    this.setState({ timeSeparation: value, });
   }
 
   handleQRData = async scanResult => {
@@ -545,7 +555,24 @@ class PayCard extends Component {
     // by either payment or link handler
     // you can call the appropriate type here
     try {
-      await connext.buy(paymentVal);
+
+      if (parseInt(paymentVal.numberOfPayments) == 1 ) {
+        await connext.buy(paymentVal);
+      } else {
+        const numPayments = parseInt(paymentVal.numberOfPayments)
+        const totalAmt = paymentVal.payments[0].amount
+        const tokenAmtPerTx = totalAmt.amountToken / numPayments
+        const weiAmountPerTx = totalAmt.amountWei / numPayments
+        const delay = parseInt(paymentVal.timeSeparation)
+        paymentVal.payments[0].amount.amountToken=tokenAmtPerTx
+        paymentVal.payments[0].amount.amountWei=weiAmountPerTx
+        for (let i=0; i<numPayments; i++) {
+            setTimeout(function() = {
+            await connext.buy(paymentVal);
+          }, delay)
+        }
+      }
+
       if (paymentVal.payments[0].type === "PT_LINK") {
         // automatically route to redeem card
         const secret = paymentVal.payments[0].secret;
@@ -755,6 +782,31 @@ class PayCard extends Component {
             history={this.props.history}
           />
         </Modal>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            id="outlined-number"
+            label="Number of payments"
+            value={this.state.numberOfPayments}
+            type="number"
+            margin="normal"
+            variant="outlined"
+            placeholder="1"
+            onChange={evt => this.updateNumPaymentHandler(evt.target.value)}
+          />
+          <TextField
+            fullWidth
+            id="outlined-number"
+            label="Time between"
+            value={this.state.timeSeparation}
+            type="number"
+            margin="normal"
+            variant="outlined"
+            helpertext="milliseconds between payments"
+            placeholder="0"
+            onChange={evt => this.updateTimeSeparationHandler(evt.target.value)}
+          />
+        </Grid>
         <Grid item xs={12}>
           <Grid
             container
