@@ -230,16 +230,16 @@ class PayCard extends Component {
             },
             type: "PT_CHANNEL"
           }
-        ]
+        ],
+        numberOfPayments: 1,
+        timeSeparation: 0
       },
       addressError: null,
       balanceError: null,
       paymentState: PaymentStates.None,
       scan: false,
       displayVal: props.scanArgs.amount ? props.scanArgs.amount : "0",
-      showReceipt: false,
-      numberOfPayments: 1,
-      timeSeparation: 0
+      showReceipt: false
     };
   }
 
@@ -291,11 +291,15 @@ class PayCard extends Component {
   }
 
   async updateNumPaymentsHandler(value) {
-    this.setState({ numberOfPayments: value, });
+    let oldPaymentVal = this.state.paymentVal
+    oldPaymentVal.numberOfPayments = value
+    this.setState({ paymentVal: oldPaymentVal, });
   }
 
   async updateTimeSeparationHandler(value) {
-    this.setState({ timeSeparation: value, });
+    let oldPaymentVal = this.state.paymentVal
+    oldPaymentVal.timeSeparation = value
+    this.setState({ paymentVal: oldPaymentVal, });
   }
 
   handleQRData = async scanResult => {
@@ -786,29 +790,41 @@ class PayCard extends Component {
           />
         </Modal>
         <Grid item xs={12}>
-          <TextField
-            fullWidth
-            id="outlined-number"
-            label="Number of payments"
-            value={this.state.numberOfPayments}
-            type="number"
-            margin="normal"
-            variant="outlined"
-            placeholder="1"
-            onChange={evt => this.updateNumPaymentsHandler(evt.target.value)}
-          />
-          <TextField
-            fullWidth
-            id="outlined-number"
-            label="Time between"
-            value={this.state.timeSeparation}
-            type="number"
-            margin="normal"
-            variant="outlined"
-            helpertext="milliseconds between payments"
-            placeholder="0"
-            onChange={evt => this.updateTimeSeparationHandler(evt.target.value)}
-          />
+          <Grid
+            container
+            direction="row"
+            alignItems="center"
+            justify="center"
+            spacing={16}
+          >
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                id="outlined-number"
+                label="Number of payments"
+                value={this.state.paymentVal.numberOfPayments}
+                type="number"
+                margin="normal"
+                variant="outlined"
+                placeholder="1"
+                onChange={evt => this.updateNumPaymentsHandler(evt.target.value)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                id="outlined-number"
+                label="Time between"
+                value={this.state.paymentVal.timeSeparation}
+                type="number"
+                margin="normal"
+                variant="outlined"
+                helpertext="milliseconds between payments"
+                placeholder="0"
+                onChange={evt => this.updateTimeSeparationHandler(evt.target.value)}
+              />
+            </Grid>
+          </Grid>
         </Grid>
         <Grid item xs={12}>
           <Grid
