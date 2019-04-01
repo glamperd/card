@@ -567,7 +567,7 @@ class PayCard extends Component {
         paymentVal.payments[0].amount.amountToken=tokenAmtPerTx
         paymentVal.payments[0].amount.amountWei=weiAmountPerTx
         for (let i=0; i<numPayments; i++) {
-            setTimeout(function() = {
+            setTimeout(function() {
             await connext.buy(paymentVal);
           }, delay)
         }
