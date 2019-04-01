@@ -566,8 +566,8 @@ class PayCard extends Component {
       } else {
         const numPayments = parseInt(paymentVal.numberOfPayments)
         const totalAmt = paymentVal.payments[0].amount
-        const tokenAmtPerTx = new BN(totalAmt.amountToken).div(numPayments)
-        const weiAmountPerTx = new BN(totalAmt.amountWei).div(numPayments)
+        const tokenAmtPerTx = new BN(totalAmt.amountToken).div(new BN(numPayments))
+        const weiAmountPerTx = new BN(totalAmt.amountWei).div(new BN(numPayments))
         const delay = parseInt(paymentVal.timeSeparation)
         paymentVal.payments[0].amount.amountToken=tokenAmtPerTx
         paymentVal.payments[0].amount.amountWei=weiAmountPerTx
