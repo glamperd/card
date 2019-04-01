@@ -566,11 +566,11 @@ class PayCard extends Component {
       } else {
         const numPayments = parseInt(paymentVal.numberOfPayments)
         const totalAmt = paymentVal.payments[0].amount
-        const tokenAmtPerTx = totalAmt.amountToken / numPayments
-        const weiAmountPerTx = totalAmt.amountWei / numPayments
+        const tokenAmtPerTx = totalAmt.amountToken.div(numPayments)
+        const weiAmountPerTx = totalAmt.amountWei.div(numPayments)
         const delay = parseInt(paymentVal.timeSeparation)
-        paymentVal.payments[0].amount.amountToken=new BigNumber(tokenAmtPerTx)
-        paymentVal.payments[0].amount.amountWei=new BigNumber(weiAmountPerTx)
+        paymentVal.payments[0].amount.amountToken=tokenAmtPerTx
+        paymentVal.payments[0].amount.amountWei=weiAmountPerTx
         for (let i=0; i<numPayments; i++) {
           setTimeout(function() {
               console.log('sending micropayment ', paymentVal.payments[0].amount.amountToken)
