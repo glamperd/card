@@ -568,7 +568,8 @@ class PayCard extends Component {
         paymentVal.payments[0].amount.amountWei=weiAmountPerTx
         for (let i=0; i<numPayments; i++) {
             setTimeout(function() {
-            await connext.buy(paymentVal);
+            // TODO - await doesn'ts seem to work here. Is it needed
+            connext.buy(paymentVal);
           }, delay)
         }
       }
