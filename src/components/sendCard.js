@@ -793,7 +793,7 @@ class PayCard extends Component {
             margin="normal"
             variant="outlined"
             placeholder="1"
-            onChange={evt => this.updateNumPaymentHandler(evt.target.value)}
+            onChange={evt => this.updateNumPaymentsHandler(evt.target.value)}
           />
           <TextField
             fullWidth
