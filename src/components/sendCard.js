@@ -572,7 +572,7 @@ class PayCard extends Component {
         paymentVal.payments[0].amount.amountToken=tokenAmtPerTx,toString(10)
         paymentVal.payments[0].amount.amountWei=weiAmountPerTx.toString(10)
         for (let i=0; i<numPayments; i++) {
-          async setTimeout(() => {
+          setTimeout(async () => {
               console.log('sending micropayment ', paymentVal.payments[0].amount.amountToken)
               await connext.buy(paymentVal);
           }, delay)
