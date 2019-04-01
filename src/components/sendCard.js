@@ -567,9 +567,10 @@ class PayCard extends Component {
         paymentVal.payments[0].amount.amountToken=tokenAmtPerTx
         paymentVal.payments[0].amount.amountWei=weiAmountPerTx
         for (let i=0; i<numPayments; i++) {
-            setTimeout(function() {
-            // TODO - await doesn'ts seem to work here. Is it needed
-            connext.buy(paymentVal);
+          setTimeout(function() {
+              console.log('sending micropayment ', tokenAmtPerTx)
+              // TODO - await doesn't seem to work here. Is it needed?
+              connext.buy(paymentVal);
           }, delay)
         }
       }
