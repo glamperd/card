@@ -27,7 +27,7 @@ describe('Daicard', () => {
   describe('Settings', () => {
     it(`Should provide an option for switching networks`, () => {
       my.goToSettings()
-      cy.contains('div[role="button"]', /mainnet/i).click()
+      cy.contains('div[role="button"]', /(mainnet)|(localhost)/i).click()
       cy.contains('li', /rinkeby/i).click()
       cy.contains('a[href="/settings"]', /rinkeby/i).should('exist')
       cy.contains('div[role="button"]', /rinkeby/i).click()

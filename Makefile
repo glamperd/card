@@ -67,7 +67,7 @@ test-prod: proxy-test
 	./node_modules/.bin/cypress install
 	./node_modules/.bin/cypress run --spec tests/index.js --env publicUrl=https://localhost
 
-test: proxy-test
+test:
 	./node_modules/.bin/cypress install
 	./node_modules/.bin/cypress run --spec tests/index.js
 
