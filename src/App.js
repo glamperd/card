@@ -675,7 +675,7 @@ class App extends React.Component {
     );
 
     const signature = await web3.eth.personal.sign(hash, this.state.address);
-
+    console.log('auth sig: ', signature)
     try {
       let authRes = await axios.post(
         `${hubUrl}/auth/response`,
