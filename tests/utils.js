@@ -1,6 +1,7 @@
 const eth = require('ethers')
 const provider = new eth.providers.JsonRpcProvider(Cypress.env('provider'))
 const wallet = eth.Wallet.fromMnemonic(Cypress.env('mnemonic')).connect(provider)
+const origin = Cypress.env('publicUrl').substring(Cypress.env('publicUrl').indexOf('://')+3)
 
 // Exported object, attach anything to this that you want available in tests
 const my = {}
@@ -167,7 +168,7 @@ my.linkPay = (value) => {
     my.goToSend()
     cy.get('input[type="number"]').clear().type(value)
     cy.contains('button', /link/i).click()
-    cy.contains('button', Cypress.env('publicUrl')).invoke('text').then(redeemLink => {
+    cy.contains('button', origin).invoke('text').then(redeemLink => {
       resolve(redeemLink)
     })
   }))
