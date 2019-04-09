@@ -2,6 +2,8 @@
 
 A simple offchain wallet, hosted in the browser, which utilizes Indra payment channels. Inspired by the SpankCard and Austin Griffith's burner wallet.
 
+Modified for GazeCoin - expose channel details. Do some authorisation for API calls.
+
 See it live at: https://daicard.io
 
 ## Contents
