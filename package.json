@@ -1,6 +1,6 @@
 {
   "name": "dai-card",
-  "version": "0.1.5",
+  "version": "0.1.12",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
