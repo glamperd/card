@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import Currency from "connext/dist/lib/currency/Currency";
+import Currency from "connext/src/lib/currency/Currency";
 const tokenAbi = require("./abi/humanToken.json");
 
 export default async function getTokenBalance(
