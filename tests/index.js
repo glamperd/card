@@ -1,8 +1,8 @@
 import my from './utils'
 import BN from 'bn.js'
 
-const depositEth = '0.05' // = 5e16 wei
-const payTokens = '3.14' // ~= 2e16 eth wei
+const depositEth = '0.02' // = 5e16 wei
+const payTokens = '0.68' // ~= 2e16 eth wei
 
 describe('Daicard', () => {
   beforeEach(() => {
