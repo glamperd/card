@@ -1,17 +1,28 @@
 #!/usr/bin/env bash
 set -e
 
+reset="${1:-no}"
+
 external_client="../indra/modules/client"
 
 if [[ ! -d "$external_client" ]]
 then echo "Error, couldn't find client to link at $external_client" && exit
 fi
 
-echo "rm -rf connext"
-rm -rf connext
+if [[ "$reset" == "reset" ]]
+then
+  echo "rm -rf connext"
+  rm -rf connext
+  echo "cp -rf ../indra/modules/client connext"
+  cp -rf ../indra/modules/client connext
 
-echo "cp -rf ../indra/modules/client connext"
-cp -rf ../indra/modules/client connext
+else
+  echo "rm -rf connext/src"
+  rm -rf connext/src
+  echo "cp -rf ../indra/modules/client/src connext/src"
+  cp -rf ../indra/modules/client/src connext/src
+
+fi
 
 echo "rebuilding the client..."
 cd connext
