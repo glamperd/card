@@ -251,13 +251,13 @@ class App extends React.Component {
   }
 
   async setConnext() {
-    const { hubUrl, rpcUrl } = this.state;
+    const { hubUrl, /*address, customWeb3*/ } = this.state;
 
     const opts = {
       mnemonic: localStorage.getItem("mnemonic"),
-      ethUrl: rpcUrl,
-      hubUrl, // in dev-mode: http://localhost:8080,
-      origin: "localhost" // TODO: what should this be
+      // web3: customWeb3, user: address, // This also works
+      hubUrl,
+      origin: window.location.host
     };
 
     // *** Instantiate the connext client ***
