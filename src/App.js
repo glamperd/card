@@ -1,15 +1,14 @@
-import React from "react";
 import "./App.css";
-import { setWallet } from "./utils/actions.js";
-import { createStore } from "redux";
+import { Paper, withStyles, Grid } from "@material-ui/core";
+import BigNumber from "bignumber.js";
+import * as eth from 'ethers';
+import interval from "interval-promise";
+import React from "react";
 import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
+import { createStore } from "redux";
+import * as Connext from "connext";
 import Home from "./components/Home";
 import DepositCard from "./components/depositCard";
-import { getConnextClient } from "connext/dist/Connext.js";
-import ProviderOptions from "./utils/ProviderOptions.ts";
-import clientProvider from "./utils/web3/clientProvider.ts";
-import { createWalletFromMnemonic, createWallet } from "./utils/walletGen";
-import { Paper, withStyles, Grid } from "@material-ui/core";
 import AppBarComponent from "./components/AppBar";
 import SettingsCard from "./components/settingsCard";
 import ReceiveCard from "./components/receiveCard";
@@ -19,19 +18,21 @@ import SupportCard from "./components/supportCard";
 import RedeemCard from "./components/redeemCard";
 import SetupCard from "./components/setupCard";
 import Confirmations from "./components/Confirmations";
-import BigNumber from "bignumber.js";
-import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
-import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
-import getExchangeRates from "connext/dist/lib/getExchangeRates";
 import MySnackbar from "./components/snackBar";
-import interval from "interval-promise";
+
+import { setWallet } from "./utils/actions.js";
+import ProviderOptions from "./utils/ProviderOptions.ts";
+import clientProvider from "./utils/web3/clientProvider.ts";
+import { createWalletFromMnemonic, createWallet } from "./utils/walletGen";
 
 export const store = createStore(setWallet, null);
+
+const { CurrencyType, CurrencyConvertable } = Connext.types
+const { getExchangeRates } = Connext.utils.getters
 
 let publicUrl;
 
 const Web3 = require("web3");
-const eth = require("ethers");
 const humanTokenAbi = require("./abi/humanToken.json");
 
 const env = process.env.NODE_ENV;
@@ -250,17 +251,17 @@ class App extends React.Component {
   }
 
   async setConnext() {
-    const { address, customWeb3, hubUrl } = this.state;
+    const { hubUrl, rpcUrl } = this.state;
 
     const opts = {
-      web3: customWeb3,
+      mnemonic: localStorage.getItem("mnemonic"),
+      ethUrl: rpcUrl,
       hubUrl, // in dev-mode: http://localhost:8080,
-      user: address,
       origin: "localhost" // TODO: what should this be
     };
 
     // *** Instantiate the connext client ***
-    const connext = await getConnextClient(opts);
+    const connext = await Connext.createClient(opts);
     console.log(`Successfully set up connext! Connext config:`);
     console.log(`  - tokenAddress: ${connext.opts.tokenAddress}`);
     console.log(`  - hubAddress: ${connext.opts.hubAddress}`);

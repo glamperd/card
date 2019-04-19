@@ -12,12 +12,12 @@ import {
   LinearProgress,
   Tooltip
 } from "@material-ui/core";
-import { CurrencyType } from "connext/dist/state/ConnextState/CurrencyTypes";
-import getExchangeRates from "connext/dist/lib/getExchangeRates";
-import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
-import Currency from "connext/dist/lib/currency/Currency";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import CopyIcon from "@material-ui/icons/FileCopy";
+import * as Connext from 'connext';
+
+const { Currency, CurrencyConvertable, CurrencyType } = Connext.types
+const { getExchangeRates } = Connext.utils.getters
 
 const styles = theme => ({
   icon: {

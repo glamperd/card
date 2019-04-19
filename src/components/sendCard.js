@@ -7,6 +7,7 @@ import LinkIcon from "@material-ui/icons/Link";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
+import * as eth from 'ethers';
 import QRScan from "./qrScan";
 import {
   withStyles,
@@ -19,13 +20,14 @@ import {
   DialogContentText,
   DialogActions
 } from "@material-ui/core";
-import { emptyAddress } from "connext/dist/Utils";
-import { convertPayment } from "connext/dist/types";
+import * as Connext from 'connext';
 import BN from "bn.js";
 import interval from "interval-promise";
 import Web3 from "web3";
 import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
 
+const { convertPayment } = Connext.types
+const emptyAddress = eth.constants.AddressZero
 const queryString = require("query-string");
 // $10 capped linked payments
 const LINK_LIMIT = Web3.utils.toBN(Web3.utils.toWei("10", "ether"));
