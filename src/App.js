@@ -667,11 +667,10 @@ class App extends React.Component {
     const challengeRes = await axios.post(`${hubUrl}/auth/challenge`, opts);
     console.log('authorizeHandler ', challengeRes)
 
+    const nonce = challengeRes.data.nonce
     const ORIGIN = "hub.spankchain.com"
     const hash = web3.utils.sha3(
-      `${HASH_PREAMBLE} ${web3.utils.sha3(
-        challengeRes.data.nonce
-      )} ${web3.utils.sha3(ORIGIN)}`
+      `${HASH_PREAMBLE} ${web3.utils.sha3(nonce)} ${web3.utils.sha3(ORIGIN)}`
     );
 
     const signature = await web3.eth.personal.sign(hash, this.state.address);
