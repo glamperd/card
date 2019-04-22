@@ -32,7 +32,7 @@
     "isolatedModules": true
   },
   "include": [
-    "src",
+    "src/**/*",
     "types"
   ],
   "exclude": [

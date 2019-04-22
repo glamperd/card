@@ -1,36 +1,32 @@
-//import React, { Fragment } from "react";
-//import "./App.css";
+import React, { Fragment } from "react";
+import "./App.css";
 import { setWallet } from "./utils/actions.js";
 import { createStore } from "redux";
-//import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
-//import Home from "./components/Home";
-//import DepositCard from "./components/depositCard";
+import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
+import Home from "./components/Home";
+import DepositCard from "./components/depositCard";
 import { getConnextClient } from "connext/dist/Connext.js";
 import ProviderOptions from "./utils/ProviderOptions.ts";
 import clientProvider from "./utils/web3/clientProvider.ts";
 import { createWalletFromMnemonic } from "./walletGen";
 import axios from "axios";
-//import { Paper, withStyles, Button, Grid } from "@material-ui/core";
-//import AppBarComponent from "./components/AppBar";
-//import SettingsCard from "./components/settingsCard";
-//import ReceiveCard from "./components/receiveCard";
-//import SendCard from "./components/sendCard";
-//import CashOutCard from "./components/cashOutCard";
-///import SupportCard from "./components/supportCard";
+import { Paper, withStyles, Button, Grid } from "@material-ui/core";
+import AppBarComponent from "./components/AppBar";
+import SettingsCard from "./components/settingsCard";
+import ReceiveCard from "./components/receiveCard";
+import SendCard from "./components/sendCard";
+import CashOutCard from "./components/cashOutCard";
+import SupportCard from "./components/supportCard";
 import { createWallet } from "./walletGen";
-//import RedeemCard from "./components/redeemCard";
-//import SetupCard from "./components/setupCard";
-//import Confirmations from "./components/Confirmations";
+import RedeemCard from "./components/redeemCard";
+import SetupCard from "./components/setupCard";
+import Confirmations from "./components/Confirmations";
 import BigNumber from "bignumber.js";
 import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
 import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
 import getExchangeRates from "connext/dist/lib/getExchangeRates";
-//import Snackbar from "./components/snackBar";
+import Snackbar from "./components/snackBar";
 import interval from "interval-promise";
-import fs from 'fs';
-
-//const tmp = fs.readFileSync('.store')
-//console.log(tmp)
 
 export const store = createStore(setWallet, null);
 
@@ -60,9 +56,37 @@ const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 
 const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
 const HASH_PREAMBLE = "SpankWallet authentication message:"
 
-class App  {
+const styles = theme => ({
+  paper: {
+    width: "100%",
+    padding: `0px ${theme.spacing.unit}px 0 ${theme.spacing.unit}px`,
+    [theme.breakpoints.up('sm')]: {
+      width: "450px",
+      height: "650px",
+      marginTop: "5%",
+      borderRadius: "4px"
+    },
+    [theme.breakpoints.down(600)]: {
+      "box-shadow": "0px 0px"
+    },
+  },
+  app: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flexGrow: 1,
+    fontFamily: ["proxima-nova", "sans-serif"],
+    backgroundColor: "#FFF",
+    width: "100%",
+    margin: "0px",
+  },
+  zIndex: 1000,
+  grid: {}
+});
+
+class App extends React.Component {
   constructor(props) {
-    //super(props);
+    super(props);
     this.state = {
       loadingConnext: true,
       rpcUrl: null,
@@ -114,7 +138,7 @@ class App  {
 
   async componentDidMount() {
     // set public url
-    publicUrl = 'localhost' //window.location.origin.toLowerCase();
+    publicUrl = window.location.origin.toLowerCase();
     console.log(publicUrl)
 
     // Set up state
@@ -155,82 +179,12 @@ class App  {
         text: delegateSigner
       });
       // Then refresh the page
-      //window.location.reload();
+      window.location.reload();
     }
 
     // Initialise authorisation
     await this.authorizeHandler();
 
-  }
-
-  async init() {
-
-    const fs = require('fs')
-    //console.log('fs', fs)
-    //const path = require('path')
-    //console.log('init', __dirname, '...', './')
-    const storeFile = "/.store";
-    //console.log('storeFile ', storeFile)
-    //console.log(await fs.readdirSync(storeFile))
-
-    // Set up state
-    var data
-    var fileStore
-    try {
-      data = fs.readFileSync(storeFile, 'utf8')
-      console.log(data)
-      //console.log('store data', JSON.parse(data))
-      fileStore = new Map(JSON.parse(data))
-  } catch(err) {
-      fileStore = new Map()
-      fileStore["mnemonic"] = "history rotate stem become spider barrel grant valley rather era ecology aerobic";
-      fileStore["delegateSigner"] = {
-              "_privKey":{"type":"Buffer","data":[185,161,76,249,112,89,29,27,204,95,82,48,27,1,176,244,57,37,231,108,94,49,61,133,166,154,152,18,107,14,173,171]},
-              "_pubKey":{"type":"Buffer","data":[30,53,227,38,40,0,130,1,99,192,66,22,179,163,56,144,8,2,152,30,214,94,187,245,141,18,38,248,190,214,30,232,128,113,51,180,107,37,241,139,62,185,26,92,13,87,238,129,58,156,42,68,127,10,109,181,15,132,158,153,162,232,223,159]}
-            }
-      fileStore["address"] = "0xb4ddd08d5348ddb48263347a388b1896a7ab0527";
-  }
-
-    // Set up state
-    const mnemonic = fileStore.getItem("mnemonic");
-    // on mount, check if you need to refund by removing maxBalance
-    fileStore.delete("refunding");
-    let rpc = fileStore.getItem("rpc-prod");
-    // TODO: better way to set default provider
-    // if it doesnt exist in storage
-    if (!rpc) {
-      rpc = env === "development" ? "LOCALHOST" : "MAINNET";
-      fileStore.setItem("rpc-prod", rpc);
-    }
-    // If a browser address exists, create wallet
-    if (mnemonic) {
-      const delegateSigner = await createWalletFromMnemonic(mnemonic);
-      const address = await delegateSigner.getAddressString();
-      this.setState({ delegateSigner, address });
-      fileStore.dispatch({
-        type: "SET_WALLET",
-        text: delegateSigner
-      });
-
-      await this.setWeb3(rpc);
-      await this.setConnext();
-      await this.setTokenContract();
-
-      await this.pollConnextState();
-      await this.setBrowserWalletMinimumBalance();
-      await this.poller();
-    } else {
-      // Else, we create a new address
-      const delegateSigner = await createWallet(this.state.web3);
-      const address = await delegateSigner.getAddressString();
-      this.setState({ delegateSigner, address });
-      fileStore.dispatch({
-        type: "SET_WALLET",
-        text: delegateSigner
-      });
-      // Then refresh the page
-      //window.location.reload();
-    }
   }
 
   // ************************************************* //
@@ -754,6 +708,120 @@ class App  {
     });
   }
 
+  async scanURL(path, args) {
+    switch (path) {
+      case "/send":
+        this.setState({
+          sendScanArgs: { ...args }
+        });
+        break;
+      case "/redeem":
+        this.setState({
+          redeemScanArgs: { ...args }
+        });
+        break;
+      default:
+        return;
+    }
+  }
+
+  async closeConfirmations(type) {
+    let deposit = null;
+    let withdraw = null;
+    let hasRefund = null;
+    let depositHistory, withdrawHistory;
+    if(!type) {
+      depositHistory = null;
+      withdrawHistory = null;
+    }
+    // Hack to keep deposit/withdraw context for confirm pending notifications
+    if(type === "deposit") {
+      depositHistory = this.state.status.deposit
+    }
+    if(type === "withdraw") {
+      withdrawHistory = this.state.status.withdraw
+    }
+    this.setState({ status: { deposit, depositHistory, withdraw, withdrawHistory, hasRefund } });
+  }
+
+  async handleClick() {
+    await this.setState({ loadingConnext: false });
+  };
+
+  render() {
+    const {
+      address,
+      channelState,
+      sendScanArgs,
+      exchangeRate,
+      customWeb3,
+      connext,
+      connextState,
+      runtime,
+      browserMinimumBalance
+    } = this.state;
+    const { classes } = this.props;
+    return (
+      <Fragment>
+        <Router>
+          <Grid className={classes.app} >
+            <Paper className={classes.paper} elevation={1}>
+            <Snackbar
+              handleClick={() => this.handleClick()}
+              onClose={() => this.handleClick()}
+              open={this.state.loadingConnext}
+              duration={100000}
+              text="Starting Channel Controllers.."
+            />
+              <Confirmations status={this.state.status}
+                closeConfirmations={this.closeConfirmations.bind(this)}/>
+              <AppBarComponent address={address} />
+              <Route
+                exact
+                path="/"
+                render={props => runtime && runtime.channelStatus !== "CS_OPEN" ? (
+                                  <Redirect to="/support" />
+                                ) : (
+                                  <Grid>
+                                    <Home
+                                      {...props}
+                                      address={address}
+                                      connextState={connextState}
+                                      channelState={channelState}
+                                      publicUrl={publicUrl}
+                                      scanURL={this.scanURL.bind(this)}
+                                    />
+
+                                    <SetupCard
+                                      {...props}
+                                      browserMinimumBalance={browserMinimumBalance}
+                                      maxTokenDeposit={CHANNEL_DEPOSIT_MAX.toString()}
+                                      connextState={connextState}
+                                    />
+                                  </Grid>
+                                )
+                              }
+                            />
+
+              <Route
+                path="/deposit"
+                render={props => (
+                  <DepositCard
+                    {...props}
+                    address={address}
+                    browserMinimumBalance={browserMinimumBalance}
+                    exchangeRate={exchangeRate}
+                    maxTokenDeposit={CHANNEL_DEPOSIT_MAX.toString()}
+                    connextState={connextState}
+                    />
+                )}
+              />
+            </Paper>
+          </Grid>
+        </Router>
+      </Fragment>
+    );
+  }
 }
 
-export default App;
+export default withStyles(styles)(App);
