@@ -11,6 +11,9 @@ export async function createWallet(web3) {
     .derivePath("m/44'/60'/0'/0/0")
     .getWallet();
   // const wallet = await web3.eth.accounts.create()
+
+  //TODO - avoid localStorage
+  /*
   localStorage.setItem("delegateSigner", wallet.getAddressString());
   localStorage.setItem("mnemonic", mnemonic);
   localStorage.setItem("privateKey", wallet.getPrivateKeyString());
@@ -20,8 +23,9 @@ export async function createWallet(web3) {
   localStorage.removeItem("maxBalanceAfterRefund");
 
   // also force to go through tutorial on each new
-  // wallet creation 
+  // wallet creation
   localStorage.removeItem("hasBeenWarned");
+  */
   return wallet;
 }
 
@@ -33,12 +37,16 @@ export async function createWalletFromMnemonic(mnemonic) {
       .fromMasterSeed(seed)
       .derivePath("m/44'/60'/0'/0/0")
       .getWallet();
+
+    //TODO - avoid localStorage
+    /*
     localStorage.setItem("delegateSigner", wallet.getAddressString());
     localStorage.setItem("mnemonic", mnemonic);
     localStorage.setItem("privateKey", wallet.getPrivateKeyString());
     // update refunding variable on import
     localStorage.removeItem("refunding");
     localStorage.removeItem("maxBalanceAfterRefund");
+    */
     return wallet;
   } catch (e) {
     console.log(`error in WalletGen`);

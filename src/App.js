@@ -6,8 +6,8 @@ import { createStore } from "redux";
 //import Home from "./components/Home";
 //import DepositCard from "./components/depositCard";
 import { getConnextClient } from "connext/dist/Connext.js";
-import ProviderOptions from "./utils/ProviderOptions.ts";
-import clientProvider from "./utils/web3/clientProvider.ts";
+import ProviderOptions from "../dist/utils/ProviderOptions.js";
+import clientProvider from "../dist/utils/web3/clientProvider.js";
 import { createWalletFromMnemonic } from "./walletGen";
 import axios from "axios";
 //import { Paper, withStyles, Button, Grid } from "@material-ui/core";
@@ -38,10 +38,10 @@ let publicUrl;
 
 const Web3 = require("web3");
 const eth = require("ethers");
-const humanTokenAbi = require("./abi/humanToken.json");
+//const humanTokenAbi = require("./abi/humanToken.json");
 
 const env = process.env.NODE_ENV;
-const tokenAbi = humanTokenAbi;
+//const tokenAbi = humanTokenAbi;
 
 const overrides = {
   localHub: process.env.REACT_APP_LOCAL_HUB_OVERRIDE,
@@ -60,8 +60,14 @@ const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 
 const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
 const HASH_PREAMBLE = "SpankWallet authentication message:"
 
+export function start() {
+  const app = new App();
+  app.init();
+  console.log('state:', app.state);
+}
+
 class App  {
-  constructor(props) {
+  constructor() {
     //super(props);
     this.state = {
       loadingConnext: true,
@@ -105,7 +111,7 @@ class App  {
       browserMinimumBalance: null,
     };
 
-    this.networkHandler = this.networkHandler.bind(this);
+    //this.networkHandler = this.networkHandler.bind(this);
   }
 
   // ************************************************* //
@@ -163,15 +169,19 @@ class App  {
 
   }
 
+  setState(key, val) {
+    this.state.key = val;
+  }
+
   async init() {
 
-    const fs = require('fs')
+    //const fs = require('fs')
     //console.log('fs', fs)
     //const path = require('path')
     //console.log('init', __dirname, '...', './')
-    const storeFile = "/.store";
-    //console.log('storeFile ', storeFile)
-    //console.log(await fs.readdirSync(storeFile))
+    const storeFile = "./.store";
+    console.log('storeFile ', storeFile)
+    //console.log('dir ', await fs.readdirSync('./'))
 
     // Set up state
     var data
@@ -179,52 +189,58 @@ class App  {
     try {
       data = fs.readFileSync(storeFile, 'utf8')
       console.log(data)
-      //console.log('store data', JSON.parse(data))
       fileStore = new Map(JSON.parse(data))
+      console.log('store data', fileStore)
   } catch(err) {
-      fileStore = new Map()
-      fileStore["mnemonic"] = "history rotate stem become spider barrel grant valley rather era ecology aerobic";
-      fileStore["delegateSigner"] = {
-              "_privKey":{"type":"Buffer","data":[185,161,76,249,112,89,29,27,204,95,82,48,27,1,176,244,57,37,231,108,94,49,61,133,166,154,152,18,107,14,173,171]},
-              "_pubKey":{"type":"Buffer","data":[30,53,227,38,40,0,130,1,99,192,66,22,179,163,56,144,8,2,152,30,214,94,187,245,141,18,38,248,190,214,30,232,128,113,51,180,107,37,241,139,62,185,26,92,13,87,238,129,58,156,42,68,127,10,109,181,15,132,158,153,162,232,223,159]}
-            }
-      fileStore["address"] = "0xb4ddd08d5348ddb48263347a388b1896a7ab0527";
+      console.log(err.message)
   }
 
     // Set up state
-    const mnemonic = fileStore.getItem("mnemonic");
+    const mnemonic = fileStore.get("mnemonic");
+    console.log('mnemonic', mnemonic);
     // on mount, check if you need to refund by removing maxBalance
     fileStore.delete("refunding");
-    let rpc = fileStore.getItem("rpc-prod");
+    let rpc = fileStore.get("rpc-prod");
     // TODO: better way to set default provider
     // if it doesnt exist in storage
     if (!rpc) {
       rpc = env === "development" ? "LOCALHOST" : "MAINNET";
-      fileStore.setItem("rpc-prod", rpc);
+      fileStore.set("rpc-prod", rpc);
     }
     // If a browser address exists, create wallet
     if (mnemonic) {
       const delegateSigner = await createWalletFromMnemonic(mnemonic);
       const address = await delegateSigner.getAddressString();
-      this.setState({ delegateSigner, address });
-      fileStore.dispatch({
+      //TODO - no state
+      this.setState('delegateSigner', delegateSigner);
+      this.setState('address', address );
+      console.log('address', address)
+      store.dispatch({
         type: "SET_WALLET",
         text: delegateSigner
       });
 
+      console.log('setWeb3')
       await this.setWeb3(rpc);
+      console.log('setConnext')
       await this.setConnext();
+      console.log('setTokencontract')
       await this.setTokenContract();
 
+      console.log('pollConnextState')
       await this.pollConnextState();
+      console.log('setBrowserWalletMinimumBalance')
       await this.setBrowserWalletMinimumBalance();
+      console.log('poller')
       await this.poller();
     } else {
       // Else, we create a new address
       const delegateSigner = await createWallet(this.state.web3);
       const address = await delegateSigner.getAddressString();
-      this.setState({ delegateSigner, address });
-      fileStore.dispatch({
+      //TODO - no state
+      this.setState( 'delegateSigner', delegateSigner);
+      this.setState('address', address );
+      store.dispatch({
         type: "SET_WALLET",
         text: delegateSigner
       });
@@ -237,22 +253,9 @@ class App  {
   //                State setters                      //
   // ************************************************* //
 
-  async networkHandler(rpc) {
-    // called from settingsCard when a new RPC URL is connected
-    // will refresh the page after
-    localStorage.setItem("rpc-prod", rpc);
-    // update refunding variable on rpc switch
-    localStorage.removeItem("maxBalanceAfterRefund");
-    localStorage.removeItem("refunding");
-    // await this.setWeb3(rpc);
-    // await this.setConnext();
-    // await this.setTokenContract();
-    window.location.reload();
-    return;
-  }
-
   // either LOCALHOST MAINNET or RINKEBY
   async setWeb3(rpc) {
+    console.log('setWeb rpc', rpc);
     let rpcUrl, hubUrl;
     switch (rpc) {
       case "LOCALHOST":
@@ -275,19 +278,15 @@ class App  {
         throw new Error(`Unrecognized rpc: ${rpc}`);
     }
 
-    // Ask permission to view accounts
-    let windowId;
-    if (window.ethereum) {
-      window.web3 = new Web3(window.ethereum);
-      windowId = await window.web3.eth.net.getId();
-    }
-
     const providerOpts = new ProviderOptions(store, rpcUrl, hubUrl).approving();
     const provider = clientProvider(providerOpts);
     const customWeb3 = new Web3(provider);
     const customId = await customWeb3.eth.net.getId();
     // NOTE: token/contract/hubWallet ddresses are set to state while initializing connext
-    this.setState({ customWeb3, hubUrl, rpcUrl });
+    //TODO - no state
+    //this.setState({ customWeb3, hubUrl, rpcUrl });
+    // TODO - check network
+    /*
     if (windowId && windowId !== customId) {
       alert(
         `Your card is set to ${JSON.stringify(
@@ -295,6 +294,7 @@ class App  {
         )}. To avoid losing funds, please make sure your metamask and card are using the same network.`
       );
     }
+    */
     return;
   }
 
@@ -310,6 +310,7 @@ class App  {
   }
 
   async setConnext() {
+    console.log('setting Connext')
     const { address, customWeb3, hubUrl } = this.state;
 
     const opts = {
