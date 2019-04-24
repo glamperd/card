@@ -28,12 +28,13 @@ import getExchangeRates from "connext/dist/lib/getExchangeRates";
 //import Snackbar from "./components/snackBar";
 import interval from "interval-promise";
 import fs from 'fs';
+import Storage from './utils/Storage.js';
 
-debugger;
 export const store = createStore(setWallet, null);
 
 
 let publicUrl='localhost';
+let localStorage = new Storage();
 
 const Web3 = require("web3");
 const eth = require("ethers");
@@ -119,61 +120,6 @@ class App  {
   //                     Hooks                         //
   // ************************************************* //
 
-  async componentDidMount() {
-    // set public url
-    publicUrl = 'localhost' //window.location.origin.toLowerCase();
-    console.log(publicUrl)
-
-    // Set up state
-    const mnemonic = localStorage.getItem("mnemonic");
-    // on mount, check if you need to refund by removing maxBalance
-    localStorage.removeItem("refunding");
-    let rpc = localStorage.getItem("rpc-prod");
-    // TODO: better way to set default provider
-    // if it doesnt exist in storage
-    if (!rpc) {
-      rpc = env === "development" ? "LOCALHOST" : "MAINNET";
-      localStorage.setItem("rpc-prod", rpc);
-    }
-    // If a browser address exists, create wallet
-    debugger;
-    if (mnemonic) {
-      const delegateSigner = await createWalletFromMnemonic(mnemonic);
-      const address = await delegateSigner.getAddressString();
-      this.setState({ delegateSigner, address });
-      debugger;
-      store.dispatch({
-        type: "SET_WALLET",
-        text: delegateSigner
-      });
-
-      await this.setWeb3(rpc);
-      await this.setConnext();
-      await this.setTokenContract();
-
-      await this.pollConnextState();
-      await this.setBrowserWalletMinimumBalance();
-      await this.poller();
-    } else {
-      // Else, we create a new address
-      const delegateSigner = await createWallet(this.state.web3);
-      const address = await delegateSigner.getAddressString();
-      this.setState({ delegateSigner, address });
-
-      store.dispatch({
-        type: "SET_WALLET",
-        text: delegateSigner
-      });
-
-      // Then refresh the page
-      //window.location.reload();
-    }
-
-    // Initialise authorisation
-    await this.authorizeHandler();
-
-  }
-
   setState(entry) {
     for (var prop in entry) {
       this.state[prop] = entry[prop];
@@ -247,7 +193,7 @@ class App  {
       this.setState({
           'delegateSigner': delegateSigner,
           'address': address
-        });
+      });
       store.dispatch({
         type: "SET_WALLET",
         text: delegateSigner
@@ -255,6 +201,9 @@ class App  {
       // Then refresh the page
       //window.location.reload();
     }
+
+    // Initialise authorisation
+    await this.authorizeHandler();
   }
 
   // ************************************************* //
@@ -367,7 +316,8 @@ class App  {
     let connext = this.state.connext;
     // register listeners
     connext.on("onStateChange", state => {
-      console.log("Connext state changed:", state);
+      console.log("Connext state changed:");
+      debugger;
       this.setState({
         channelState: state.persistent.channel,
         connextState: state,
@@ -379,15 +329,18 @@ class App  {
     });
     // start polling
     await connext.start();
+    console.log('connext loaded')
     this.setState({ loadingConnext: false })
   }
 
   async poller() {
+    console.log('autoDeposit')
     await this.autoDeposit();
     await this.autoSwap();
 
     interval(
       async (iteration, stop) => {
+        console.log('autoDeposit')
         await this.autoDeposit();
       },
       5000
@@ -662,6 +615,7 @@ class App  {
     const refundStr = localStorage.getItem("refunding");
     const hasRefund = !!refundStr ? refundStr.split(",") : null;
     if (runtime.syncResultsFromHub[0]) {
+      console.log('syncResultsFromHub', runtime.syncResultsFromHub[0].update.reason);
       let deposit;
       let withdraw;
       /* if (runtime.syncResultsFromHub[0].type === 'thread') {

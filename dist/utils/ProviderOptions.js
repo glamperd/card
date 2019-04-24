@@ -22,7 +22,7 @@ var ProviderOptions = /** @class */ (function () {
             if (!key) {
                 return callback("Wallet is locked.");
             }
-            var tx = new ethereumjs_tx_1["default"](rawTx);
+            var tx = new ethereumjs_tx_1(rawTx);
             tx.sign(key);
             var txHex = "0x" + buffer_1.Buffer.from(tx.serialize()).toString("hex");
             callback(null, txHex);
