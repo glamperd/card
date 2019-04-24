@@ -10,6 +10,7 @@ var ProviderOptions = /** @class */ (function () {
         var _this = this;
         this.getAccounts = function (callback) {
             var state = _this.store.getState();
+            console.log('providerOptions ', state);
             var addr = state[0] ? state[0].getAddressString() : null;
             callback(null, addr ? [addr] : []);
         };

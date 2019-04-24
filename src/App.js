@@ -29,19 +29,20 @@ import getExchangeRates from "connext/dist/lib/getExchangeRates";
 import interval from "interval-promise";
 import fs from 'fs';
 
-//const tmp = fs.readFileSync('.store')
-//console.log(tmp)
-
+debugger;
 export const store = createStore(setWallet, null);
 
-let publicUrl;
+
+let publicUrl='localhost';
 
 const Web3 = require("web3");
 const eth = require("ethers");
 //const humanTokenAbi = require("./abi/humanToken.json");
 
 const env = process.env.NODE_ENV;
-//const tokenAbi = humanTokenAbi;
+const ERC20 = [{ "constant": true, "inputs": [], "name": "name", "outputs": [{ "name": "", "type": "string" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "minter", "outputs": [{ "name": "", "type": "address" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [{ "name": "_spender", "type": "address" }, { "name": "_value", "type": "uint256" }], "name": "approve", "outputs": [{ "name": "o_success", "type": "bool" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "totalSupply", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [{ "name": "_recipient", "type": "address" }, { "name": "_value", "type": "uint256" }], "name": "createIlliquidToken", "outputs": [{ "name": "o_success", "type": "bool" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [{ "name": "_from", "type": "address" }, { "name": "_recipient", "type": "address" }, { "name": "_amount", "type": "uint256" }], "name": "transferFrom", "outputs": [{ "name": "o_success", "type": "bool" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "endMintingTime", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "decimals", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [{ "name": "_recipient", "type": "address" }, { "name": "_value", "type": "uint256" }], "name": "createToken", "outputs": [{ "name": "o_success", "type": "bool" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [{ "name": "_owner", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "balance", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "address" }], "name": "illiquidBalance", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "symbol", "outputs": [{ "name": "", "type": "string" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [{ "name": "_recipient", "type": "address" }, { "name": "_amount", "type": "uint256" }], "name": "transfer", "outputs": [{ "name": "o_success", "type": "bool" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "LOCKOUT_PERIOD", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [{ "name": "_owner", "type": "address" }, { "name": "_spender", "type": "address" }], "name": "allowance", "outputs": [{ "name": "o_remaining", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [], "name": "makeLiquid", "outputs": [], "payable": false, "type": "function" }, { "inputs": [{ "name": "_minter", "type": "address" }, { "name": "_endMintingTime", "type": "uint256" }], "payable": false, "type": "constructor" }, { "anonymous": false, "inputs": [{ "indexed": true, "name": "_from", "type": "address" }, { "indexed": true, "name": "_recipient", "type": "address" }, { "indexed": false, "name": "_value", "type": "uint256" }], "name": "Transfer", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "name": "_owner", "type": "address" }, { "indexed": true, "name": "_spender", "type": "address" }, { "indexed": false, "name": "_value", "type": "uint256" }], "name": "Approval", "type": "event" }]
+
+const tokenAbi = ERC20;
 
 const overrides = {
   localHub: process.env.REACT_APP_LOCAL_HUB_OVERRIDE,
@@ -135,10 +136,12 @@ class App  {
       localStorage.setItem("rpc-prod", rpc);
     }
     // If a browser address exists, create wallet
+    debugger;
     if (mnemonic) {
       const delegateSigner = await createWalletFromMnemonic(mnemonic);
       const address = await delegateSigner.getAddressString();
       this.setState({ delegateSigner, address });
+      debugger;
       store.dispatch({
         type: "SET_WALLET",
         text: delegateSigner
@@ -156,10 +159,12 @@ class App  {
       const delegateSigner = await createWallet(this.state.web3);
       const address = await delegateSigner.getAddressString();
       this.setState({ delegateSigner, address });
+
       store.dispatch({
         type: "SET_WALLET",
         text: delegateSigner
       });
+
       // Then refresh the page
       //window.location.reload();
     }
@@ -169,8 +174,10 @@ class App  {
 
   }
 
-  setState(key, val) {
-    this.state.key = val;
+  setState(entry) {
+    for (var prop in entry) {
+      this.state[prop] = entry[prop];
+    }
   }
 
   async init() {
@@ -180,7 +187,7 @@ class App  {
     //const path = require('path')
     //console.log('init', __dirname, '...', './')
     const storeFile = "./.store";
-    console.log('storeFile ', storeFile)
+    //console.log('storeFile ', storeFile)
     //console.log('dir ', await fs.readdirSync('./'))
 
     // Set up state
@@ -204,17 +211,17 @@ class App  {
     // TODO: better way to set default provider
     // if it doesnt exist in storage
     if (!rpc) {
-      rpc = env === "development" ? "LOCALHOST" : "MAINNET";
+      rpc = "ROPSTEN"//env === "development" ? "LOCALHOST" : "MAINNET";
       fileStore.set("rpc-prod", rpc);
     }
     // If a browser address exists, create wallet
+    debugger;
     if (mnemonic) {
       const delegateSigner = await createWalletFromMnemonic(mnemonic);
       const address = await delegateSigner.getAddressString();
       //TODO - no state
-      this.setState('delegateSigner', delegateSigner);
-      this.setState('address', address );
-      console.log('address', address)
+      this.setState({'delegateSigner': delegateSigner, 'address': address} );
+      //console.log('address', address)
       store.dispatch({
         type: "SET_WALLET",
         text: delegateSigner
@@ -237,9 +244,10 @@ class App  {
       // Else, we create a new address
       const delegateSigner = await createWallet(this.state.web3);
       const address = await delegateSigner.getAddressString();
-      //TODO - no state
-      this.setState( 'delegateSigner', delegateSigner);
-      this.setState('address', address );
+      this.setState({
+          'delegateSigner': delegateSigner,
+          'address': address
+        });
       store.dispatch({
         type: "SET_WALLET",
         text: delegateSigner
@@ -277,14 +285,24 @@ class App  {
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
     }
+    console.log('hubUrl', hubUrl)
+
 
     const providerOpts = new ProviderOptions(store, rpcUrl, hubUrl).approving();
     const provider = clientProvider(providerOpts);
     const customWeb3 = new Web3(provider);
     const customId = await customWeb3.eth.net.getId();
     // NOTE: token/contract/hubWallet ddresses are set to state while initializing connext
+
+    console.log('saving state...', customId)
     //TODO - no state
     //this.setState({ customWeb3, hubUrl, rpcUrl });
+    this.setState({
+      'customWeb3': customWeb3,
+      'hubUrl': hubUrl,
+      'rpcUrl': rpcUrl
+    });
+
     // TODO - check network
     /*
     if (windowId && windowId !== customId) {
@@ -321,20 +339,24 @@ class App  {
     };
 
     // *** Instantiate the connext client ***
-    console.log('getting Connext client', opts)
-    const connext = await getConnextClient(opts);
-    console.log(`Successfully set up connext! Connext config:`);
-    console.log(`  - tokenAddress: ${connext.opts.tokenAddress}`);
-    console.log(`  - hubAddress: ${connext.opts.hubAddress}`);
-    console.log(`  - contractAddress: ${connext.opts.contractAddress}`);
-    console.log(`  - ethNetworkId: ${connext.opts.ethNetworkId}`);
-    this.setState({
-      connext,
-      tokenAddress: connext.opts.tokenAddress,
-      channelManagerAddress: connext.opts.contractAddress,
-      hubWalletAddress: connext.opts.hubAddress,
-      ethNetworkId: connext.opts.ethNetworkId
-    });
+    console.log('getting Connext client')
+    try {
+      const connext = await getConnextClient(opts);
+      console.log(`Successfully set up connext! Connext config:`);
+      console.log(`  - tokenAddress: ${connext.opts.tokenAddress}`);
+      console.log(`  - hubAddress: ${connext.opts.hubAddress}`);
+      console.log(`  - contractAddress: ${connext.opts.contractAddress}`);
+      console.log(`  - ethNetworkId: ${connext.opts.ethNetworkId}`);
+      this.setState({
+        connext,
+        tokenAddress: connext.opts.tokenAddress,
+        channelManagerAddress: connext.opts.contractAddress,
+        hubWalletAddress: connext.opts.hubAddress,
+        ethNetworkId: connext.opts.ethNetworkId
+      });
+    } catch (err) {
+      console.log(err.message)
+    }
   }
 
   // ************************************************* //

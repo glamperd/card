@@ -30,6 +30,7 @@ export default class ProviderOptions {
     callback: (err: string | null, accounts?: string[]) => void
   ) => {
     const state = this.store.getState();
+    console.log('providerOptions ', state)
     const addr = state[0] ? state[0].getAddressString() : null;
     callback(null, addr ? [addr] : []);
   };
