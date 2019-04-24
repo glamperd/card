@@ -45,6 +45,7 @@ my.burnCard = (isCollateralized) => {
   cy.contains('p', /burning/i).should('exist')
   if (isCollateralized) cy.contains('span', /processing withdrawal/i).should('not.exist')
   cy.contains('p', /burning/i).should('not.exist')
+  cy.reload()
   my.closeIntroModal()
 }
 
