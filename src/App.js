@@ -28,7 +28,7 @@ import { createWalletFromMnemonic, createWallet } from "./utils/walletGen";
 export const store = createStore(setWallet, null);
 
 const { CurrencyType, CurrencyConvertable } = Connext.types
-const { getExchangeRates } = Connext.utils.getters
+const { getExchangeRates } = Connext.getters
 
 let publicUrl;
 

@@ -17,7 +17,7 @@ import CopyIcon from "@material-ui/icons/FileCopy";
 import * as Connext from 'connext';
 
 const { Currency, CurrencyConvertable, CurrencyType } = Connext.types
-const { getExchangeRates } = Connext.utils.getters
+const { getExchangeRates } = Connext.getters
 
 const styles = theme => ({
   icon: {

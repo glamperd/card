@@ -1,7 +1,7 @@
 import * as Connext from "connext";
 
 const { CurrencyConvertable, CurrencyType, Currency } = Connext.types
-const { getExchangeRates } = Connext.utils.getters
+const { getExchangeRates } = Connext.getters
 
 export function getChannelBalanceInUSD(channelState, connextState, onlyTokens = true) {
   if (!connextState || !channelState) {
