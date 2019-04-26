@@ -10,6 +10,16 @@ describe('Daicard', () => {
     my.closeIntroModal()
   })
 
+  describe('Deposit', () => {
+    it(`Should display our card's address`, () => {
+      my.getAddress().should('match', my.addressRegex)
+    })
+
+    it(`Should accept a deposit to displayed address`, () => {
+      my.deposit(depositEth)
+    })
+  })
+
   describe('Home', () => {
     it(`Should display the card's balance`, () => {
       my.getBalance()
@@ -60,16 +70,6 @@ describe('Daicard', () => {
         my.goToDeposit()
         cy.contains('button', my.addressRegex).invoke('text').should('eql', account.address)
       })
-    })
-  })
-
-  describe('Deposit', () => {
-    it(`Should display our card's address`, () => {
-      my.getAddress().should('match', my.addressRegex)
-    })
-
-    it(`Should accept a deposit to displayed address`, () => {
-      my.deposit(depositEth)
     })
   })
 

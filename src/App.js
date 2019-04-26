@@ -251,13 +251,11 @@ class App extends React.Component {
   }
 
   async setConnext() {
-    const { hubUrl, /*address, customWeb3*/ } = this.state;
-
     const opts = {
-      mnemonic: localStorage.getItem("mnemonic"),
-      // web3: customWeb3, user: address, // This also works
-      hubUrl,
-      origin: window.location.host
+      hubUrl: this.state.hubUrl,
+      web3: this.state.customWeb3, user: this.state.address,
+      // mnemonic: localStorage.getItem("mnemonic"),
+      // privateKey: eth.Wallet.fromMnemonic(localStorage.getItem("mnemonic")).privateKey,
     };
 
     // *** Instantiate the connext client ***
