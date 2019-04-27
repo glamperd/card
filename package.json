@@ -1,5 +1,5 @@
 {
-  "name": "dai-card",
+  "name": "gazepay-auto",
   "version": "0.1.5",
   "private": true,
   "scripts": {
@@ -8,6 +8,7 @@
     "start-test": "make start-test",
     "build": "tsc",
     "babel": "./node_modules/.bin/babel src -d lib",
+    "debug": "set NODE_ENV=ROPSTEN& node inspect server.js",
     "eject": "react-scripts eject"
   },
   "dependencies": {
@@ -51,6 +52,7 @@
     "react-swipeable-views": "^0.13.0",
     "redux": "^4.0.1",
     "semaphore": "^1.1.0",
+    "socket.io": "^2.2.0",
     "typescript": "^3.3.3",
     "typescript-fsa": "^3.0.0-beta-2",
     "typescript-fsa-reducers": "^1.1.0",

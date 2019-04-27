@@ -29,6 +29,9 @@ import getExchangeRates from "connext/dist/lib/getExchangeRates";
 import interval from "interval-promise";
 import fs from 'fs';
 import Storage from './utils/Storage.js';
+import Express from 'express';
+import Http from 'http';
+import socketIo from 'socket.io';
 
 export const store = createStore(setWallet, null);
 
@@ -44,6 +47,7 @@ const env = process.env.NODE_ENV;
 const ERC20 = [{ "constant": true, "inputs": [], "name": "name", "outputs": [{ "name": "", "type": "string" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "minter", "outputs": [{ "name": "", "type": "address" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [{ "name": "_spender", "type": "address" }, { "name": "_value", "type": "uint256" }], "name": "approve", "outputs": [{ "name": "o_success", "type": "bool" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "totalSupply", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [{ "name": "_recipient", "type": "address" }, { "name": "_value", "type": "uint256" }], "name": "createIlliquidToken", "outputs": [{ "name": "o_success", "type": "bool" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [{ "name": "_from", "type": "address" }, { "name": "_recipient", "type": "address" }, { "name": "_amount", "type": "uint256" }], "name": "transferFrom", "outputs": [{ "name": "o_success", "type": "bool" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "endMintingTime", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "decimals", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [{ "name": "_recipient", "type": "address" }, { "name": "_value", "type": "uint256" }], "name": "createToken", "outputs": [{ "name": "o_success", "type": "bool" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [{ "name": "_owner", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "balance", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "address" }], "name": "illiquidBalance", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "symbol", "outputs": [{ "name": "", "type": "string" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [{ "name": "_recipient", "type": "address" }, { "name": "_amount", "type": "uint256" }], "name": "transfer", "outputs": [{ "name": "o_success", "type": "bool" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "LOCKOUT_PERIOD", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [{ "name": "_owner", "type": "address" }, { "name": "_spender", "type": "address" }], "name": "allowance", "outputs": [{ "name": "o_remaining", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [], "name": "makeLiquid", "outputs": [], "payable": false, "type": "function" }, { "inputs": [{ "name": "_minter", "type": "address" }, { "name": "_endMintingTime", "type": "uint256" }], "payable": false, "type": "constructor" }, { "anonymous": false, "inputs": [{ "indexed": true, "name": "_from", "type": "address" }, { "indexed": true, "name": "_recipient", "type": "address" }, { "indexed": false, "name": "_value", "type": "uint256" }], "name": "Transfer", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "name": "_owner", "type": "address" }, { "indexed": true, "name": "_spender", "type": "address" }, { "indexed": false, "name": "_value", "type": "uint256" }], "name": "Approval", "type": "event" }]
 
 const tokenAbi = ERC20;
+const WS_PORT = 1337;
 
 const overrides = {
   localHub: process.env.REACT_APP_LOCAL_HUB_OVERRIDE,
@@ -65,7 +69,7 @@ const HASH_PREAMBLE = "SpankWallet authentication message:"
 export function start() {
   const app = new App();
   app.init();
-  console.log('state:', app.state);
+  //console.log('state:', app.state);
 }
 
 class App  {
@@ -83,15 +87,6 @@ class App  {
       tokenContract: null,
       connext: null,
       delegateSigner: null,
-      modals: {
-        settings: false,
-        keyGen: false,
-        receive: false,
-        send: false,
-        cashOut: false,
-        scan: false,
-        deposit: false
-      },
       authorized: "false",
       approvalWeiUser: "10000",
       channelState: null,
@@ -111,6 +106,7 @@ class App  {
         hasRefund: ""
       },
       browserMinimumBalance: null,
+      autopayState: "stopped"
     };
 
     //this.networkHandler = this.networkHandler.bind(this);
@@ -161,7 +157,6 @@ class App  {
       fileStore.set("rpc-prod", rpc);
     }
     // If a browser address exists, create wallet
-    debugger;
     if (mnemonic) {
       const delegateSigner = await createWalletFromMnemonic(mnemonic);
       const address = await delegateSigner.getAddressString();
@@ -204,6 +199,44 @@ class App  {
 
     // Initialise authorisation
     await this.authorizeHandler();
+
+    // Start websockets server
+    await this.startWsServer();
+
+  }
+
+  async startWsServer() {
+    const express = Express();
+    const server = Http.Server(express);
+    var io = socketIo(server);
+
+    server.listen(WS_PORT);
+
+    console.log(`Listening on port ${WS_PORT}...`);
+    // WARNING: app.listen(80) will NOT work here!
+
+    express.get('/', function (req, res) {
+      res.sendFile(__dirname + '/index.html');
+    });
+
+    io.on('connection', (socket) => {
+      console.log('WS connection');
+      socket.emit('autopay', { is: 'connected' });
+      socket.on('payment-request', function (request) {
+        console.log('payment request', request);
+      });
+
+      socket.on('status', () => {
+        console.log('received status request')
+        const status = {
+          balance: this.state.channelState ? this.state.channelState.balanceTokenUser : "0",
+          txHistory: [],
+          hubCollateral: this.state.channelState ? this.state.channelState.balanceTokenHub : "0",
+          status: this.state.autopayState
+        }
+        io.emit('status', JSON.stringify(status));
+      })
+    });
   }
 
   // ************************************************* //

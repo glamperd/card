@@ -1,0 +1,42 @@
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io.connect('http://localhost:1337');
+  setInterval(function () {
+    socket.emit('status');
+    console.log('requesting status');
+  }, 3000);
+  socket.on('status', function(data) {
+    const s = JSON.parse(data);
+    console.log('status reply: ', s);
+    document.getElementById('userbal').innerText = s.balance;
+    document.getElementById('status').innerText = s.status;
+    document.getElementById('hubtoken').innerText = s.hubCollateral;
+    document.getElementById('history').innerText = s.txHistory;
+  })
+  function requestPayment() {
+    socket.emit('payment-request',JSON.stringify(
+      {
+        to: document.getElementById('acc').value,
+        amount: document.getElementById('amount').value,
+        locId: '1234'
+      }))
+  }
+</script>
+
+<body>
+  <label>Status:</label><div id="status" ></div>
+  <p>
+  <label>Balance:</label><div id="userbal" ></div>
+  <p>
+  <label>Collateral:</label><div id="hubtoken" ></div>
+  <p>
+  <label>History:</label><div id="history" ></div>
+  <p>
+  <form action="">
+    <label>To:</label>
+    <input id="acc" />
+    <label>Amount:</label>
+    <input id="amount" />
+    <button type="button" onclick="requestPayment()" >Pay</button>
+  </form>
+</body>
