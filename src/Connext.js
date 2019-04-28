@@ -297,7 +297,10 @@ class HubAPIClient {
     buy(meta, payments) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { data } = yield this.networking.post('payments/purchase', { meta, payments });
+                const { data } = yield this.networking.post('payments/purchase',
+                  { meta, payments,
+                    authToken: document.authToken
+                 });
                 return data;
             }
             catch (e) {

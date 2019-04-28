@@ -222,8 +222,10 @@ class App  {
     io.on('connection', (socket) => {
       console.log('WS connection');
       socket.emit('autopay', { is: 'connected' });
-      socket.on('payment-request', function (request) {
+      socket.on('payment-request', async (request) => {
         console.log('payment request', request);
+        const payRequest = JSON.parse(request);
+        await this.sendPayment(payRequest.to, payRequest.amount);
       });
 
       socket.on('status', () => {
@@ -296,6 +298,32 @@ class App  {
     }
     */
     return;
+  }
+
+  async sendPayment(toAccount, amount) {
+    const payment = {
+        meta: {
+          purchaseId: "payment"
+          // memo: "",
+        },
+        payments: [
+          {
+            recipient: toAccount,
+            amount: {
+              amountToken: Web3.utils.toWei(amount),
+              amountWei: "0"
+            },
+            type: "PT_CHANNEL"
+          }
+        ]
+      };
+
+      try {
+        await this.state.connext.buy(payment);
+        console.log('sendPayment done')
+      } catch (err) {
+        console.log(err.message)
+      }
   }
 
   async setTokenContract() {
