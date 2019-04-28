@@ -1,42 +1,72 @@
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  var socket = io.connect('http://localhost:1337');
-  setInterval(function () {
-    socket.emit('status');
-    console.log('requesting status');
-  }, 3000);
-  socket.on('status', function(data) {
-    const s = JSON.parse(data);
-    console.log('status reply: ', s);
-    document.getElementById('userbal').innerText = s.balance;
-    document.getElementById('status').innerText = s.status;
-    document.getElementById('hubtoken').innerText = s.hubCollateral;
-    document.getElementById('history').innerText = s.txHistory;
-  })
-  function requestPayment() {
-    socket.emit('payment-request',JSON.stringify(
-      {
-        to: document.getElementById('acc').value,
-        amount: document.getElementById('amount').value,
-        locId: '1234'
-      }))
-  }
-</script>
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    span.stat {
+      width: 700px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    label.head {
+      font-weight: bold;
+
+    }
+    label.data {
+      background-color: #ccffcc;
+    }
+  </style>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io.connect('http://localhost:1337');
+    setInterval(function () {
+      socket.emit('status');
+      console.log('requesting status');
+    }, 3000);
+    socket.on('status', function(data) {
+      const s = JSON.parse(data);
+      console.log('status reply: ', s);
+      document.getElementById('userbal').innerText = s.balance/(10**18);
+      document.getElementById('status').innerText = s.status;
+      document.getElementById('hubtoken').innerText = s.hubCollateral/(10**18);
+      document.getElementById('history').innerText = s.txHistory;
+    })
+    function requestPayment() {
+      socket.emit('payment-request',JSON.stringify(
+        {
+          to: document.getElementById('acc').value,
+          amount: document.getElementById('amount').value,
+          locId: '1234'
+        }))
+    }
+  </script>
+</head>
 
 <body>
-  <label>Status:</label><div id="status" ></div>
+  <span class="stat">
+    <label class="head">Status: </label><label class="data" id="status" ></label>
+  </span>
   <p>
-  <label>Balance:</label><div id="userbal" ></div>
+  <span class="stat">
+    <label class="head">Balance: </label><label class="data" id="userbal" ></label>
+  </span>
   <p>
-  <label>Collateral:</label><div id="hubtoken" ></div>
+  <span class="stat">
+    <label class="head">Collateral: </label><label class="data" id="hubtoken" ></label>
+  </span>
   <p>
-  <label>History:</label><div id="history" ></div>
+  <span class="stat">
+    <label class="head">History: </label><label class="data" id="history" ></label>
+  </span>
   <p>
-  <form action="">
-    <label>To:</label>
-    <input id="acc" />
-    <label>Amount:</label>
-    <input id="amount" />
-    <button type="button" onclick="requestPayment()" >Pay</button>
+  <form  action="">
+    <span style="background-color: #faeefa; border: 1px;">
+      <label>To:</label>
+      <input id="acc" />
+      <p>
+      <label>Amount:</label>
+      <input id="amount" />
+      <p>
+      <button type="button" onclick="requestPayment()" >Pay</button>
+    </span>
   </form>
 </body>

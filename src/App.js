@@ -239,6 +239,8 @@ class App  {
         io.emit('status', JSON.stringify(status));
       })
     });
+
+    this.setState({ autopayState: 'running' });
   }
 
   // ************************************************* //
