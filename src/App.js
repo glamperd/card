@@ -42,6 +42,7 @@ let webSocket;
 
 const Web3 = require("web3");
 const eth = require("ethers");
+const BN = Web3.utils.BN;
 //const humanTokenAbi = require("./abi/humanToken.json");
 
 const env = process.env.NODE_ENV;
@@ -68,7 +69,7 @@ const DEPOSIT_ESTIMATED_GAS = new BigNumber("700000") // 700k gas
 const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 69 TST
 const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
 const HASH_PREAMBLE = "SpankWallet authentication message:"
-const LOW_BALANCE_THRESHOLD = process.env.LOW_BALANCE_THRESHOLD;
+const LOW_BALANCE_THRESHOLD = new BN(process.env.LOW_BALANCE_THRESHOLD);
 
 export function start() {
   const app = new App();
@@ -141,16 +142,16 @@ class App  {
     var fileStore
     try {
       data = fs.readFileSync(storeFile, 'utf8')
-      console.log(data)
+      //console.log(data)
       fileStore = new Map(JSON.parse(data))
-      console.log('store data', fileStore)
+      //console.log('store data', fileStore)
   } catch(err) {
       console.log(err.message)
   }
 
     // Set up state
     const mnemonic = fileStore.get("mnemonic");
-    console.log('mnemonic', mnemonic);
+    //console.log('mnemonic', mnemonic);
     // on mount, check if you need to refund by removing maxBalance
     fileStore.delete("refunding");
     let rpc = fileStore.get("rpc-prod");
@@ -327,11 +328,13 @@ class App  {
       console.log('Payment requested but autosigning is paused');
       return
     }
+    debugger;
     let balance = this.state.channelState ? this.state.channelState.balanceTokenUser : 0;
-    const payAmount = Web3.utils.toWei(amount);
-    if (balance < payAmount) {
+    const amtWei = Web3.utils.toWei(amount);
+    const payAmount = Web3.utils.isBN(amtWei) ? amtWei : new BN(amtWei);
+    let bnBal = new BN(balance);
+    if (bnBal.lt(payAmount)) {
       console.log(` Payment declined. Requested payment amount: ${payAmount} exceeds balance: ${balance}.`);
-
       return
     }
 
@@ -344,7 +347,7 @@ class App  {
           {
             recipient: toAccount,
             amount: {
-              amountToken: payAmount,
+              amountToken: amtWei,
               amountWei: "0"
             },
             type: "PT_CHANNEL"
@@ -360,9 +363,10 @@ class App  {
       }
 
       // Evaluate new balance. See if autosigning should be paused.
-      balance = this.state.channelState ? this.state.channelState.balanceTokenUser : 0;
-      if (balance <= LOW_BALANCE_THRESHOLD) {
-        pausePaymentsAndNotify();
+      balance = this.state.channelState ? this.state.channelState.balanceTokenUser : '0';
+      bnBal = new BN(balance);
+      if (bnBal.lte(LOW_BALANCE_THRESHOLD)) {
+        this.pausePaymentsAndNotify();
       }
   }
 
@@ -381,7 +385,8 @@ class App  {
   checkForTopup() {
     if  (this.state.autopayState === StatusEnum.paused) {
       const balance = this.state.channelState ? this.state.channelState.balanceTokenUser : 0;
-      if (balance > LOW_BALANCE_THRESHOLD) {
+      let bnBal = new BN(balance);
+      if (bnBal.gt(LOW_BALANCE_THRESHOLD)) {
         this.resumePaymentsAndNotify();
       }
     }
@@ -439,7 +444,6 @@ class App  {
     // register listeners
     connext.on("onStateChange", state => {
       console.log("Connext state changed:");
-      debugger;
       this.setState({
         channelState: state.persistent.channel,
         connextState: state,
