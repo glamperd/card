@@ -8,11 +8,17 @@
       white-space: nowrap;
     }
     label.head {
+      font-family: "Arial", sans-serif;
       font-weight: bold;
 
     }
     label.data {
       background-color: #ccffcc;
+    }
+    form {
+      width: 300px;
+      background-color: #ccffcc;
+      border: 1px;
     }
   </style>
   <script src="/socket.io/socket.io.js"></script>
@@ -25,6 +31,7 @@
     socket.on('status', function(data) {
       const s = JSON.parse(data);
       console.log('status reply: ', s);
+      document.getElementById('address').innerText = s.address;
       document.getElementById('userbal').innerText = s.balance/(10**18);
       document.getElementById('status').innerText = s.status;
       document.getElementById('hubtoken').innerText = s.hubCollateral/(10**18);
@@ -38,10 +45,21 @@
           locId: '1234'
         }))
     }
+    function pause() {
+      socket.emit('pause')
+    }
+    function release() {
+      socket.emit('release')
+    }
   </script>
 </head>
 
 <body>
+  <h2>Status</h2>
+  <span class="stat">
+    <label class="head">Address: </label><label class="data" id="address" ></label>
+  </span>
+  <p>
   <span class="stat">
     <label class="head">Status: </label><label class="data" id="status" ></label>
   </span>
@@ -58,8 +76,11 @@
     <label class="head">History: </label><label class="data" id="history" ></label>
   </span>
   <p>
+  <hr>
   <form  action="">
-    <span style="background-color: #faeefa; border: 1px;">
+    <span >
+      <h2>Send Payment</h2>
+      <p>
       <label>To:</label>
       <input id="acc" />
       <p>
@@ -68,5 +89,12 @@
       <p>
       <button type="button" onclick="requestPayment()" >Pay</button>
     </span>
+  </form>
+  <hr>
+  <form >
+    <h2>Autosigner Control</h2>
+    <p>
+    <button type="button" onclick="pause()" >Pause</button>
+    <button type="button" onclick="release()" >Release</button>
   </form>
 </body>

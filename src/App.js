@@ -38,6 +38,7 @@ export const store = createStore(setWallet, null);
 
 let publicUrl='localhost';
 let localStorage = new Storage();
+let webSocket;
 
 const Web3 = require("web3");
 const eth = require("ethers");
@@ -48,6 +49,8 @@ const ERC20 = [{ "constant": true, "inputs": [], "name": "name", "outputs": [{ "
 
 const tokenAbi = ERC20;
 const WS_PORT = 1337;
+
+const StatusEnum = {stopped:"stopped", running: "running", paused: "paused"};
 
 const overrides = {
   localHub: process.env.REACT_APP_LOCAL_HUB_OVERRIDE,
@@ -65,6 +68,7 @@ const DEPOSIT_ESTIMATED_GAS = new BigNumber("700000") // 700k gas
 const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 69 TST
 const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
 const HASH_PREAMBLE = "SpankWallet authentication message:"
+const LOW_BALANCE_THRESHOLD = process.env.LOW_BALANCE_THRESHOLD;
 
 export function start() {
   const app = new App();
@@ -106,7 +110,7 @@ class App  {
         hasRefund: ""
       },
       browserMinimumBalance: null,
-      autopayState: "stopped"
+      autopayState: StatusEnum.stopped
     };
 
     //this.networkHandler = this.networkHandler.bind(this);
@@ -208,7 +212,7 @@ class App  {
   async startWsServer() {
     const express = Express();
     const server = Http.Server(express);
-    var io = socketIo(server);
+    webSocket = socketIo(server);
 
     server.listen(WS_PORT);
 
@@ -219,7 +223,7 @@ class App  {
       res.sendFile(__dirname + '/index.html');
     });
 
-    io.on('connection', (socket) => {
+    webSocket.on('connection', (socket) => {
       console.log('WS connection');
       socket.emit('autopay', { is: 'connected' });
       socket.on('payment-request', async (request) => {
@@ -229,18 +233,33 @@ class App  {
       });
 
       socket.on('status', () => {
-        console.log('received status request')
-        const status = {
-          balance: this.state.channelState ? this.state.channelState.balanceTokenUser : "0",
-          txHistory: [],
-          hubCollateral: this.state.channelState ? this.state.channelState.balanceTokenHub : "0",
-          status: this.state.autopayState
-        }
-        io.emit('status', JSON.stringify(status));
-      })
+        //console.log('received status request')
+        this.sendStatusMessage();
+      });
+
+      socket.on('pause', () => {
+        console.log("pausing at client's request");
+        this.pausePaymentsAndNotify()
+      });
+
+      socket.on('release', () => {
+        console.log("resuming at client's request");
+        this.resumePaymentsAndNotify()
+      });
     });
 
-    this.setState({ autopayState: 'running' });
+    this.setState({ autopayState: StatusEnum.running });
+  }
+
+  async sendStatusMessage() {
+    const status = {
+      address: this.state.address,
+      balance: this.state.channelState ? this.state.channelState.balanceTokenUser : "0",
+      txHistory: [],
+      hubCollateral: this.state.channelState ? this.state.channelState.balanceTokenHub : "0",
+      status: this.state.autopayState
+    }
+    webSocket.emit('status', JSON.stringify(status));
   }
 
   // ************************************************* //
@@ -303,6 +322,19 @@ class App  {
   }
 
   async sendPayment(toAccount, amount) {
+    // Check status
+    if (this.state.autopayState !== StatusEnum.running) {
+      console.log('Payment requested but autosigning is paused');
+      return
+    }
+    let balance = this.state.channelState ? this.state.channelState.balanceTokenUser : 0;
+    const payAmount = Web3.utils.toWei(amount);
+    if (balance < payAmount) {
+      console.log(` Payment declined. Requested payment amount: ${payAmount} exceeds balance: ${balance}.`);
+
+      return
+    }
+
     const payment = {
         meta: {
           purchaseId: "payment"
@@ -312,7 +344,7 @@ class App  {
           {
             recipient: toAccount,
             amount: {
-              amountToken: Web3.utils.toWei(amount),
+              amountToken: payAmount,
               amountWei: "0"
             },
             type: "PT_CHANNEL"
@@ -326,6 +358,33 @@ class App  {
       } catch (err) {
         console.log(err.message)
       }
+
+      // Evaluate new balance. See if autosigning should be paused.
+      balance = this.state.channelState ? this.state.channelState.balanceTokenUser : 0;
+      if (balance <= LOW_BALANCE_THRESHOLD) {
+        pausePaymentsAndNotify();
+      }
+  }
+
+  pausePaymentsAndNotify() {
+    webSocket.emit('pausing', 'Temporarily pausing payments.');
+    this.setState({ autopayState: StatusEnum.paused });
+    this.sendStatusMessage();
+  }
+
+  resumePaymentsAndNotify() {
+    webSocket.emit('resuming', 'Temporarily resuming payments.');
+    this.setState({ autopayState: StatusEnum.running });
+    this.sendStatusMessage();
+  }
+
+  checkForTopup() {
+    if  (this.state.autopayState === StatusEnum.paused) {
+      const balance = this.state.channelState ? this.state.channelState.balanceTokenUser : 0;
+      if (balance > LOW_BALANCE_THRESHOLD) {
+        this.resumePaymentsAndNotify();
+      }
+    }
   }
 
   async setTokenContract() {
@@ -389,6 +448,8 @@ class App  {
           ? state.runtime.exchangeRate.rates.USD
           : 0
       });
+      // Check whether, if autosigning is paused, the balance has been topped up sufficiently.
+      this.checkForTopup();
     });
     // start polling
     await connext.start();
@@ -397,13 +458,11 @@ class App  {
   }
 
   async poller() {
-    console.log('autoDeposit')
     await this.autoDeposit();
     await this.autoSwap();
 
     interval(
       async (iteration, stop) => {
-        console.log('autoDeposit')
         await this.autoDeposit();
       },
       5000

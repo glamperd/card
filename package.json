@@ -7,7 +7,7 @@
     "test": "make test",
     "start-test": "make start-test",
     "build": "tsc",
-    "babel": "./node_modules/.bin/babel src -d lib",
+    "babel": "./node_modules/.bin/babel src -d lib&cp src/*.html lib",
     "debug": "set NODE_ENV=ROPSTEN& node inspect server.js",
     "eject": "react-scripts eject"
   },
