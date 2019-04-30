@@ -50,6 +50,7 @@ const ERC20 = [{ "constant": true, "inputs": [], "name": "name", "outputs": [{ "
 
 const tokenAbi = ERC20;
 const WS_PORT = 1337;
+const MAX_HISTORY_ITEMS = 20;
 
 const StatusEnum = {stopped:"stopped", running: "running", paused: "paused"};
 
@@ -111,7 +112,8 @@ class App  {
         hasRefund: ""
       },
       browserMinimumBalance: null,
-      autopayState: StatusEnum.stopped
+      autopayState: StatusEnum.stopped,
+      history: []
     };
 
     //this.networkHandler = this.networkHandler.bind(this);
@@ -256,7 +258,7 @@ class App  {
     const status = {
       address: this.state.address,
       balance: this.state.channelState ? this.state.channelState.balanceTokenUser : "0",
-      txHistory: [],
+      txHistory: this.state.history,
       hubCollateral: this.state.channelState ? this.state.channelState.balanceTokenHub : "0",
       status: this.state.autopayState
     }
@@ -357,6 +359,7 @@ class App  {
 
       try {
         await this.state.connext.buy(payment);
+        this.addToHistory(payment);
         console.log('sendPayment done')
       } catch (err) {
         console.log(err.message)
@@ -390,6 +393,21 @@ class App  {
         this.resumePaymentsAndNotify();
       }
     }
+  }
+
+  async addToHistory(event) {
+    let eventText = '';
+    if (event.meta && event.meta.purchaseId === "payment") {
+      eventText = `Payment of ${Web3.utils.fromWei(event.payments[0].amount.amountToken)} to ${event.payments[0].recipient}. Type: ${event.payments[0].type}`;
+    }
+
+    let history = this.state.history;
+
+    if (history.length >= MAX_HISTORY_ITEMS) {
+      history.pop();
+    }
+    history.push(eventText);
+    this.setState({ history: history })
   }
 
   async setTokenContract() {
@@ -637,6 +655,7 @@ class App  {
       channelDeposit.amountWei = weiDeposit.toFixed(0);
 
       await this.state.connext.deposit(channelDeposit);
+      this.addToHistory(channelDeposit);
     }
   }
 
@@ -772,6 +791,7 @@ class App  {
             }
             break;
           case "ConfirmPending":
+            this.addToHistory(runtime.syncResultsFromHub[0].update);
             if(this.state.status.depositHistory === "PENDING") {
               this.closeConfirmations("deposit")
               deposit = "SUCCESS";
