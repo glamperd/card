@@ -406,7 +406,7 @@ class App  {
     if (history.length >= MAX_HISTORY_ITEMS) {
       history.pop();
     }
-    history.push(eventText);
+    history.unshift(eventText);
     this.setState({ history: history })
   }
 

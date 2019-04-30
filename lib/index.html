@@ -35,8 +35,14 @@
       document.getElementById('userbal').innerText = s.balance/(10**18);
       document.getElementById('status').innerText = s.status;
       document.getElementById('hubtoken').innerText = s.hubCollateral/(10**18);
-      document.getElementById('history').innerText = s.txHistory;
+      document.getElementById('histlist').innerHTML = parseHistory(s.txHistory);
     })
+    function parseHistory(histArray) {
+      let rows = histArray.map((entry) => {
+        return `<li>${entry}</li>`;
+      });
+      return rows;
+    };
     function requestPayment() {
       socket.emit('payment-request',JSON.stringify(
         {
@@ -73,7 +79,9 @@
   </span>
   <p>
   <span class="stat">
-    <label class="head">History: </label><label class="data" id="history" ></label>
+    <label class="head">History: </label>
+    <ul id='histlist'>
+    </ul>
   </span>
   <p>
   <hr>
