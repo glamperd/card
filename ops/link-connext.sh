@@ -24,8 +24,12 @@ else
 
 fi
 
+rm -rf connext/node_modules
+rm -rf connext/dist
+
 echo "rebuilding the client..."
 cd connext
+npm i
 npm run build
 cd ..
 
