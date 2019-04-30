@@ -116,6 +116,7 @@ class App extends React.Component {
       },
       address: "",
       status: {
+        lastAction: "",
         deposit: "",
         withdraw: "",
         payment: "",
@@ -560,9 +561,14 @@ class App extends React.Component {
   async checkStatus() {
     const { runtime, status } = this.state;
     const refundStr = localStorage.getItem("refunding");
+    let log = () => {}
     status.hasRefund = !!refundStr ? refundStr.split(",") : null;
     if (runtime.syncResultsFromHub[0]) {
-      console.log(`Hub Sync results: ${JSON.stringify(runtime.syncResultsFromHub[0],null,2)}`)
+      if (status.lastAction !== runtime.syncResultsFromHub[0].update.reason) {
+        log = console.log
+        status.lastAction = runtime.syncResultsFromHub[0].update.reason
+      }
+      log(`Hub Sync results: ${JSON.stringify(runtime.syncResultsFromHub[0],null,2)}`)
       switch (runtime.syncResultsFromHub[0].update.reason) {
         case "ProposePendingDeposit":
           if(runtime.syncResultsFromHub[0].update.args.depositTokenUser !== "0" ||
@@ -570,9 +576,9 @@ class App extends React.Component {
             this.closeConfirmations()
             status.deposit = "PENDING";
             status.depositHistory = "PENDING";
-            console.log(`ProposePendingDeposit! New status: ${JSON.stringify(status)}`)
+            log(`ProposePendingDeposit! New status: ${JSON.stringify(status)}`)
           } else {
-            console.log(`ProposePendingDeposit! Nothing to do`)
+            log(`ProposePendingDeposit! Nothing to do`)
           }
           break;
         case "ProposePendingWithdrawal":
@@ -581,26 +587,26 @@ class App extends React.Component {
             this.closeConfirmations()
             status.withdraw = "PENDING";
             status.withdrawHistory = "PENDING";
-            console.log(`ProposePendingWithdrawal! New status: ${JSON.stringify(status)}`)
+            log(`ProposePendingWithdrawal! New status: ${JSON.stringify(status)}`)
           } else {
-            console.log(`ProposePendingWithdrawal! Nothing to do`)
+            log(`ProposePendingWithdrawal! Nothing to do`)
           }
           break;
         case "ConfirmPending":
           if(this.state.status.depositHistory === "PENDING") {
             this.closeConfirmations("deposit")
             status.deposit = "SUCCESS";
-            console.log(`New status: ${JSON.stringify(status)}`)
+            log(`New status: ${JSON.stringify(status)}`)
           } else if(this.state.status.withdrawHistory === "PENDING") {
             this.closeConfirmations("withdraw")
             status.withdraw = "SUCCESS";
-            console.log(`ConfirmPending! New status: ${JSON.stringify(status)}`)
+            log(`ConfirmPending! New status: ${JSON.stringify(status)}`)
           } else {
-            console.log(`ConfirmPending! Nothing to do`)
+            log(`ConfirmPending! Nothing to do`)
           }
           break;
         default:
-          console.log(`Nothing to do for update of type: ${runtime.syncResultsFromHub[0].update.reason}`)
+          log(`Nothing to do for update of type: ${runtime.syncResultsFromHub[0].update.reason}`)
       }
     }
     this.setState({ status });
@@ -648,7 +654,7 @@ class App extends React.Component {
     if(type === "withdraw") {
       status.withdrawHistory = status.withdraw
     }
-    console.log(`New status: ${JSON.stringify(status)}`)
+    //console.log(`New status: ${JSON.stringify(status)}`)
     this.setState({ status });
   }
 
