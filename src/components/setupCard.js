@@ -141,14 +141,18 @@ class SetupCard extends Component {
 
       minEth = minConvertable
         .toETH()
-        .amountBigNumber.toFixed()
-        .substr(0, 5);
+        .format({
+          decimals: 2,
+          withSymbol: false,
+        })
       minDai = Currency.USD(browserMinimumBalance.dai).format({});
       maxEth = maxConvertable
         .toETH()
-        .amountBigNumber.toFixed()
-        .substr(0, 5);
-      maxDai = Currency.USD(maxConvertable.toUSD().amountBigNumber).format({});
+        .format({
+          decimals: 2,
+          withSymbol: false,
+        })
+      maxDai = Currency.USD(maxConvertable.toUSD().amountBN).format({});
     }
 
     const display = screens(classes, minEth, minDai, maxEth, maxDai);
