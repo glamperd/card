@@ -1,6 +1,5 @@
 import "./App.css";
 import { Paper, withStyles, Grid } from "@material-ui/core";
-import BigNumber from "bignumber.js";
 import * as eth from 'ethers';
 import interval from "interval-promise";
 import React from "react";
@@ -27,6 +26,7 @@ import { createWalletFromMnemonic, createWallet } from "./utils/walletGen";
 
 export const store = createStore(setWallet, null);
 
+const { Big, maxBN, minBN } = Connext.big
 const { CurrencyType, CurrencyConvertable } = Connext.types
 const { getExchangeRates } = Connext.getters
 
@@ -47,10 +47,9 @@ const overrides = {
   mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE
 };
 
-const DEPOSIT_ESTIMATED_GAS = new BigNumber("700000") // 700k gas
-//const DEPOSIT_MINIMUM_WEI = new BigNumber(Web3.utils.toWei("0.020", "ether")); // 30 FIN
-const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 69 TST
-const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
+const DEPOSIT_ESTIMATED_GAS = Big("700000") // 700k gas
+const HUB_EXCHANGE_CEILING = Big(Web3.utils.toWei("69", "ether")); // 69 TST
+const CHANNEL_DEPOSIT_MAX = Big(Web3.utils.toWei("30", "ether")); // 30 TST
 
 const styles = theme => ({
   paper: {
@@ -323,11 +322,11 @@ class App extends React.Component {
     if (!customWeb3 || !connextState) {
       return
     }
-    const defaultGas = new BigNumber(await customWeb3.eth.getGasPrice())
+    const defaultGas = Big(await customWeb3.eth.getGasPrice())
     // default connext multiple is 1.5, leave 2x for safety
     const depositGasPrice = DEPOSIT_ESTIMATED_GAS
-      .multipliedBy(new BigNumber(2))
-      .multipliedBy(defaultGas)
+      .mul(Big(2))
+      .mul(defaultGas)
     // add dai conversion
     const minConvertable = new CurrencyConvertable(
       CurrencyType.WEI, 
@@ -372,7 +371,7 @@ class App extends React.Component {
     const maxBalanceAfterRefund = localStorage.getItem("maxBalanceAfterRefund");
     if (
       maxBalanceAfterRefund &&
-      new BigNumber(balance).gte(new BigNumber(maxBalanceAfterRefund))
+      Big(balance).gte(Big(maxBalanceAfterRefund))
     ) {
       // wallet balance hasnt changed since submitting tx, returning
       return;
@@ -394,8 +393,8 @@ class App extends React.Component {
     }
 
     if (balance !== "0" || tokenBalance !== "0") {
-      const minWei = new BigNumber(browserMinimumBalance.wei)
-      if (new BigNumber(balance).lt(minWei)) {
+      const minWei = Big(browserMinimumBalance.wei)
+      if (Big(balance).lt(minWei)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
         return;
@@ -419,16 +418,16 @@ class App extends React.Component {
       ) {
         // refund any wei that is in the browser wallet
         // above the minimum
-        const refundWei = BigNumber.max(
-          new BigNumber(balance).minus(minWei),
-          0
+        const refundWei = maxBN(
+          Big(balance).minus(minWei),
+          Big(0)
         );
         await this.returnWei(refundWei.toFixed(0));
         return;
       }
 
       let channelDeposit = {
-        amountWei: new BigNumber(balance)
+        amountWei: Big(balance)
           .minus(minWei)
           .toFixed(0),
         amountToken: tokenBalance
@@ -454,8 +453,8 @@ class App extends React.Component {
         return;
       }
       // update channel deposit
-      const weiDeposit = new BigNumber(channelDeposit.amountWei).minus(
-        new BigNumber(weiToReturn)
+      const weiDeposit = Big(channelDeposit.amountWei).minus(
+        Big(weiToReturn)
       );
       channelDeposit.amountWei = weiDeposit.toFixed(0);
 
@@ -501,8 +500,8 @@ class App extends React.Component {
       Web3.utils.fromWei(wei, "finney") + "," + mostRecent.from
     );
     console.log(`Refunding ${wei} to ${mostRecent.from} from ${address}`);
-    const origBalance = new BigNumber(await customWeb3.eth.getBalance(address));
-    const newMax = origBalance.minus(new BigNumber(wei));
+    const origBalance = Big(await customWeb3.eth.getBalance(address));
+    const newMax = origBalance.minus(Big(wei));
 
     try {
       const res = await customWeb3.eth.sendTransaction({
@@ -531,13 +530,13 @@ class App extends React.Component {
     // the hub would exchange, or a set deposit max
     const ceilingWei = new CurrencyConvertable(
       CurrencyType.BEI,
-      BigNumber.min(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX),
+      minBN(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX),
       () => getExchangeRates(connextState)
     ).toWEI().amountBigNumber
 
-    const weiToRefund = BigNumber.max(
-      new BigNumber(wei).minus(ceilingWei),
-      new BigNumber(0)
+    const weiToRefund = maxBN(
+      Big(wei).minus(ceilingWei),
+      Big(0)
     );
 
     return weiToRefund.toFixed(0);
@@ -548,11 +547,11 @@ class App extends React.Component {
     if (!connextState || !connextState.runtime.canExchange) {
       return;
     }
-    const weiBalance = new BigNumber(channelState.balanceWeiUser);
-    const tokenBalance = new BigNumber(channelState.balanceTokenUser);
+    const weiBalance = Big(channelState.balanceWeiUser);
+    const tokenBalance = Big(channelState.balanceTokenUser);
     if (
       channelState &&
-      weiBalance.gt(new BigNumber("0")) &&
+      weiBalance.gt(Big("0")) &&
       tokenBalance.lte(HUB_EXCHANGE_CEILING)
     ) {
       await this.state.connext.exchange(channelState.balanceWeiUser, "wei");
