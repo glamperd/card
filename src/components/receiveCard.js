@@ -9,9 +9,10 @@ import * as eth from 'ethers';
 import QRGenerate from "./qrGenerate";
 import { withStyles, Grid } from "@material-ui/core";
 import MySnackbar from "./snackBar";
-import BN from "bn.js";
 import Web3 from "web3";
 import { getAmountInUSD } from "../utils/currencyFormatting";
+import * as Connext from 'connext';
+const { Big } = Connext.big
 
 const styles = theme => ({
   icon: {
@@ -56,12 +57,12 @@ class ReceiveCard extends Component {
       this.setState({ error })
       return error
     }
-    const tokenBig = new BN(amountToken)
+    const tokenBig = Big(amountToken)
     const amount = {
       amountWei: '0',
       amountToken: maxTokenDeposit,
     }
-    if (tokenBig.gt(new BN(amount.amountToken))) {
+    if (tokenBig.gt(Big(amount.amountToken))) {
       error = `Channel balances are capped at ${getAmountInUSD(amount, connextState)}`
     }
     if (tokenBig.isZero() || tokenBig.isNeg()) {
