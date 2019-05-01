@@ -26,7 +26,6 @@ fi
 
 rm -rf connext/node_modules
 rm -rf connext/dist
-
 echo "rebuilding the client..."
 cd connext
 npm i
@@ -36,8 +35,8 @@ cd ..
 echo "rm -rf node_modules/connext/dist"
 rm -rf node_modules/connext/dist
 
-echo "cp -r connext/dist node_modules/connext/dist"
-cp -r connext/dist node_modules/connext/dist
+echo "rsync -r connext/dist node_modules/connext/dist"
+rsync -r connext/dist node_modules/connext/dist
 
 echo "Done!"
 
