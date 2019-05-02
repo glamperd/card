@@ -422,14 +422,13 @@ class App extends React.Component {
           Big(balance).minus(minWei),
           Big(0)
         );
-        await this.returnWei(refundWei.toFixed(0));
+        await this.returnWei(refundWei.toString());
         return;
       }
 
       let channelDeposit = {
         amountWei: Big(balance)
-          .minus(minWei)
-          .toFixed(0),
+          .minus(minWei),
         amountToken: tokenBalance
       };
 
@@ -456,7 +455,7 @@ class App extends React.Component {
       const weiDeposit = Big(channelDeposit.amountWei).minus(
         Big(weiToReturn)
       );
-      channelDeposit.amountWei = weiDeposit.toFixed(0);
+      channelDeposit.amountWei = weiDeposit.toString();
 
       await this.state.connext.deposit(channelDeposit);
     }
@@ -515,7 +514,7 @@ class App extends React.Component {
       // storage. once the tx is submitted, the wallet balance should
       // always be lower than the expected balance, because of added
       // gas costs
-      localStorage.setItem("maxBalanceAfterRefund", newMax.toFixed(0));
+      localStorage.setItem("maxBalanceAfterRefund", newMax.toString());
     } catch (e) {
       console.log("Error with refund transaction:", e.message);
       localStorage.removeItem("maxBalanceAfterRefund");
@@ -539,7 +538,7 @@ class App extends React.Component {
       Big(0)
     );
 
-    return weiToRefund.toFixed(0);
+    return weiToRefund.toString();
   }
 
   async autoSwap() {
