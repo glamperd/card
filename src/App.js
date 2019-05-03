@@ -50,6 +50,7 @@ const overrides = {
 const DEPOSIT_ESTIMATED_GAS = Big("700000") // 700k gas
 const HUB_EXCHANGE_CEILING = Big(Web3.utils.toWei("69", "ether")); // 69 TST
 const CHANNEL_DEPOSIT_MAX = Big(Web3.utils.toWei("30", "ether")); // 30 TST
+const MAX_GAS_PRICE = Big("10000000000") // 10 gWei
 
 const styles = theme => ({
   paper: {
@@ -323,15 +324,18 @@ class App extends React.Component {
     if (!customWeb3 || !connextState) {
       return
     }
-    const defaultGas = Big(await customWeb3.eth.getGasPrice())
+    let currentGasPrice = Big(await customWeb3.eth.getGasPrice())
+    // dont let gas price be any higher than the min
+    currentGasPrice = minBN(currentGasPrice, MAX_GAS_PRICE)
     // default connext multiple is 1.5, leave 2x for safety
-    const depositGasPrice = DEPOSIT_ESTIMATED_GAS
+    const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS
       .mul(Big(2))
-      .mul(defaultGas)
+      .mul(currentGasPrice)
+
     // add dai conversion
     const minConvertable = new CurrencyConvertable(
       CurrencyType.WEI, 
-      depositGasPrice, 
+      totalDepositGasWei, 
       () => getExchangeRates(connextState)
     )
     const browserMinimumBalance = { 
@@ -420,7 +424,7 @@ class App extends React.Component {
         // refund any wei that is in the browser wallet
         // above the minimum
         const refundWei = maxBN(
-          Big(balance).minus(minWei),
+          Big(balance).sub(minWei),
           Big(0)
         );
         await this.returnWei(refundWei.toString());
@@ -429,7 +433,7 @@ class App extends React.Component {
 
       let channelDeposit = {
         amountWei: Big(balance)
-          .minus(minWei),
+          .sub(minWei),
         amountToken: tokenBalance
       };
 
@@ -453,7 +457,7 @@ class App extends React.Component {
         return;
       }
       // update channel deposit
-      const weiDeposit = Big(channelDeposit.amountWei).minus(
+      const weiDeposit = Big(channelDeposit.amountWei).sub(
         Big(weiToReturn)
       );
       channelDeposit.amountWei = weiDeposit.toString();
@@ -501,7 +505,7 @@ class App extends React.Component {
     );
     console.log(`Refunding ${wei} to ${mostRecent.from} from ${address}`);
     const origBalance = Big(await customWeb3.eth.getBalance(address));
-    const newMax = origBalance.minus(Big(wei));
+    const newMax = origBalance.sub(Big(wei));
 
     try {
       const res = await customWeb3.eth.sendTransaction({
@@ -532,10 +536,10 @@ class App extends React.Component {
       CurrencyType.BEI,
       minBN(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX),
       () => getExchangeRates(connextState)
-    ).toWEI().amountBigNumber
+    ).toWEI().amountBN
 
     const weiToRefund = maxBN(
-      Big(wei).minus(ceilingWei),
+      Big(wei).sub(ceilingWei),
       Big(0)
     );
 
