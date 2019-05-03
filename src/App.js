@@ -1,31 +1,16 @@
-//import React, { Fragment } from "react";
-//import "./App.css";
 import { setWallet } from "./utils/actions.js";
 import { createStore } from "redux";
-//import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
-//import Home from "./components/Home";
-//import DepositCard from "./components/depositCard";
-import { getConnextClient } from "connext/dist/Connext.js";
+//import { getConnextClient } from "connext/dist/Connext.js";
+import Connext from 'connext';
+import { types, getters, big, createClient } from "connext/dist";
 import ProviderOptions from "../dist/utils/ProviderOptions.js";
 import clientProvider from "../dist/utils/web3/clientProvider.js";
-import { createWalletFromMnemonic } from "./walletGen";
+import { createWalletFromMnemonic, createWallet } from "./walletGen";
 import axios from "axios";
-//import { Paper, withStyles, Button, Grid } from "@material-ui/core";
-//import AppBarComponent from "./components/AppBar";
-//import SettingsCard from "./components/settingsCard";
-//import ReceiveCard from "./components/receiveCard";
-//import SendCard from "./components/sendCard";
-//import CashOutCard from "./components/cashOutCard";
-///import SupportCard from "./components/supportCard";
-import { createWallet } from "./walletGen";
-//import RedeemCard from "./components/redeemCard";
-//import SetupCard from "./components/setupCard";
-//import Confirmations from "./components/Confirmations";
 import BigNumber from "bignumber.js";
-import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
-import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
-import getExchangeRates from "connext/dist/lib/getExchangeRates";
-//import Snackbar from "./components/snackBar";
+//import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
+//import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
+//import getExchangeRates from "connext/dist/lib/getExchangeRates";
 import interval from "interval-promise";
 import fs from 'fs';
 import Storage from './utils/Storage.js';
@@ -33,6 +18,9 @@ import Express from 'express';
 import Http from 'http';
 import socketIo from 'socket.io';
 
+const { CurrencyType, CurrencyConvertable } = types
+const { getExchangeRates } = getters
+const { Big, maxBN, minBN } = big
 export const store = createStore(setWallet, null);
 
 
@@ -131,13 +119,7 @@ class App  {
 
   async init() {
 
-    //const fs = require('fs')
-    //console.log('fs', fs)
-    //const path = require('path')
-    //console.log('init', __dirname, '...', './')
     const storeFile = "./.store";
-    //console.log('storeFile ', storeFile)
-    //console.log('dir ', await fs.readdirSync('./'))
 
     // Set up state
     var data
@@ -147,9 +129,9 @@ class App  {
       //console.log(data)
       fileStore = new Map(JSON.parse(data))
       //console.log('store data', fileStore)
-  } catch(err) {
-      console.log(err.message)
-  }
+    } catch(err) {
+        console.log(err.message)
+    }
 
     // Set up state
     const mnemonic = fileStore.get("mnemonic");
@@ -168,7 +150,11 @@ class App  {
       const delegateSigner = await createWalletFromMnemonic(mnemonic);
       const address = await delegateSigner.getAddressString();
       //TODO - no state
-      this.setState({'delegateSigner': delegateSigner, 'address': address} );
+      this.setState({
+        'delegateSigner': delegateSigner,
+        'address': address,
+        mnemonic
+      });
       //console.log('address', address)
       store.dispatch({
         type: "SET_WALLET",
@@ -205,7 +191,7 @@ class App  {
     }
 
     // Initialise authorisation
-    await this.authorizeHandler();
+    //await this.authorizeHandler();
 
     // Start websockets server
     await this.startWsServer();
@@ -423,19 +409,20 @@ class App  {
 
   async setConnext() {
     console.log('setting Connext')
-    const { address, customWeb3, hubUrl } = this.state;
+    const { address, customWeb3, hubUrl, mnemonic } = this.state;
 
     const opts = {
       web3: customWeb3,
       hubUrl: hubUrl, // in dev-mode: http://localhost:8080,
       user: address,
-      origin: "localhost" // TODO: what should this be
+      origin: "localhost", // TODO: what should this be
+      mnemonic: mnemonic
     };
 
     // *** Instantiate the connext client ***
     console.log('getting Connext client')
     try {
-      const connext = await getConnextClient(opts);
+      const connext = await createClient(opts);
       console.log(`Successfully set up connext! Connext config:`);
       console.log(`  - tokenAddress: ${connext.opts.tokenAddress}`);
       console.log(`  - hubAddress: ${connext.opts.hubAddress}`);
