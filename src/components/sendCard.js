@@ -30,7 +30,7 @@ const { Big } = Connext.big
 const emptyAddress = eth.constants.AddressZero
 const queryString = require("query-string");
 // $10 capped linked payments
-const LINK_LIMIT = Web3.utils.toBN(Web3.utils.toWei("10", "ether"));
+const LINK_LIMIT = eth.utils.parseEther("10")
 
 const styles = theme => ({
   icon: {

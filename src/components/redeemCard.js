@@ -13,6 +13,7 @@ import { getAmountInUSD } from "../utils/currencyFormatting";
 import interval from "interval-promise";
 import MySnackbar from "../components/snackBar";
 import * as Connext from 'connext';
+import { ethers } from "ethers";
 const { Big } = Connext.big
 
 const queryString = require("query-string");
@@ -486,7 +487,7 @@ class RedeemCard extends Component {
       return errs
     }
     const token = Big(amount.amountToken)
-    if (token.isNeg()) {
+    if (token.lt(ethers.constants.Zero)) {
       errs.push("Copied token balance is negative")
     }
     // print amount for easy confirmation
