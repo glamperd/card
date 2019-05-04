@@ -156,7 +156,11 @@ class SettingsCard extends Component {
           >
             <MenuItem value={"MAINNET"}>MAINNET</MenuItem>
             <MenuItem value={"RINKEBY"}>RINKEBY</MenuItem>
-            <MenuItem value={"LOCALHOST"}>LOCALHOST</MenuItem>
+            {
+              process.env.NODE_ENV === "development"
+              ? <MenuItem value={"LOCALHOST"}>LOCALHOST</MenuItem>
+              : null
+            }
           </Select>
         </Grid>
         <Grid item xs={12} className={classes.button}>

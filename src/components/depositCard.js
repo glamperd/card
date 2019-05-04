@@ -8,11 +8,10 @@ import Grid from "@material-ui/core/Grid";
 import QRGenerate from "./qrGenerate";
 import MySnackbar from "./snackBar";
 import { withStyles } from "@material-ui/core";
-import { CurrencyType } from "connext/dist/state/ConnextState/CurrencyTypes";
-import getExchangeRates from "connext/dist/lib/getExchangeRates";
-import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
-import Currency from "connext/dist/lib/currency/Currency";
+import * as Connext from 'connext';
 
+const { Currency, CurrencyConvertable, CurrencyType } = Connext.types
+const { getExchangeRates } = Connext.getters
 
 const styles = theme => ({
   icon: {

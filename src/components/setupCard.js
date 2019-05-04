@@ -12,12 +12,12 @@ import {
   LinearProgress,
   Tooltip
 } from "@material-ui/core";
-import { CurrencyType } from "connext/dist/state/ConnextState/CurrencyTypes";
-import getExchangeRates from "connext/dist/lib/getExchangeRates";
-import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
-import Currency from "connext/dist/lib/currency/Currency";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import CopyIcon from "@material-ui/icons/FileCopy";
+import * as Connext from 'connext';
+
+const { Currency, CurrencyConvertable, CurrencyType } = Connext.types
+const { getExchangeRates } = Connext.getters
 
 const styles = theme => ({
   icon: {
@@ -141,14 +141,18 @@ class SetupCard extends Component {
 
       minEth = minConvertable
         .toETH()
-        .amountBigNumber.toFixed()
-        .substr(0, 5);
+        .format({
+          decimals: 2,
+          withSymbol: false,
+        })
       minDai = Currency.USD(browserMinimumBalance.dai).format({});
       maxEth = maxConvertable
         .toETH()
-        .amountBigNumber.toFixed()
-        .substr(0, 5);
-      maxDai = Currency.USD(maxConvertable.toUSD().amountBigNumber).format({});
+        .format({
+          decimals: 2,
+          withSymbol: false,
+        })
+      maxDai = Currency.USD(maxConvertable.toUSD().amountBN).format({});
     }
 
     const display = screens(classes, minEth, minDai, maxEth, maxDai);

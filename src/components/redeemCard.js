@@ -8,11 +8,13 @@ import Typography from "@material-ui/core/Typography";
 import Tooltip from "@material-ui/core/Tooltip";
 import QRGenerate from "./qrGenerate";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import BN from "bn.js";
 import Web3 from "web3";
 import { getAmountInUSD } from "../utils/currencyFormatting";
 import interval from "interval-promise";
 import MySnackbar from "../components/snackBar";
+import * as Connext from 'connext';
+import { ethers } from "ethers";
+const { Big } = Connext.big
 
 const queryString = require("query-string");
 
@@ -349,8 +351,8 @@ class RedeemCard extends Component {
           return
         }
         // eval channel collateral
-        hasCollateral = new BN(channelState.balanceTokenHub).gte(
-          new BN(amount.amountToken)
+        hasCollateral = Big(channelState.balanceTokenHub).gte(
+          Big(amount.amountToken)
         )
 
         if (hasCollateral || iteration > 30) {
@@ -438,8 +440,8 @@ class RedeemCard extends Component {
 
       // check if the channel has collateral, otherwise display loading
       if (
-        new BN(channelState.balanceTokenHub).lt(
-          new BN(amount.amountToken))
+        Big(channelState.balanceTokenHub).lt(
+          Big(amount.amountToken))
         ) {
         // channel does not have collateral
         this.setState({ redeemPaymentState: RedeemPaymentStates.Collateralizing })
@@ -484,8 +486,8 @@ class RedeemCard extends Component {
       errs.push("Invalid amount")
       return errs
     }
-    const token = new BN(amount.amountToken)
-    if (token.isNeg()) {
+    const token = Big(amount.amountToken)
+    if (token.lt(ethers.constants.Zero)) {
       errs.push("Copied token balance is negative")
     }
     // print amount for easy confirmation

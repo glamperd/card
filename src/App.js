@@ -1,15 +1,13 @@
-import React from "react";
 import "./App.css";
-import { setWallet } from "./utils/actions.js";
-import { createStore } from "redux";
+import { Paper, withStyles, Grid } from "@material-ui/core";
+import * as eth from 'ethers';
+import interval from "interval-promise";
+import React from "react";
 import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
+import { createStore } from "redux";
+import * as Connext from "connext";
 import Home from "./components/Home";
 import DepositCard from "./components/depositCard";
-import { getConnextClient } from "connext/dist/Connext.js";
-import ProviderOptions from "./utils/ProviderOptions.ts";
-import clientProvider from "./utils/web3/clientProvider.ts";
-import { createWalletFromMnemonic, createWallet } from "./utils/walletGen";
-import { Paper, withStyles, Grid } from "@material-ui/core";
 import AppBarComponent from "./components/AppBar";
 import SettingsCard from "./components/settingsCard";
 import ReceiveCard from "./components/receiveCard";
@@ -19,19 +17,22 @@ import SupportCard from "./components/supportCard";
 import RedeemCard from "./components/redeemCard";
 import SetupCard from "./components/setupCard";
 import Confirmations from "./components/Confirmations";
-import BigNumber from "bignumber.js";
-import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
-import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
-import getExchangeRates from "connext/dist/lib/getExchangeRates";
 import MySnackbar from "./components/snackBar";
-import interval from "interval-promise";
+
+import { setWallet } from "./utils/actions.js";
+import ProviderOptions from "./utils/ProviderOptions.ts";
+import clientProvider from "./utils/web3/clientProvider.ts";
+import { createWalletFromMnemonic, createWallet } from "./utils/walletGen";
 
 export const store = createStore(setWallet, null);
+
+const { Big, maxBN, minBN } = Connext.big
+const { CurrencyType, CurrencyConvertable } = Connext.types
+const { getExchangeRates } = Connext.getters
 
 let publicUrl;
 
 const Web3 = require("web3");
-const eth = require("ethers");
 const humanTokenAbi = require("./abi/humanToken.json");
 
 const env = process.env.NODE_ENV;
@@ -46,10 +47,10 @@ const overrides = {
   mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE
 };
 
-const DEPOSIT_ESTIMATED_GAS = new BigNumber("700000") // 700k gas
-//const DEPOSIT_MINIMUM_WEI = new BigNumber(Web3.utils.toWei("0.020", "ether")); // 30 FIN
-const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 69 TST
-const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
+const DEPOSIT_ESTIMATED_GAS = Big("700000") // 700k gas
+const HUB_EXCHANGE_CEILING = Big(Web3.utils.toWei("69", "ether")); // 69 TST
+const CHANNEL_DEPOSIT_MAX = Big(Web3.utils.toWei("30", "ether")); // 30 TST
+const MAX_GAS_PRICE = Big("10000000000") // 10 gWei
 
 const styles = theme => ({
   paper: {
@@ -116,6 +117,7 @@ class App extends React.Component {
       },
       address: "",
       status: {
+        lastAction: "",
         deposit: "",
         withdraw: "",
         payment: "",
@@ -250,17 +252,15 @@ class App extends React.Component {
   }
 
   async setConnext() {
-    const { address, customWeb3, hubUrl } = this.state;
-
     const opts = {
-      web3: customWeb3,
-      hubUrl, // in dev-mode: http://localhost:8080,
-      user: address,
-      origin: "localhost" // TODO: what should this be
+      hubUrl: this.state.hubUrl,
+      web3: this.state.customWeb3, user: this.state.address,
+      // mnemonic: localStorage.getItem("mnemonic"),
+      // privateKey: eth.Wallet.fromMnemonic(localStorage.getItem("mnemonic")).privateKey,
     };
 
     // *** Instantiate the connext client ***
-    const connext = await getConnextClient(opts);
+    const connext = await Connext.createClient(opts);
     console.log(`Successfully set up connext! Connext config:`);
     console.log(`  - tokenAddress: ${connext.opts.tokenAddress}`);
     console.log(`  - hubAddress: ${connext.opts.hubAddress}`);
@@ -324,15 +324,18 @@ class App extends React.Component {
     if (!customWeb3 || !connextState) {
       return
     }
-    const defaultGas = new BigNumber(await customWeb3.eth.getGasPrice())
+    let currentGasPrice = Big(await customWeb3.eth.getGasPrice())
+    // dont let gas price be any higher than the min
+    currentGasPrice = minBN(currentGasPrice, MAX_GAS_PRICE)
     // default connext multiple is 1.5, leave 2x for safety
-    const depositGasPrice = DEPOSIT_ESTIMATED_GAS
-      .multipliedBy(new BigNumber(2))
-      .multipliedBy(defaultGas)
+    const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS
+      .mul(Big(2))
+      .mul(currentGasPrice)
+
     // add dai conversion
     const minConvertable = new CurrencyConvertable(
       CurrencyType.WEI, 
-      depositGasPrice, 
+      totalDepositGasWei, 
       () => getExchangeRates(connextState)
     )
     const browserMinimumBalance = { 
@@ -373,7 +376,7 @@ class App extends React.Component {
     const maxBalanceAfterRefund = localStorage.getItem("maxBalanceAfterRefund");
     if (
       maxBalanceAfterRefund &&
-      new BigNumber(balance).gte(new BigNumber(maxBalanceAfterRefund))
+      Big(balance).gte(Big(maxBalanceAfterRefund))
     ) {
       // wallet balance hasnt changed since submitting tx, returning
       return;
@@ -395,8 +398,8 @@ class App extends React.Component {
     }
 
     if (balance !== "0" || tokenBalance !== "0") {
-      const minWei = new BigNumber(browserMinimumBalance.wei)
-      if (new BigNumber(balance).lt(minWei)) {
+      const minWei = Big(browserMinimumBalance.wei)
+      if (Big(balance).lt(minWei)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
         return;
@@ -420,18 +423,17 @@ class App extends React.Component {
       ) {
         // refund any wei that is in the browser wallet
         // above the minimum
-        const refundWei = BigNumber.max(
-          new BigNumber(balance).minus(minWei),
-          0
+        const refundWei = maxBN(
+          Big(balance).sub(minWei),
+          Big(0)
         );
-        await this.returnWei(refundWei.toFixed(0));
+        await this.returnWei(refundWei.toString());
         return;
       }
 
       let channelDeposit = {
-        amountWei: new BigNumber(balance)
-          .minus(minWei)
-          .toFixed(0),
+        amountWei: Big(balance)
+          .sub(minWei),
         amountToken: tokenBalance
       };
 
@@ -455,10 +457,10 @@ class App extends React.Component {
         return;
       }
       // update channel deposit
-      const weiDeposit = new BigNumber(channelDeposit.amountWei).minus(
-        new BigNumber(weiToReturn)
+      const weiDeposit = Big(channelDeposit.amountWei).sub(
+        Big(weiToReturn)
       );
-      channelDeposit.amountWei = weiDeposit.toFixed(0);
+      channelDeposit.amountWei = weiDeposit.toString();
 
       await this.state.connext.deposit(channelDeposit);
     }
@@ -502,8 +504,8 @@ class App extends React.Component {
       Web3.utils.fromWei(wei, "finney") + "," + mostRecent.from
     );
     console.log(`Refunding ${wei} to ${mostRecent.from} from ${address}`);
-    const origBalance = new BigNumber(await customWeb3.eth.getBalance(address));
-    const newMax = origBalance.minus(new BigNumber(wei));
+    const origBalance = Big(await customWeb3.eth.getBalance(address));
+    const newMax = origBalance.sub(Big(wei));
 
     try {
       const res = await customWeb3.eth.sendTransaction({
@@ -517,7 +519,7 @@ class App extends React.Component {
       // storage. once the tx is submitted, the wallet balance should
       // always be lower than the expected balance, because of added
       // gas costs
-      localStorage.setItem("maxBalanceAfterRefund", newMax.toFixed(0));
+      localStorage.setItem("maxBalanceAfterRefund", newMax.toString());
     } catch (e) {
       console.log("Error with refund transaction:", e.message);
       localStorage.removeItem("maxBalanceAfterRefund");
@@ -532,16 +534,16 @@ class App extends React.Component {
     // the hub would exchange, or a set deposit max
     const ceilingWei = new CurrencyConvertable(
       CurrencyType.BEI,
-      BigNumber.min(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX),
+      minBN(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX),
       () => getExchangeRates(connextState)
-    ).toWEI().amountBigNumber
+    ).toWEI().amountBN
 
-    const weiToRefund = BigNumber.max(
-      new BigNumber(wei).minus(ceilingWei),
-      new BigNumber(0)
+    const weiToRefund = maxBN(
+      Big(wei).sub(ceilingWei),
+      Big(0)
     );
 
-    return weiToRefund.toFixed(0);
+    return weiToRefund.toString();
   }
 
   async autoSwap() {
@@ -549,11 +551,11 @@ class App extends React.Component {
     if (!connextState || !connextState.runtime.canExchange) {
       return;
     }
-    const weiBalance = new BigNumber(channelState.balanceWeiUser);
-    const tokenBalance = new BigNumber(channelState.balanceTokenUser);
+    const weiBalance = Big(channelState.balanceWeiUser);
+    const tokenBalance = Big(channelState.balanceTokenUser);
     if (
       channelState &&
-      weiBalance.gt(new BigNumber("0")) &&
+      weiBalance.gt(Big("0")) &&
       tokenBalance.lte(HUB_EXCHANGE_CEILING)
     ) {
       await this.state.connext.exchange(channelState.balanceWeiUser, "wei");
@@ -563,9 +565,14 @@ class App extends React.Component {
   async checkStatus() {
     const { runtime, status } = this.state;
     const refundStr = localStorage.getItem("refunding");
+    let log = () => {}
     status.hasRefund = !!refundStr ? refundStr.split(",") : null;
     if (runtime.syncResultsFromHub[0]) {
-      console.log(`Hub Sync results: ${JSON.stringify(runtime.syncResultsFromHub[0],null,2)}`)
+      if (status.lastAction !== runtime.syncResultsFromHub[0].update.reason) {
+        log = console.log
+        status.lastAction = runtime.syncResultsFromHub[0].update.reason
+      }
+      log(`Hub Sync results: ${JSON.stringify(runtime.syncResultsFromHub[0],null,2)}`)
       switch (runtime.syncResultsFromHub[0].update.reason) {
         case "ProposePendingDeposit":
           if(runtime.syncResultsFromHub[0].update.args.depositTokenUser !== "0" ||
@@ -573,9 +580,9 @@ class App extends React.Component {
             this.closeConfirmations()
             status.deposit = "PENDING";
             status.depositHistory = "PENDING";
-            console.log(`ProposePendingDeposit! New status: ${JSON.stringify(status)}`)
+            log(`ProposePendingDeposit! New status: ${JSON.stringify(status)}`)
           } else {
-            console.log(`ProposePendingDeposit! Nothing to do`)
+            log(`ProposePendingDeposit! Nothing to do`)
           }
           break;
         case "ProposePendingWithdrawal":
@@ -584,26 +591,26 @@ class App extends React.Component {
             this.closeConfirmations()
             status.withdraw = "PENDING";
             status.withdrawHistory = "PENDING";
-            console.log(`ProposePendingWithdrawal! New status: ${JSON.stringify(status)}`)
+            log(`ProposePendingWithdrawal! New status: ${JSON.stringify(status)}`)
           } else {
-            console.log(`ProposePendingWithdrawal! Nothing to do`)
+            log(`ProposePendingWithdrawal! Nothing to do`)
           }
           break;
         case "ConfirmPending":
           if(this.state.status.depositHistory === "PENDING") {
             this.closeConfirmations("deposit")
             status.deposit = "SUCCESS";
-            console.log(`New status: ${JSON.stringify(status)}`)
+            log(`New status: ${JSON.stringify(status)}`)
           } else if(this.state.status.withdrawHistory === "PENDING") {
             this.closeConfirmations("withdraw")
             status.withdraw = "SUCCESS";
-            console.log(`ConfirmPending! New status: ${JSON.stringify(status)}`)
+            log(`ConfirmPending! New status: ${JSON.stringify(status)}`)
           } else {
-            console.log(`ConfirmPending! Nothing to do`)
+            log(`ConfirmPending! Nothing to do`)
           }
           break;
         default:
-          console.log(`Nothing to do for update of type: ${runtime.syncResultsFromHub[0].update.reason}`)
+          log(`Nothing to do for update of type: ${runtime.syncResultsFromHub[0].update.reason}`)
       }
     }
     this.setState({ status });
@@ -651,7 +658,7 @@ class App extends React.Component {
     if(type === "withdraw") {
       status.withdrawHistory = status.withdraw
     }
-    console.log(`New status: ${JSON.stringify(status)}`)
+    //console.log(`New status: ${JSON.stringify(status)}`)
     this.setState({ status });
   }
 

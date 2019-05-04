@@ -7,6 +7,7 @@ import LinkIcon from "@material-ui/icons/Link";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
+import * as eth from 'ethers';
 import QRScan from "./qrScan";
 import {
   withStyles,
@@ -19,16 +20,17 @@ import {
   DialogContentText,
   DialogActions
 } from "@material-ui/core";
-import { emptyAddress } from "connext/dist/Utils";
-import { convertPayment } from "connext/dist/types";
-import BN from "bn.js";
+import * as Connext from 'connext';
 import interval from "interval-promise";
 import Web3 from "web3";
 import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
 
+const { convertPayment } = Connext.types
+const { Big } = Connext.big
+const emptyAddress = eth.constants.AddressZero
 const queryString = require("query-string");
 // $10 capped linked payments
-const LINK_LIMIT = Web3.utils.toBN(Web3.utils.toWei("10", "ether"));
+const LINK_LIMIT = eth.utils.parseEther("10")
 
 const styles = theme => ({
   icon: {
@@ -228,7 +230,7 @@ class PayCard extends Component {
                 : "0",
               amountWei: "0"
             },
-            type: "PT_CHANNEL"
+            type: "PT_OPTIMISTIC"
           }
         ]
       },
@@ -327,19 +329,18 @@ class PayCard extends Component {
     let balanceError = null
     let addressError = null
     // validate that the token amount is within bounds
-    if (payment.amountToken.gt(new BN(channelState.balanceTokenUser))) {
+    if (payment.amountToken.gt(Big(channelState.balanceTokenUser))) {
       balanceError = "Insufficient balance in channel";
     }
-    if (payment.amountToken.isZero() || payment.amountToken.isNeg()) {
+    if (payment.amountToken.lte(Big(0)) ) {
       balanceError = "Please enter a payment amount above 0";
     }
 
     // validate recipient is valid address OR the empty address
     // recipient address can be empty
     const isLink = paymentVal.payments[0].type === "PT_LINK";
-    const isValidRecipient =
-      Web3.utils.isAddress(address) &&
-      (isLink ? address === emptyAddress : address !== emptyAddress);
+    const isValidRecipient = Web3.utils.isAddress(address) &&
+      (isLink ? address == emptyAddress : address != emptyAddress);
 
     if (!isValidRecipient) {
       addressError = address + " is an invalid address";
