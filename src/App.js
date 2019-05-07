@@ -4,8 +4,9 @@ import * as eth from 'ethers';
 import interval from "interval-promise";
 import React from "react";
 import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
-import { createStore } from "redux";
 import * as Connext from "connext";
+
+// Pages
 import Home from "./components/Home";
 import DepositCard from "./components/depositCard";
 import AppBarComponent from "./components/AppBar";
@@ -19,34 +20,28 @@ import SetupCard from "./components/setupCard";
 import Confirmations from "./components/Confirmations";
 import MySnackbar from "./components/snackBar";
 
-import { setWallet } from "./utils/actions.js";
-import ProviderOptions from "./utils/ProviderOptions.ts";
-import clientProvider from "./utils/web3/clientProvider.ts";
-import { createWalletFromMnemonic, createWallet } from "./utils/walletGen";
-
-export const store = createStore(setWallet, null);
-
 const { Big, maxBN, minBN } = Connext.big
 const { CurrencyType, CurrencyConvertable } = Connext.types
 const { getExchangeRates } = Connext.getters
 
 let publicUrl;
 
-const Web3 = require("web3");
 const humanTokenAbi = require("./abi/humanToken.json");
 
 const env = process.env.NODE_ENV;
 const tokenAbi = humanTokenAbi;
 
+// Optional URL overrides for custom hubs
 const overrides = {
   localHub: process.env.REACT_APP_LOCAL_HUB_OVERRIDE,
   localEth: process.env.REACT_APP_LOCAL_ETH_OVERRIDE,
   rinkebyHub: process.env.REACT_APP_RINKEBY_HUB_OVERRIDE,
   rinkebyEth: process.env.REACT_APP_RINKEBY_ETH_OVERRIDE,
   mainnetHub: process.env.REACT_APP_MAINNET_HUB_OVERRIDE,
-  mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE
+  mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE,
 };
 
+// Constants for channel max/min - this is also enforced on the hub
 const DEPOSIT_ESTIMATED_GAS = Big("700000") // 700k gas
 const HUB_EXCHANGE_CEILING = Big(Web3.utils.toWei("69", "ether")); // 69 TST
 const CHANNEL_DEPOSIT_MAX = Big(Web3.utils.toWei("30", "ether")); // 30 TST
@@ -117,11 +112,9 @@ class App extends React.Component {
       },
       address: "",
       status: {
-        lastAction: "",
-        deposit: "",
-        withdraw: "",
-        payment: "",
-        hasRefund: ""
+        txHash: "",
+        type: "",
+        reset: false,
       },
       browserMinimumBalance: null,
     };
@@ -134,49 +127,32 @@ class App extends React.Component {
   // ************************************************* //
 
   async componentDidMount() {
+    // on mount, check if you need to refund by removing maxBalance
+    localStorage.removeItem("refunding");
+
     // set public url
     publicUrl = window.location.origin.toLowerCase();
 
-    // Set up state
-    const mnemonic = localStorage.getItem("mnemonic");
-    // on mount, check if you need to refund by removing maxBalance
-    localStorage.removeItem("refunding");
+    // Get mnemonic and rpc type
+    let mnemonic = localStorage.getItem("mnemonic");
     let rpc = localStorage.getItem("rpc-prod");
-    // TODO: better way to set default provider
-    // if it doesnt exist in storage
+
+    // If no rpc, get from env and save to local storage
     if (!rpc) {
       rpc = env === "development" ? "LOCALHOST" : "MAINNET";
       localStorage.setItem("rpc-prod", rpc);
     }
-    // If a browser address exists, create wallet
-    if (mnemonic) {
-      const delegateSigner = await createWalletFromMnemonic(mnemonic);
-      const address = await delegateSigner.getAddressString();
-      this.setState({ delegateSigner, address });
-      store.dispatch({
-        type: "SET_WALLET",
-        text: delegateSigner
-      });
+    // If no mnemonic, create one and save to local storage
+    if (!mnemonic) {
+      mnemonic = bip39.generateMnemonic();
+      localStorage.setItem("mnemonic", mnemonic);
+    }  
 
-      await this.setWeb3(rpc);
-      await this.setConnext();
-      await this.setTokenContract();
-
-      await this.pollConnextState();
-      await this.setBrowserWalletMinimumBalance();
-      await this.poller();
-    } else {
-      // Else, we create a new address
-      const delegateSigner = await createWallet(this.state.web3);
-      const address = await delegateSigner.getAddressString();
-      this.setState({ delegateSigner, address });
-      store.dispatch({
-        type: "SET_WALLET",
-        text: delegateSigner
-      });
-      // Then refresh the page
-      window.location.reload();
-    }
+    await this.setConnext(rpc, mnemonic);
+    await this.setTokenContract();
+    await this.pollConnextState();
+    await this.setBrowserWalletMinimumBalance();
+    await this.poller();
   }
 
   // ************************************************* //
@@ -190,54 +166,45 @@ class App extends React.Component {
     // update refunding variable on rpc switch
     localStorage.removeItem("maxBalanceAfterRefund");
     localStorage.removeItem("refunding");
-    // await this.setWeb3(rpc);
-    // await this.setConnext();
-    // await this.setTokenContract();
     window.location.reload();
     return;
   }
 
-  // either LOCALHOST MAINNET or RINKEBY
-  async setWeb3(rpc) {
-    let rpcUrl, hubUrl;
+  async setConnext(rpc, mnemonic) {
+    let hubUrl;
     switch (rpc) {
       case "LOCALHOST":
-        rpcUrl = overrides.localEth || `${publicUrl}/api/local/eth`;
         hubUrl = overrides.localHub || `${publicUrl}/api/local/hub`;
         break;
       case "RINKEBY":
-        rpcUrl = overrides.rinkebyEth || `${publicUrl}/api/rinkeby/eth`;
         hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
         break;
       case "MAINNET":
-        rpcUrl = overrides.mainnetEth || `${publicUrl}/api/mainnet/eth`;
         hubUrl = overrides.mainnetHub || `${publicUrl}/api/mainnet/hub`;
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
     }
 
-    // Ask permission to view accounts
-    let windowId;
-    if (window.ethereum) {
-      window.web3 = new Web3(window.ethereum);
-      windowId = await window.web3.eth.net.getId();
-    }
-
-    const providerOpts = new ProviderOptions(store, rpcUrl, hubUrl).approving();
-    const provider = clientProvider(providerOpts);
-    const customWeb3 = new Web3(provider);
-    const customId = await customWeb3.eth.net.getId();
-    // NOTE: token/contract/hubWallet ddresses are set to state while initializing connext
-    this.setState({ customWeb3, hubUrl, rpcUrl });
-    if (windowId && windowId !== customId) {
-      alert(
-        `Your card is set to ${JSON.stringify(
-          rpc
-        )}. To avoid losing funds, please make sure your metamask and card are using the same network.`
-      );
-    }
-    return;
+    const opts = {
+      hubUrl: this.state.hubUrl,
+      mnemonic,
+    };
+    const connext = await Connext.getConnextClient(opts)
+    console.log(`Successfully set up connext! Connext config:`);
+    console.log(`  - tokenAddress: ${connext.opts.tokenAddress}`);
+    console.log(`  - hubAddress: ${connext.opts.hubAddress}`);
+    console.log(`  - contractAddress: ${connext.opts.contractAddress}`);
+    console.log(`  - ethNetworkId: ${connext.opts.ethNetworkId}`);
+    console.log(`  - public address: ${connext.wallet.getAddressString()}`)
+    this.setState({
+      connext,
+      tokenAddress: connext.opts.tokenAddress,
+      channelManagerAddress: connext.opts.contractAddress,
+      hubWalletAddress: connext.opts.hubAddress,
+      ethNetworkId: connext.opts.ethNetworkId,
+      address: connext.wallet.getAddressString(),
+    });
   }
 
   async setTokenContract() {
@@ -251,37 +218,13 @@ class App extends React.Component {
     }
   }
 
-  async setConnext() {
-    const opts = {
-      hubUrl: this.state.hubUrl,
-      web3: this.state.customWeb3, user: this.state.address,
-      // mnemonic: localStorage.getItem("mnemonic"),
-      // privateKey: eth.Wallet.fromMnemonic(localStorage.getItem("mnemonic")).privateKey,
-    };
-
-    // *** Instantiate the connext client ***
-    const connext = await Connext.createClient(opts);
-    console.log(`Successfully set up connext! Connext config:`);
-    console.log(`  - tokenAddress: ${connext.opts.tokenAddress}`);
-    console.log(`  - hubAddress: ${connext.opts.hubAddress}`);
-    console.log(`  - contractAddress: ${connext.opts.contractAddress}`);
-    console.log(`  - ethNetworkId: ${connext.opts.ethNetworkId}`);
-    this.setState({
-      connext,
-      tokenAddress: connext.opts.tokenAddress,
-      channelManagerAddress: connext.opts.contractAddress,
-      hubWalletAddress: connext.opts.hubAddress,
-      ethNetworkId: connext.opts.ethNetworkId
-    });
-  }
-
   // ************************************************* //
   //                    Pollers                        //
   // ************************************************* //
 
   async pollConnextState() {
     let connext = this.state.connext;
-    // register listeners
+    // register connext listeners
     connext.on("onStateChange", state => {
       console.log("Connext state changed:", state);
       this.setState({
@@ -320,11 +263,8 @@ class App extends React.Component {
   }
 
   async setBrowserWalletMinimumBalance() {
-    const { customWeb3, connextState } = this.state
-    if (!customWeb3 || !connextState) {
-      return
-    }
-    let currentGasPrice = Big(await customWeb3.eth.getGasPrice())
+    let gasEstimateJson = await eth.utils.fetchJson({url:`https://ethgasstation.info/json/ethgasAPI.json`})
+    let currentGasPrice = gasEstimateJson.safeLow
     // dont let gas price be any higher than the min
     currentGasPrice = minBN(currentGasPrice, MAX_GAS_PRICE)
     // default connext multiple is 1.5, leave 2x for safety
@@ -354,24 +294,15 @@ class App extends React.Component {
       tokenAddress,
       exchangeRate,
       channelState,
-      rpcUrl,
+      connext,
       browserMinimumBalance,
     } = this.state;
-    if (!rpcUrl) {
-      return;
-    }
-
-    if (!browserMinimumBalance) {
-      return
-    }
-
-    const web3 = new Web3(rpcUrl);
-    const balance = await web3.eth.getBalance(address);
-
     const refunding = localStorage.getItem("refunding");
-    if (refunding) {
-      return;
-    }
+
+    if (!connext || !browserMinimumBalance || refunding) return;
+
+    const web3 = new Web3(connext.opts.rpcUrl);
+    const balance = await web3.eth.getBalance(address);
 
     const maxBalanceAfterRefund = localStorage.getItem("maxBalanceAfterRefund");
     if (
@@ -406,9 +337,15 @@ class App extends React.Component {
       }
       // only proceed with deposit request if you can deposit
       if (
+        // Either no state
         !connextState ||
-        !connextState.runtime.canDeposit ||
-        exchangeRate === "0.00"
+        // Or nothing has been submitted
+        (!connextState.runtime.deposit.submitted && !connextState.runtime.withdrawal.submitted && !connextState.runtime.collateral.submitted) ||
+        // Or something was submitted but also confirmed
+        (connextState.runtime.deposit.submitted && connextState.runtime.deposit.transactionHash) ||
+        (connextState.runtime.withdrawal.submitted && connextState.runtime.withdrawal.transactionHash) ||
+        (connextState.runtime.collateral.submitted && connextState.runtime.collateral.transactionHash)
+        // exchangeRate === "0.00"
       ) {
         return;
       }
@@ -422,12 +359,13 @@ class App extends React.Component {
           .gte(eth.utils.parseEther("29.8"))
       ) {
         // refund any wei that is in the browser wallet
-        // above the minimum
-        const refundWei = maxBN(
-          Big(balance).sub(minWei),
-          Big(0)
-        );
-        await this.returnWei(refundWei.toString());
+        alert("TEMPORARY WARNING: You already have maximum balance. Refusing to deposit more for now.")
+        
+        // const refundWei = maxBN(
+        //   Big(balance).sub(minWei),
+        //   Big(0)
+        // );
+        // await this.returnWei(refundWei.toString());
         return;
       }
 
@@ -453,7 +391,8 @@ class App extends React.Component {
 
       // return wei to sender
       if (weiToReturn !== "0") {
-        await this.returnWei(weiToReturn);
+        alert("TEMPORARY WARNING: You've deposited more balance than the maximum. Only balance up to the maximum will be deposited - retrieve remaining funds by recovering your seed phrase into a wallet")
+        // await this.returnWei(weiToReturn);
         return;
       }
       // update channel deposit
@@ -466,67 +405,68 @@ class App extends React.Component {
     }
   }
 
-  async returnWei(wei) {
-    const { address, customWeb3 } = this.state;
-    localStorage.setItem("refunding", Web3.utils.fromWei(wei, "finney"));
+  // async returnWei(wei) {
+  //   // const { address,connext } = this.state;
+  //   // localStorage.setItem("refunding", Web3.utils.fromWei(wei, "finney"));
 
-    if (!customWeb3) {
-      return;
-    }
+  //   // if (!connext) {
+  //   //   return;
+  //   // }
 
-    // if wei is 0, save gas and return
-    if (wei === "0") {
-      return;
-    }
+  //   // // if wei is 0, save gas and return
+  //   // if (wei === "0") {
+  //   //   return;
+  //   // }
 
-    // get address of latest sender of most recent transaction
-    // first, get the last 10 blocks
-    const currentBlock = await customWeb3.eth.getBlockNumber();
-    let txs = [];
-    const start = currentBlock - 100 < 0 ? 0 : currentBlock - 100;
-    for (let i = start; i <= currentBlock; i++) {
-      // add any transactions found in the blocks to the txs array
-      const block = await customWeb3.eth.getBlock(i, true);
-      txs = txs.concat(block.transactions);
-    }
-    // sort by nonce and take latest senders address and
-    // return wei to the senders address
-    const filteredTxs = txs.filter(
-      t => t.to && t.to.toLowerCase() === address.toLowerCase()
-    );
-    const mostRecent = filteredTxs.sort((a, b) => b.nonce - a.nonce)[0];
-    if (!mostRecent) {
-      // Browser wallet overfunded, but couldnt find most recent tx in last 100 blocks
-      return;
-    }
-    localStorage.setItem(
-      "refunding",
-      Web3.utils.fromWei(wei, "finney") + "," + mostRecent.from
-    );
-    console.log(`Refunding ${wei} to ${mostRecent.from} from ${address}`);
-    const origBalance = Big(await customWeb3.eth.getBalance(address));
-    const newMax = origBalance.sub(Big(wei));
+  //   // // get address of latest sender of most recent transaction
+  //   // // first, get the last 10 blocks
+  //   // const web3 = new Web3(connext.opts.rpcUrl);
+  //   // const currentBlock = await web3.eth.getBlockNumber();
+  //   // let txs = [];
+  //   // const start = currentBlock - 100 < 0 ? 0 : currentBlock - 100;
+  //   // for (let i = start; i <= currentBlock; i++) {
+  //   //   // add any transactions found in the blocks to the txs array
+  //   //   const block = await web3.eth.getBlock(i, true);
+  //   //   txs = txs.concat(block.transactions);
+  //   // }
+  //   // // sort by nonce and take latest senders address and
+  //   // // return wei to the senders address
+  //   // const filteredTxs = txs.filter(
+  //   //   t => t.to && t.to.toLowerCase() === address.toLowerCase()
+  //   // );
+  //   // const mostRecent = filteredTxs.sort((a, b) => b.nonce - a.nonce)[0];
+  //   // if (!mostRecent) {
+  //   //   // Browser wallet overfunded, but couldnt find most recent tx in last 100 blocks
+  //   //   return;
+  //   // }
+  //   // localStorage.setItem(
+  //   //   "refunding",
+  //   //   Web3.utils.fromWei(wei, "finney") + "," + mostRecent.from
+  //   // );
+  //   // console.log(`Refunding ${wei} to ${mostRecent.from} from ${address}`);
+  //   // const origBalance = Big(await web3.eth.getBalance(address));
+  //   // const newMax = origBalance.sub(Big(wei));
 
-    try {
-      const res = await customWeb3.eth.sendTransaction({
-        from: address,
-        to: mostRecent.from,
-        value: wei
-      });
-      const tx = await customWeb3.eth.getTransaction(res.transactionHash);
-      console.log(`Returned deposit tx: ${JSON.stringify(tx, null, 2)}`)
-      // calculate expected balance after transaction and set in local
-      // storage. once the tx is submitted, the wallet balance should
-      // always be lower than the expected balance, because of added
-      // gas costs
-      localStorage.setItem("maxBalanceAfterRefund", newMax.toString());
-    } catch (e) {
-      console.log("Error with refund transaction:", e.message);
-      localStorage.removeItem("maxBalanceAfterRefund");
-    }
-    localStorage.removeItem("refunding");
-    // await this.setWeb3(localStorage.getItem("rpc-prod"));
-  }
+  //   // try {
+  //   //   const res = await web3.eth.sendTransaction({
+  //   //     from: address,
+  //   //     to: mostRecent.from,
+  //   //     value: wei
+  //   //   });
+  //   //   const tx = await customWeb3.eth.getTransaction(res.transactionHash);
+  //   //   console.log(`Returned deposit tx: ${JSON.stringify(tx, null, 2)}`)
+  //   //   // calculate expected balance after transaction and set in local
+  //   //   // storage. once the tx is submitted, the wallet balance should
+  //   //   // always be lower than the expected balance, because of added
+  //   //   // gas costs
+  //   //   localStorage.setItem("maxBalanceAfterRefund", newMax.toString());
+  //   // } catch (e) {
+  //   //   console.log("Error with refund transaction:", e.message);
+  //   //   localStorage.removeItem("maxBalanceAfterRefund");
+  //   // }
+  //   // localStorage.removeItem("refunding");
+  //   // // await this.setWeb3(localStorage.getItem("rpc-prod"));
+  // }
 
   // returns a BigNumber
   calculateWeiToRefund(wei, connextState) {
@@ -564,56 +504,36 @@ class App extends React.Component {
 
   async checkStatus() {
     const { runtime, status } = this.state;
-    const refundStr = localStorage.getItem("refunding");
     let log = () => {}
-    status.hasRefund = !!refundStr ? refundStr.split(",") : null;
-    if (runtime.syncResultsFromHub[0]) {
-      if (status.lastAction !== runtime.syncResultsFromHub[0].update.reason) {
-        log = console.log
-        status.lastAction = runtime.syncResultsFromHub[0].update.reason
-      }
+    let newStatus
+
+    if(runtime) {
       log(`Hub Sync results: ${JSON.stringify(runtime.syncResultsFromHub[0],null,2)}`)
-      switch (runtime.syncResultsFromHub[0].update.reason) {
-        case "ProposePendingDeposit":
-          if(runtime.syncResultsFromHub[0].update.args.depositTokenUser !== "0" ||
-            runtime.syncResultsFromHub[0].update.args.depositWeiUser !== "0" ) {
-            this.closeConfirmations()
-            status.deposit = "PENDING";
-            status.depositHistory = "PENDING";
-            log(`ProposePendingDeposit! New status: ${JSON.stringify(status)}`)
-          } else {
-            log(`ProposePendingDeposit! Nothing to do`)
-          }
-          break;
-        case "ProposePendingWithdrawal":
-          if(runtime.syncResultsFromHub[0].update.args.withdrawalTokenUser !== "0" ||
-            runtime.syncResultsFromHub[0].update.args.withdrawalWeiUser !== "0" ) {
-            this.closeConfirmations()
-            status.withdraw = "PENDING";
-            status.withdrawHistory = "PENDING";
-            log(`ProposePendingWithdrawal! New status: ${JSON.stringify(status)}`)
-          } else {
-            log(`ProposePendingWithdrawal! Nothing to do`)
-          }
-          break;
-        case "ConfirmPending":
-          if(this.state.status.depositHistory === "PENDING") {
-            this.closeConfirmations("deposit")
-            status.deposit = "SUCCESS";
-            log(`New status: ${JSON.stringify(status)}`)
-          } else if(this.state.status.withdrawHistory === "PENDING") {
-            this.closeConfirmations("withdraw")
-            status.withdraw = "SUCCESS";
-            log(`ConfirmPending! New status: ${JSON.stringify(status)}`)
-          } else {
-            log(`ConfirmPending! Nothing to do`)
-          }
-          break;
-        default:
-          log(`Nothing to do for update of type: ${runtime.syncResultsFromHub[0].update.reason}`)
+      if (runtime.deposit.submitted) {
+        if (!runtime.deposit.detected) {
+          newStatus.type = "DEPOSIT_PENDING"
+        } else {
+          newStatus.type = "DEPOSIT_SUCCESS"
+          newStatus.txHash = runtime.deposit.transactionHash
+        }
+      }
+      if (runtime.withdrawal.submitted) {
+        if(!runtime.withdrawal.detected) {
+          newStatus.type = "WITHDRAWAL_PENDING"
+        } else {
+          newStatus.type = "WITHDRAWAL_SUCCESS"
+          newStatus.txHash = runtime.withdrawal.transactionHash
+        }
       }
     }
-    this.setState({ status });
+
+    if(newStatus.type != status.type) {
+      status = newStatus
+      status.reset = true
+      console.log(`New channel status! ${JSON.stringify(status)}`)
+    }
+
+    this.setState({status})
   }
 
   // ************************************************* //
@@ -641,25 +561,6 @@ class App extends React.Component {
       default:
         return;
     }
-  }
-
-  async closeConfirmations(type) {
-    const { status } = this.state
-    if(!type) {
-      status.deposit = '';
-      status.depositHistory = '';
-      status.withdraw = '';
-      status.withdrawHistory = '';
-    }
-    // Hack to keep deposit/withdraw context for confirm pending notifications
-    if(type === "deposit") {
-      status.depositHistory = status.deposit
-    }
-    if(type === "withdraw") {
-      status.withdrawHistory = status.withdraw
-    }
-    //console.log(`New status: ${JSON.stringify(status)}`)
-    this.setState({ status });
   }
 
   async closeModal() {
