@@ -20,6 +20,8 @@ import SetupCard from "./components/setupCard";
 import Confirmations from "./components/Confirmations";
 import MySnackbar from "./components/snackBar";
 
+const bip39 = require("bip39");
+
 const { Big, maxBN, minBN } = Connext.big
 const { CurrencyType, CurrencyConvertable } = Connext.types
 const { getExchangeRates } = Connext.getters
@@ -43,8 +45,8 @@ const overrides = {
 
 // Constants for channel max/min - this is also enforced on the hub
 const DEPOSIT_ESTIMATED_GAS = Big("700000") // 700k gas
-const HUB_EXCHANGE_CEILING = Big(Web3.utils.toWei("69", "ether")); // 69 TST
-const CHANNEL_DEPOSIT_MAX = Big(Web3.utils.toWei("30", "ether")); // 30 TST
+const HUB_EXCHANGE_CEILING = eth.constants.WeiPerEther.mul(Big(69)); // 69 TST
+const CHANNEL_DEPOSIT_MAX = eth.constants.WeiPerEther.mul(Big(30)); // 30 TST
 const MAX_GAS_PRICE = Big("10000000000") // 10 gWei
 
 const styles = theme => ({
@@ -80,16 +82,13 @@ class App extends React.Component {
     super(props);
     this.state = {
       loadingConnext: true,
-      rpcUrl: null,
       hubUrl: null,
       tokenAddress: null,
-      channelManagerAddress: null,
+      contractAddress: null,
       hubWalletAddress: null,
       web3: null,
-      customWeb3: null,
       tokenContract: null,
       connext: null,
-      delegateSigner: null,
       modals: {
         settings: false,
         keyGen: false,
@@ -197,6 +196,7 @@ class App extends React.Component {
     console.log(`  - contractAddress: ${connext.opts.contractAddress}`);
     console.log(`  - ethNetworkId: ${connext.opts.ethNetworkId}`);
     console.log(`  - public address: ${connext.wallet.getAddressString()}`)
+    const web3 = new eth.providers.JsonRpcProvider(connext.opts.rpcUrl)
     this.setState({
       connext,
       tokenAddress: connext.opts.tokenAddress,
@@ -204,13 +204,14 @@ class App extends React.Component {
       hubWalletAddress: connext.opts.hubAddress,
       ethNetworkId: connext.opts.ethNetworkId,
       address: connext.wallet.getAddressString(),
+      web3
     });
   }
 
   async setTokenContract() {
     try {
-      let { customWeb3, tokenAddress } = this.state;
-      const tokenContract = new customWeb3.eth.Contract(tokenAbi, tokenAddress);
+      let { tokenAddress } = this.state;
+      const tokenContract = new eth.Contract(tokenAbi, tokenAddress);
       this.setState({ tokenContract });
     } catch (e) {
       console.log("Error setting token contract");
@@ -263,6 +264,7 @@ class App extends React.Component {
   }
 
   async setBrowserWalletMinimumBalance() {
+    const {connextState} = this.state
     let gasEstimateJson = await eth.utils.fetchJson({url:`https://ethgasstation.info/json/ethgasAPI.json`})
     let currentGasPrice = gasEstimateJson.safeLow
     // dont let gas price be any higher than the min
@@ -296,12 +298,12 @@ class App extends React.Component {
       channelState,
       connext,
       browserMinimumBalance,
+      web3,
     } = this.state;
     const refunding = localStorage.getItem("refunding");
 
     if (!connext || !browserMinimumBalance || refunding) return;
 
-    const web3 = new Web3(connext.opts.rpcUrl);
     const balance = await web3.eth.getBalance(address);
 
     const maxBalanceAfterRefund = localStorage.getItem("maxBalanceAfterRefund");
@@ -536,6 +538,10 @@ class App extends React.Component {
     this.setState({status})
   }
 
+  closeConfirmations() {
+
+  }
+
   // ************************************************* //
   //                    Handlers                       //
   // ************************************************* //
@@ -573,11 +579,11 @@ class App extends React.Component {
       channelState,
       sendScanArgs,
       exchangeRate,
-      customWeb3,
       connext,
       connextState,
       runtime,
-      browserMinimumBalance
+      browserMinimumBalance,
+      web3
     } = this.state;
     const { classes } = this.props;
     return (
@@ -667,7 +673,7 @@ class App extends React.Component {
               render={props => (
                 <SendCard
                   {...props}
-                  web3={customWeb3}
+                  web3={web3}
                   connext={connext}
                   address={address}
                   channelState={channelState}
@@ -698,7 +704,7 @@ class App extends React.Component {
                   channelState={channelState}
                   publicUrl={publicUrl}
                   exchangeRate={exchangeRate}
-                  web3={customWeb3}
+                  web3={web3}
                   connext={connext}
                   connextState={connextState}
                   runtime={runtime}

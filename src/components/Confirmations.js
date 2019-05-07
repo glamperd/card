@@ -11,13 +11,13 @@ const styles = theme => ({
 
 class Confirmations extends Component {
   render() {
-    const { deposit, withdraw, hasRefund } = this.props.status;
+    const { type, txHash, reset } = this.props.status;
     return (
       <div>
 
         <MySnackbar
           variant="warning"
-          openWhen={!!hasRefund}
+          openWhen={!!type}
           onClose={() => this.props.closeConfirmations()}
           message={`Refunding ${
             !!hasRefund && hasRefund[0] ? hasRefund[0].substr(0, 6) : ""
