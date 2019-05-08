@@ -141,7 +141,7 @@ class App extends React.Component {
     }
     // If no mnemonic, create one and save to local storage
     if (!mnemonic) {
-      mnemonic = eth.Wallet.createRandom().mnemonic
+      mnemonic = eth.Wallet.createRandom().mnemonic;
       localStorage.setItem("mnemonic", mnemonic);
     }
 
@@ -259,13 +259,13 @@ class App extends React.Component {
   async setBrowserWalletMinimumBalance() {
     const { connextState, ethprovider } = this.state;
     let gasEstimateJson = await eth.utils.fetchJson({ url: `https://ethgasstation.info/json/ethgasAPI.json` });
-    let providerGasPrice = await ethprovider.getGasPrice()
-    let currentGasPrice = Math.round(gasEstimateJson.average / 10 * 2); // multiply gas price by two to be safe
+    let providerGasPrice = await ethprovider.getGasPrice();
+    let currentGasPrice = Math.round((gasEstimateJson.average / 10) * 2); // multiply gas price by two to be safe
     // dont let gas price be any higher than the max
-    currentGasPrice = eth.utils.parseUnits(minBN(Big(currentGasPrice.toString()), MAX_GAS_PRICE).toString(), 'gwei');
+    currentGasPrice = eth.utils.parseUnits(minBN(Big(currentGasPrice.toString()), MAX_GAS_PRICE).toString(), "gwei");
     // unless it really needs to be: average eth gas station price w ethprovider's
-    currentGasPrice = currentGasPrice.add(providerGasPrice).div(eth.constants.Two)
-    console.log(`Gas Price = ${currentGasPrice}`)
+    currentGasPrice = currentGasPrice.add(providerGasPrice).div(eth.constants.Two);
+    console.log(`Gas Price = ${currentGasPrice}`);
 
     // default connext multiple is 1.5, leave 2x for safety
     const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS.mul(Big(2)).mul(currentGasPrice);
@@ -292,11 +292,11 @@ class App extends React.Component {
       tokenBalance = await tokenContract.balanceOf(address);
     } catch (e) {
       console.warn(
-        `Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${JSON.stringify(await ethprovider.getNetwork())}))? Error: ${
-          e.message
-        }`
+        `Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${JSON.stringify(
+          await ethprovider.getNetwork()
+        )}))? Error: ${e.message}`
       );
-      return
+      return;
     }
 
     if (balance.gt("0") || tokenBalance.gt("0")) {
@@ -310,16 +310,16 @@ class App extends React.Component {
         return;
       }
       // only proceed with deposit request if you can deposit
+      if (!connextState) {
+        return;
+      }
       if (
-        // Either no state
-        !connextState ||
-        // Or something was submitted but also confirmed
-        (connextState.runtime.deposit.submitted)||// && connextState.runtime.deposit.transactionHash) ||
-        (connextState.runtime.withdrawal.submitted)||// && connextState.runtime.withdrawal.transactionHash) ||
-        (connextState.runtime.collateral.submitted)// && connextState.runtime.collateral.transactionHash)
-        // exchangeRate === "0.00"
+        // something was submitted
+        connextState.runtime.deposit.submitted ||
+        connextState.runtime.withdrawal.submitted ||
+        connextState.runtime.collateral.submitted
       ) {
-        console.log(`Could not deposit because of runtime state: ${JSON.stringify(connextState.runtime, null, 2)}`);
+        console.log(`Deposit or withdrawal transaction in progress, will not auto-deposit`);
         return;
       }
 
@@ -332,7 +332,6 @@ class App extends React.Component {
         return;
       }
 
-      console.log(`connext.deposit activated w runtime state: ${JSON.stringify(connextState.runtime,null,2)}`)
       await this.state.connext.deposit({ amountWei: channelDeposit.amountWei.toString() });
     }
   }
@@ -375,7 +374,6 @@ class App extends React.Component {
     }
 
     if (newStatus.type !== status.type) {
-      newStatus = status;
       newStatus.reset = true;
       console.log(`New channel status! ${JSON.stringify(newStatus)}`);
     }
@@ -417,7 +415,18 @@ class App extends React.Component {
   }
 
   render() {
-    const { address, channelState, sendScanArgs, exchangeRate, connext, connextState, runtime, browserMinimumBalance, ethprovider, status } = this.state;
+    const {
+      address,
+      channelState,
+      sendScanArgs,
+      exchangeRate,
+      connext,
+      connextState,
+      runtime,
+      browserMinimumBalance,
+      ethprovider,
+      status
+    } = this.state;
     const { classes } = this.props;
     return (
       <Router>
