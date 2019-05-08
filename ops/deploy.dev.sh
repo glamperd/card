@@ -41,6 +41,9 @@ services:
       - $project
     volumes:
       - `pwd`:/root
+    environment:
+      REACT_APP_RINKEBY_HUB_OVERRIDE: https://rinkeby.hub.connext.network/api/hub
+      REACT_APP_MAINNET_HUB_OVERRIDE: https://hub.connext.network/api/hub
 EOF
 
 docker stack deploy -c /tmp/$project/docker-compose.yml $project

@@ -11,7 +11,7 @@ import { withStyles } from "@material-ui/core";
 import * as Connext from 'connext';
 
 const { Currency, CurrencyConvertable, CurrencyType } = Connext.types
-const { getExchangeRates } = Connext.getters
+const { getExchangeRates } = Connext.Utils
 
 const styles = theme => ({
   icon: {

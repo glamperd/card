@@ -224,13 +224,10 @@ class PayCard extends Component {
             recipient: props.scanArgs.recipient
               ? props.scanArgs.recipient
               : "",
-            amount: {
-              amountToken: props.scanArgs.amount
-                ? Web3.utils.toWei(props.scanArgs.amount)
-                : "0",
-              amountWei: "0"
-            },
-            type: "PT_OPTIMISTIC"
+            amountToken: props.scanArgs.amount
+              ? Web3.utils.toWei(props.scanArgs.amount)
+              : "0",
+            amountWei: "0",
           }
         ]
       },
@@ -278,7 +275,7 @@ class PayCard extends Component {
       balanceError = `Value too precise! Using ${tokenVal}`
     }    
     await this.setState(oldState => {
-      oldState.paymentVal.payments[0].amount.amountToken = value
+      oldState.paymentVal.payments[0].amountToken = value
         ? Web3.utils.toWei(`${tokenVal}`, "ether")
         : "0";
       if (balanceError) {
@@ -322,7 +319,7 @@ class PayCard extends Component {
   // returns the values it sets, to prevent async weirdness
   validatePaymentInput(paymentVal) {
     const address = paymentVal.payments[0].recipient;
-    const payment = convertPayment("bn", paymentVal.payments[0].amount);
+    const payment = convertPayment("bn", paymentVal.payments[0]);
     const { channelState } = this.props;
     this.setState({ addressError: null, balanceError: null });
 
@@ -340,7 +337,7 @@ class PayCard extends Component {
     // recipient address can be empty
     const isLink = paymentVal.payments[0].type === "PT_LINK";
     const isValidRecipient = Web3.utils.isAddress(address) &&
-      (isLink ? address == emptyAddress : address != emptyAddress);
+      (isLink ? address === emptyAddress : address !== emptyAddress);
 
     if (!isValidRecipient) {
       addressError = address + " is an invalid address";
@@ -401,7 +398,7 @@ class PayCard extends Component {
     // check if the recipient needs collateral
     const needsCollateral = await connext.recipientNeedsCollateral(
       paymentVal.payments[0].recipient,
-      convertPayment("str", paymentVal.payments[0].amount)
+      convertPayment("str", { amountWei: paymentVal.payments[0].amountWei, amountToken: paymentVal.payments[0].amountToken })
     );
     // do not send collateral request if it is not valid
     // check if the values are reasonable
@@ -514,18 +511,21 @@ class PayCard extends Component {
     // by either payment or link handler
     // you can call the appropriate type here
     try {
+      console.log("+++++++++==+====================+++++++++++++++++++++++++======+++++==+")
+      console.log("3============================================================D~~~")
+      console.log(paymentVal)
       await connext.buy(paymentVal);
       if (paymentVal.payments[0].type === "PT_LINK") {
         // automatically route to redeem card
         const secret = paymentVal.payments[0].meta.secret;
-        const amount = paymentVal.payments[0].amount;
+        const amountToken = paymentVal.payments[0].amountToken;
         this.props.history.push({
           pathname: "/redeem",
           // TODO: add wei
           search: `?secret=${secret}&amountToken=${
-            Web3.utils.fromWei(amount.amountToken, "ether")
+            Web3.utils.fromWei(amountToken, "ether")
           }`,
-          state: { isConfirm: true, secret, amount }
+          state: { isConfirm: true, secret, amountToken }
         });
       } else {
         // display receipts
@@ -555,7 +555,7 @@ class PayCard extends Component {
 
   render() {
     const { classes, channelState, connextState } = this.props;
-    const { paymentState } = this.state;
+    const { paymentState, paymentVal, displayVal, balanceError, addressError, scan, showReceipt, sendError } = this.state;
     return (
       <Grid
         container
@@ -601,13 +601,13 @@ class PayCard extends Component {
             fullWidth
             id="outlined-number"
             label="Amount"
-            value={this.state.displayVal}
+            value={displayVal}
             type="number"
             margin="normal"
             variant="outlined"
             onChange={evt => this.updatePaymentHandler(evt.target.value)}
-            error={this.state.balanceError !== null}
-            helperText={this.state.balanceError}
+            error={balanceError !== null}
+            helperText={balanceError}
           />
         </Grid>
         <Grid item xs={12}>
@@ -617,19 +617,19 @@ class PayCard extends Component {
             label="Recipient Address"
             type="string"
             value={
-              this.state.paymentVal.payments[0].recipient === emptyAddress
+              paymentVal.payments[0].recipient === emptyAddress
                 ? ""
-                : this.state.paymentVal.payments[0].recipient
+                : paymentVal.payments[0].recipient
             }
             onChange={evt => this.updateRecipientHandler(evt.target.value)}
             margin="normal"
             variant="outlined"
             helperText={
-              this.state.addressError
-                ? this.state.addressError
+              addressError
+                ? addressError
                 : "Optional for linked payments"
             }
-            error={this.state.addressError !== null}
+            error={addressError !== null}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -654,7 +654,7 @@ class PayCard extends Component {
         </Grid>
         <Modal
           id="qrscan"
-          open={this.state.scan}
+          open={scan}
           onClose={() => this.setState({ scan: false })}
           style={{
             justifyContent: "center",
@@ -724,16 +724,16 @@ class PayCard extends Component {
           </Button>
         </Grid>
         <PaymentConfirmationDialog
-          showReceipt={this.state.showReceipt}
-          sendError={this.state.sendError}
+          showReceipt={showReceipt}
+          sendError={sendError}
           amountToken={
-            this.state.paymentVal.payments[0].amount.amountToken
+            paymentVal.payments[0].amountToken
               ? Web3.utils.fromWei(
-                  this.state.paymentVal.payments[0].amount.amountToken
+                  paymentVal.payments[0].amountToken
                 )
               : "0"
           }
-          recipient={this.state.paymentVal.payments[0].recipient}
+          recipient={paymentVal.payments[0].recipient}
           history={this.props.history}
           closeModal={this.closeModal}
           paymentState={paymentState}

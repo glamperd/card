@@ -11,27 +11,13 @@ const styles = theme => ({
 
 class Confirmations extends Component {
   render() {
-    const { deposit, withdraw, hasRefund } = this.props.status;
+    const { type } = this.props.status;
     return (
       <div>
 
         <MySnackbar
           variant="warning"
-          openWhen={!!hasRefund}
-          onClose={() => this.props.closeConfirmations()}
-          message={`Refunding ${
-            !!hasRefund && hasRefund[0] ? hasRefund[0].substr(0, 6) : ""
-          } finney to ${
-            !!hasRefund && hasRefund[1]
-              ? hasRefund[1].substr(0, 5).toLowerCase() + "..."
-              : ""
-          }.`}
-          duration={30000}
-        />
-
-        <MySnackbar
-          variant="warning"
-          openWhen={deposit === "PENDING"}
+          openWhen={type === "DEPOSIT_PENDING"}
           onClose={() => this.props.closeConfirmations("deposit")}
           message="Processing deposit, we'll let you know when it's done."
           duration={30000}
@@ -39,7 +25,7 @@ class Confirmations extends Component {
 
         <MySnackbar
           variant="warning"
-          openWhen={withdraw === "PENDING"}
+          openWhen={type === "WITHDRAWAL_PENDING"}
           onClose={() => this.props.closeConfirmations("withdraw")}
           message="Processing withdrawal, we'll let you know when it's done."
           duration={30000}
@@ -47,14 +33,14 @@ class Confirmations extends Component {
 
         <MySnackbar
           variant="success"
-          openWhen={deposit === "SUCCESS"}
+          openWhen={type === "DEPOSIT_SUCCESS"}
           onClose={() => this.props.closeConfirmations()}
           message="Pending deposit confirmed!"
         />
 
         <MySnackbar
           variant="success"
-          openWhen={withdraw === "SUCCESS"}
+          openWhen={type === "WITHDRAWAL_SUCCESS"}
           onClose={() => this.props.closeConfirmations()}
           message="Pending withdraw confirmed!"
         />
