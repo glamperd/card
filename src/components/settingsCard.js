@@ -19,9 +19,8 @@ import {
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import CopyIcon from "@material-ui/icons/FileCopy";
 import SubmitIcon from "@material-ui/icons/ArrowRight";
-import { createWallet, createWalletFromMnemonic } from "../walletGen";
 import SettingsIcon from "@material-ui/icons/Settings";
-import Snackbar from "./snackBar";
+import MySnackbar from "./snackBar";
 import interval from "interval-promise";
 
 const styles = {
@@ -55,13 +54,13 @@ class SettingsCard extends Component {
       showRecovery: false,
       inputRecovery: false,
       rpc: localStorage.getItem("rpc-prod"),
-      mnemonic: null,
-      copied: null,
+      mnemonic: '',
+      copied: false,
       showWarning: false
     };
   }
 
-  handleClick = async () => {
+  closeModal = async () => {
     await this.setState({ copied: false });
   };
 
@@ -79,7 +78,7 @@ class SettingsCard extends Component {
     } catch (e) {
       console.log("Error withdrawing, creating new address anyway", e.message);
     } finally {
-      await createWallet(this.state.web3);
+      localStorage.removeItem("mnemonic");
       this.burnRefreshPoller();
     }
   };
@@ -102,7 +101,7 @@ class SettingsCard extends Component {
   };
 
   async recoverAddressFromMnemonic() {
-    await createWalletFromMnemonic(this.state.mnemonic);
+    localStorage.setItem("mnemonic", this.state.mnemonic);
     window.location.reload();
   }
 
@@ -130,11 +129,11 @@ class SettingsCard extends Component {
           justifyContent: "center"
         }}
       >
-        <Snackbar
-          handleClick={() => this.handleClick()}
-          onClose={() => this.handleClick()}
-          open={copied}
-          text="Copied!"
+        <MySnackbar
+          variant="success"
+          openWhen={copied}
+          onClose={() => this.closeModal()}
+          message="Copied!"
         />
         <Grid item xs={12} style={{ justifyContent: "center" }}>
           <SettingsIcon className={classes.icon} />
@@ -192,6 +191,7 @@ class SettingsCard extends Component {
             </Button>
           ) : (
             <CopyToClipboard
+              onCopy={() => this.setState({ copied: true })}
               text={localStorage.getItem("mnemonic")}
               color="primary"
             >
@@ -299,7 +299,7 @@ class SettingsCard extends Component {
                 <Grid item xs={12}>
                   <DialogContentText variant="body1">
                     Burning. Please do not refresh or navigate away. This page
-                    with refresh automatically when it's done.
+                    will refresh automatically when it's done.
                   </DialogContentText>
                   <CircularProgress style={{ marginTop: "1em" }} />
                   </Grid>

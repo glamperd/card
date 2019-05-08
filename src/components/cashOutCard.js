@@ -1,8 +1,5 @@
 import React, { Component } from "react";
 import Button from "@material-ui/core/Button";
-//import IconButton from "@material-ui/core/IconButton";
-//import HighlightOffIcon from "@material-ui/icons/HighlightOff";
-//import { withRouter } from "react-router-dom";
 import UnarchiveIcon from "@material-ui/icons/Unarchive";
 import TextField from "@material-ui/core/TextField";
 import QRIcon from "mdi-material-ui/QrcodeScan";
@@ -11,7 +8,6 @@ import DaiIcon from "../assets/dai.svg";
 import Tooltip from "@material-ui/core/Tooltip";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Modal from "@material-ui/core/Modal";
-//import CircularProgress from "@material-ui/core/CircularProgress";
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography, CircularProgress } from "@material-ui/core";
 import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
@@ -173,7 +169,7 @@ class CashOutCard extends Component {
       const addressError = `${
         withdrawalVal.recipient === "0x0..."
           ? "Must provide address."
-          : withdrawalVal.recipient + " is not a valid address"
+          : withdrawalVal.recipient + " is an invalid address"
       }`;
       this.setState({ addressError });
       return;

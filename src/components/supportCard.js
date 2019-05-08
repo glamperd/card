@@ -20,7 +20,7 @@ class SupportCard extends Component {
     };
   }
 
-  handleClick = () => {
+  openDiscord = () => {
     window.open("https://discord.gg/q2cakRc", "_blank");
     window.close();
     return false;
@@ -89,7 +89,7 @@ class SupportCard extends Component {
               width: "15%"
             }}
             size="medium"
-            onClick={() => this.handleClick()}
+            onClick={() => this.openDiscord()}
           >
             Support
           </Button>

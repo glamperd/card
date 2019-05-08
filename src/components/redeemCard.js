@@ -1,4 +1,4 @@
-import { withStyles, Button, CircularProgress, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, Icon, } from "@material-ui/core";
+import { withStyles, Button, CircularProgress, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions } from "@material-ui/core";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
 import DoneIcon from "@material-ui/icons/Done";
 import ErrorIcon from "@material-ui/icons/ErrorOutline";
@@ -8,11 +8,13 @@ import Typography from "@material-ui/core/Typography";
 import Tooltip from "@material-ui/core/Tooltip";
 import QRGenerate from "./qrGenerate";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import BN from "bn.js";
 import Web3 from "web3";
 import { getAmountInUSD } from "../utils/currencyFormatting";
 import interval from "interval-promise";
-import Snackbar from "../components/snackBar";
+import MySnackbar from "../components/snackBar";
+import * as Connext from 'connext';
+import { ethers } from "ethers";
+const { Big } = Connext.big
 
 const queryString = require("query-string");
 
@@ -62,7 +64,7 @@ const RedeemConfirmationDialog = props => (
   <Dialog
     open={props.open}
     onBackdropClick={() =>
-      props.redeemPaymentState == RedeemPaymentStates.Collateralizing
+      props.redeemPaymentState === RedeemPaymentStates.Collateralizing
         ? null
         : props.closeModal()
     }
@@ -166,7 +168,9 @@ const RedeemCardContent = (props) => {
       warnings = ["Something went wrong"]
       break
     case RedeemPaymentStates.Collateralizing:
+      icon = (<CircularProgress className={classes.icon} />)
       warnings = ["Setting up your card too. This will take 30-40s."]
+      break
     case RedeemPaymentStates.Success:
       icon = (<DoneIcon className={classes.icon} />)
       break
@@ -176,9 +180,9 @@ const RedeemCardContent = (props) => {
       break
   }
 
-  const finalWarnings = warnings ? warnings.map(w => {
+  const finalWarnings = warnings ? warnings.map((w, index) => {
     return (
-      <Typography variant="body1" style={{margin: "1em"}}>
+      <Typography key={index} variant="body1" style={{margin: "1em"}}>
         <span>{w}</span>
       </Typography>
     )
@@ -301,7 +305,7 @@ class RedeemCard extends Component {
     let { redeemPaymentState } = this.state
     await interval(
       async (iteration, stop) => {
-        const processing = redeemPaymentState == RedeemPaymentStates.Redeeming || redeemPaymentState == RedeemPaymentStates.Collateralizing
+        const processing = redeemPaymentState === RedeemPaymentStates.Redeeming || redeemPaymentState === RedeemPaymentStates.Collateralizing
         if (redeemPaymentState && !processing) {
           stop()
         }
@@ -332,7 +336,7 @@ class RedeemCard extends Component {
     }
 
     // only proceed if status is collateralizing
-    if (redeemPaymentState != RedeemPaymentStates.Collateralizing) {
+    if (redeemPaymentState !== RedeemPaymentStates.Collateralizing) {
       console.log("Incorrect payment state, expected Collateralizing, got", RedeemPaymentStates[redeemPaymentState]);
       this.setState({ redeemPaymentState: RedeemPaymentStates.OtherError })
       return;
@@ -347,8 +351,8 @@ class RedeemCard extends Component {
           return
         }
         // eval channel collateral
-        hasCollateral = new BN(channelState.balanceTokenHub).gte(
-          new BN(amount.amountToken)
+        hasCollateral = Big(channelState.balanceTokenHub).gte(
+          Big(amount.amountToken)
         )
 
         if (hasCollateral || iteration > 30) {
@@ -386,7 +390,7 @@ class RedeemCard extends Component {
     }
 
     // only proceed if status is redeeming
-    if (redeemPaymentState != RedeemPaymentStates.Redeeming) {
+    if (redeemPaymentState !== RedeemPaymentStates.Redeeming) {
       console.log("Incorrect payment state, expected Redeeming, got", Object.keys(RedeemPaymentStates)[redeemPaymentState]);
       this.setState({ 
         showReceipt: true,
@@ -436,8 +440,8 @@ class RedeemCard extends Component {
 
       // check if the channel has collateral, otherwise display loading
       if (
-        new BN(channelState.balanceTokenHub).lt(
-          new BN(amount.amountToken))
+        Big(channelState.balanceTokenHub).lt(
+          Big(amount.amountToken))
         ) {
         // channel does not have collateral
         this.setState({ redeemPaymentState: RedeemPaymentStates.Collateralizing })
@@ -477,13 +481,13 @@ class RedeemCard extends Component {
       errs.push("Secret copied is invalid")
     }
     // valid amount
-    if (!amount.amountToken || amount.amountWei != "0") {
+    if (!amount.amountToken || amount.amountWei !== "0") {
       console.log("Invalid amount:", amount)
       errs.push("Invalid amount")
       return errs
     }
-    const token = new BN(amount.amountToken)
-    if (token.isNeg()) {
+    const token = Big(amount.amountToken)
+    if (token.lt(ethers.constants.Zero)) {
       errs.push("Copied token balance is negative")
     }
     // print amount for easy confirmation
@@ -526,12 +530,12 @@ class RedeemCard extends Component {
           justifyContent: "center",
         }}
       >
-      <Snackbar
-          handleClick={this.closeSnackBar}
-          onClose={this.closeSnackBar}
-          open={copied}
-          text="Copied!"
-        />
+      <MySnackbar
+        variant="success"
+        openWhen={copied}
+        onClose={this.closeSnackBar}
+        message="Copied!"
+      />
       <Grid container>
         <Grid item xs={12}>
           <RedeemConfirmationDialog

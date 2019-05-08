@@ -5,17 +5,14 @@ import TextField from "@material-ui/core/TextField";
 import Tooltip from "@material-ui/core/Tooltip";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import Typography from "@material-ui/core/Typography";
-//import CopyIcon from "@material-ui/icons/FileCopy";
+import * as eth from 'ethers';
 import QRGenerate from "./qrGenerate";
-//import IconButton from "@material-ui/core/IconButton";
-//import HighlightOffIcon from "@material-ui/icons/HighlightOff";
-//import { withRouter } from "react-router-dom";
 import { withStyles, Grid } from "@material-ui/core";
-import Snackbar from "./snackBar";
-import BN from "bn.js";
+import MySnackbar from "./snackBar";
 import Web3 from "web3";
 import { getAmountInUSD } from "../utils/currencyFormatting";
-import { emptyAddress } from "connext/dist/Utils";
+import * as Connext from 'connext';
+const { Big } = Connext.big
 
 const styles = theme => ({
   icon: {
@@ -37,7 +34,7 @@ class ReceiveCard extends Component {
     };
   }
 
-  handleClick = async () => {
+  closeModal = async () => {
     this.setState({ copied: false });
   };
 
@@ -60,12 +57,12 @@ class ReceiveCard extends Component {
       this.setState({ error })
       return error
     }
-    const tokenBig = new BN(amountToken)
+    const tokenBig = Big(amountToken)
     const amount = {
       amountWei: '0',
       amountToken: maxTokenDeposit,
     }
-    if (tokenBig.gt(new BN(amount.amountToken))) {
+    if (tokenBig.gt(Big(amount.amountToken))) {
       error = `Channel balances are capped at ${getAmountInUSD(amount, connextState)}`
     }
     if (tokenBig.isZero() || tokenBig.isNeg()) {
@@ -77,8 +74,6 @@ class ReceiveCard extends Component {
   }
 
   updatePaymentHandler = async value => {
-    // appears to be just value
-    const token = value ? value : "0"
     // protect against precision errors
     const decimal = (
       value.startsWith('.') ? value.substr(1) : value.split('.')[1]
@@ -104,7 +99,7 @@ class ReceiveCard extends Component {
     // and convert it to the url with
     // appropriate strings to prefill a send
     // modal state (recipient, amountToken)
-    const url = `${publicUrl || "https:/"}/send?amountToken=${value || "0"}&recipient=${address || emptyAddress}`;
+    const url = `${publicUrl || "https:/"}/send?amountToken=${value || "0"}&recipient=${address || eth.constants.AddressZero}`;
     return url;
   };
 
@@ -125,11 +120,11 @@ class ReceiveCard extends Component {
           justifyContent: "center"
         }}
       >
-        <Snackbar
-          handleClick={this.handleClick}
-          onClose={this.handleClick}
-          open={copied}
-          text="Copied!"
+        <MySnackbar
+          variant="success"
+          openWhen={copied}
+          onClose={this.closeModal}
+          message="Copied!"
         />
         <Grid
           container
@@ -152,7 +147,7 @@ class ReceiveCard extends Component {
             margin="normal"
             variant="outlined"
             onChange={evt => this.updatePaymentHandler(evt.target.value)}
-            error={error != null}
+            error={error !== null}
             helperText={error}
           />
         </Grid>
@@ -163,7 +158,7 @@ class ReceiveCard extends Component {
           {/* <CopyIcon style={{marginBottom: "2px"}}/> */}
           <CopyToClipboard
             onCopy={this.handleCopy}
-            text={error == null || error.indexOf('too precise') != -1 && amountToken != null ? qrUrl : ''}
+            text={(error == null || error.indexOf('too precise') !== -1) && amountToken != null ? qrUrl : ''}
           >
             <Button variant="outlined" fullWidth onClick={this.validatePayment}>
               <Typography noWrap variant="body1">

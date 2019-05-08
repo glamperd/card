@@ -6,13 +6,12 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import QRGenerate from "./qrGenerate";
-import Snackbar from "./snackBar";
+import MySnackbar from "./snackBar";
 import { withStyles } from "@material-ui/core";
-import { CurrencyType } from "connext/dist/state/ConnextState/CurrencyTypes";
-import getExchangeRates from "connext/dist/lib/getExchangeRates";
-import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
-import Currency from "connext/dist/lib/currency/Currency";
+import * as Connext from 'connext';
 
+const { Currency, CurrencyConvertable, CurrencyType } = Connext.types
+const { getExchangeRates } = Connext.Utils
 
 const styles = theme => ({
   icon: {
@@ -28,11 +27,11 @@ class DepositCard extends Component {
     this.state = {
       value: "0",
       error: null,
-      copied: null
+      copied: false
     };
   }
 
-  handleClick = async () => {
+  closeModal = async () => {
     await this.setState({ copied: false });
   };
 
@@ -75,11 +74,11 @@ class DepositCard extends Component {
           justifyContent: "center"
         }}
       >
-        <Snackbar
-          handleClick={() => this.handleClick()}
-          onClose={() => this.handleClick()}
-          open={copied}
-          text="Copied!"
+        <MySnackbar
+          variant="success"
+          openWhen={copied}
+          onClose={() => this.closeModal()}
+          message="Copied!"
         />
         <Grid
           container
