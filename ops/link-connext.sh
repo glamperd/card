@@ -15,7 +15,7 @@ then
   rm -rf connext
 
   echo "cp -rf $external_client connext"
-  cp -rf $external_client connext
+  cp -Rf $external_client connext
 
   echo "npm install"
   cd connext
@@ -27,7 +27,7 @@ else
   rm -rf connext/src
 
   echo "cp -rf $external_client/src connext/src"
-  cp -rf $external_client/src connext/src
+  cp -Rf $external_client/src connext/src
 
 fi
 
@@ -40,8 +40,10 @@ cd ..
 echo "rm -rf node_modules/connext/dist"
 rm -rf node_modules/connext/dist
 
+mkdir -p node_modules/connext
+
 echo "cp -r connext/dist node_modules/connext/dist"
-cp -r connext/dist node_modules/connext/dist
+cp -R connext/dist node_modules/connext/dist
 
 echo "Done!"
 

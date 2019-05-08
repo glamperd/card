@@ -41,17 +41,21 @@ npm start
 
 From the card's project root (eg `git clone https://github.com/ConnextProject/card.git && cd card`), run one of the following:
 
-Using a local webpack dev server:
+Using a containerized webpack dev server (recommended):
+```
+make start
+```
 
+Using a local webpack dev server:
 ```
 npm install
 npm start
 ```
 
-Using a containerized webpack dev server:
+The above step will take a while to completely finish because the webpack dev server takes a long time to wake up. Monitor it with:
 
 ```
-make start
+bash ops/logs.sh server
 ```
 
 3. Check it out
@@ -81,7 +85,12 @@ Assuming indra has been cloned & started in the parent directory, run the follow
 
 ```
 bash ops/link-connext.sh
-npm restart
+```
+
+Sometimes the connext link gets screwy, especially if you update the connext package.json. To reset the connext link to a clean slate, do:
+
+```
+bash ops/link-connext.sh reset
 ```
 
 The above will create a local copy of the connext client that you can mess with. None of you changes in this local client will be reflected in indra, make sure to copy over any changes worth keeping.
