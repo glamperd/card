@@ -260,9 +260,9 @@ class App extends React.Component {
   async setBrowserWalletMinimumBalance() {
     const { connextState } = this.state;
     let gasEstimateJson = await eth.utils.fetchJson({ url: `https://ethgasstation.info/json/ethgasAPI.json` });
-    let currentGasPrice = Math.round(gasEstimateJson.average / 10);
+    let currentGasPrice = Math.round(gasEstimateJson.average / 10 * 2); // multiply gas price by two to be safe
     // dont let gas price be any higher than the max
-    currentGasPrice = minBN(Big(currentGasPrice.toString()), MAX_GAS_PRICE);
+    currentGasPrice = eth.utils.parseUnits(minBN(Big(currentGasPrice.toString()), MAX_GAS_PRICE).toString(), 'gwei');
     // default connext multiple is 1.5, leave 2x for safety
     const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS.mul(Big(2)).mul(currentGasPrice);
 
