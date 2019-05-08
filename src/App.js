@@ -230,7 +230,6 @@ class App extends React.Component {
     let connext = this.state.connext;
     // register connext listeners
     connext.on("onStateChange", state => {
-      console.log("Connext state changed:", state);
       this.setState({
         channelState: state.persistent.channel,
         connextState: state,
