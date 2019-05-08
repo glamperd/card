@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-reset="${1:-no}"
+reset="${1:-noreset}"
 
 external_client="../indra/modules/client"
 
@@ -13,30 +13,35 @@ if [[ "$reset" == "reset" ]]
 then
   echo "rm -rf connext"
   rm -rf connext
-  echo "cp -rf ../indra/modules/client connext"
-  cp -rf ../indra/modules/client connext
+
+  echo "cp -rf $external_client connext"
+  cp -rf $external_client connext
+
+  echo "npm install"
+  cd connext
+  npm install
+  cd ..
 
 else
   echo "rm -rf connext/src"
   rm -rf connext/src
-  echo "cp -rf ../indra/modules/client/src connext/src"
-  cp -rf ../indra/modules/client/src connext/src
+
+  echo "cp -rf $external_client/src connext/src"
+  cp -rf $external_client/src connext/src
 
 fi
 
-rm -rf connext/node_modules
-rm -rf connext/dist
-echo "rebuilding the client..."
+echo "npm run build"
 cd connext
-npm i
+rm -rf dist
 npm run build
 cd ..
 
 echo "rm -rf node_modules/connext/dist"
 rm -rf node_modules/connext/dist
 
-echo "rsync -r connext/dist node_modules/connext/dist"
-rsync -r connext/dist node_modules/connext/dist
+echo "cp -r connext/dist node_modules/connext/dist"
+cp -r connext/dist node_modules/connext/dist
 
 echo "Done!"
 
