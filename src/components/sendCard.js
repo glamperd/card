@@ -340,7 +340,7 @@ class PayCard extends Component {
     // recipient address can be empty
     const isLink = paymentVal.payments[0].type === "PT_LINK";
     const isValidRecipient = Web3.utils.isAddress(address) &&
-      (isLink ? address == emptyAddress : address != emptyAddress);
+      (isLink ? address === emptyAddress : address !== emptyAddress);
 
     if (!isValidRecipient) {
       addressError = address + " is an invalid address";

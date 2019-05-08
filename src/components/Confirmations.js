@@ -11,7 +11,7 @@ const styles = theme => ({
 
 class Confirmations extends Component {
   render() {
-    const { type, txHash, reset } = this.props.status;
+    const { type } = this.props.status;
     return (
       <div>
 
