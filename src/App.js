@@ -188,7 +188,7 @@ class App extends React.Component {
     }
 
     const opts = {
-      hubUrl: "https://rinkeby.hub.connext.network/api/hub",
+      hubUrl,
       mnemonic
     };
     const connext = await Connext.getConnextClient(opts);
@@ -338,7 +338,7 @@ class App extends React.Component {
   }
 
   async autoSwap() {
-    const { channelState, connextState, connext } = this.state;
+    const { channelState, connextState } = this.state;
     if (!connextState || hasPendingOps(channelState)) {
       return;
     }
