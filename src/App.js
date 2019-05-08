@@ -529,7 +529,6 @@ class App extends React.Component {
                   channelState={channelState}
                   publicUrl={publicUrl}
                   exchangeRate={exchangeRate}
-                  web3={ethprovider}
                   connext={connext}
                   connextState={connextState}
                   runtime={runtime}
