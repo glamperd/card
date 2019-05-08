@@ -148,7 +148,6 @@ function ConfirmationDialogText(paymentState, amountToken, recipient) {
       return <div />;
   }
 }
-
 const PaymentConfirmationDialog = props => (
   <Dialog
     open={props.showReceipt}
@@ -208,11 +207,9 @@ const PaymentConfirmationDialog = props => (
     </Grid>
   </Dialog>
 );
-
 class PayCard extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       paymentVal: {
         meta: {
@@ -232,9 +229,7 @@ class PayCard extends Component {
             },
             type: "PT_OPTIMISTIC"
           }
-        ],
-        numberOfPayments: 1,
-        timeSeparation: 0
+        ]
       },
       addressError: null,
       balanceError: null,
@@ -244,7 +239,6 @@ class PayCard extends Component {
       showReceipt: false
     };
   }
-
   async componentDidMount() {
     const { location } = this.props;
     const query = queryString.parse(location.search);
@@ -264,7 +258,6 @@ class PayCard extends Component {
       });
     }
   }
-
   async updatePaymentHandler(value) {
     // if there are more than 18 digits after the decimal, do not
     // count them.
@@ -273,7 +266,6 @@ class PayCard extends Component {
     const decimal = (
       value.startsWith('.') ? value.substr(1) : value.split('.')[1]
     )
-
     let tokenVal = value
     if (decimal && decimal.length > 18) {
       tokenVal = value.startsWith('.') ? value.substr(0, 19) : value.split('.')[0] + '.' + decimal.substr(0, 18)
@@ -288,25 +280,10 @@ class PayCard extends Component {
       }
       return oldState;
     });
-
     this.setState({ displayVal: value, });
   }
-
-  async updateNumPaymentsHandler(value) {
-    let oldPaymentVal = this.state.paymentVal
-    oldPaymentVal.numberOfPayments = value
-    this.setState({ paymentVal: oldPaymentVal, });
-  }
-
-  async updateTimeSeparationHandler(value) {
-    let oldPaymentVal = this.state.paymentVal
-    oldPaymentVal.timeSeparation = value
-    this.setState({ paymentVal: oldPaymentVal, });
-  }
-
   handleQRData = async scanResult => {
     const { publicUrl } = this.props;
-
     let data = scanResult.split("/send?");
     if (data[0] === publicUrl) {
       let temp = data[1].split("&");
@@ -322,15 +299,12 @@ class PayCard extends Component {
       scan: false
     });
   };
-
   async updateRecipientHandler(value) {
     this.setState(async oldState => {
       oldState.paymentVal.payments[0].recipient = value;
-
       return oldState;
     });
   }
-
   // validates recipient and payment amount
   // also sets the variables of these values in the state
   // returns the values it sets, to prevent async weirdness
@@ -339,7 +313,6 @@ class PayCard extends Component {
     const payment = convertPayment("bn", paymentVal.payments[0].amount);
     const { channelState } = this.props;
     this.setState({ addressError: null, balanceError: null });
-
     let balanceError = null
     let addressError = null
     // validate that the token amount is within bounds
@@ -349,17 +322,14 @@ class PayCard extends Component {
     if (payment.amountToken.lte(Big(0)) ) {
       balanceError = "Please enter a payment amount above 0";
     }
-
     // validate recipient is valid address OR the empty address
     // recipient address can be empty
     const isLink = paymentVal.payments[0].type === "PT_LINK";
     const isValidRecipient = Web3.utils.isAddress(address) &&
       (isLink ? address === emptyAddress : address !== emptyAddress);
-
     if (!isValidRecipient) {
       addressError = address + " is an invalid address";
     }
-
     // linked payments also have a maximum enforced
     if (isLink && payment.amountToken.gt(LINK_LIMIT)) {
       // balance error here takes lower precendence than preceding
@@ -367,14 +337,11 @@ class PayCard extends Component {
       balanceError = balanceError || "Linked payments are capped at $10.";
     }
     this.setState({ balanceError, addressError });
-
     return { balanceError, addressError };
   }
-
   async linkHandler() {
     const { connext } = this.props;
     const { paymentVal } = this.state;
-
     // generate secret, set type, and set
     // recipient to empty address
     const payment = {
@@ -385,64 +352,24 @@ class PayCard extends Component {
         secret: connext.generateSecret()
       }
     };
-
     const updatedPaymentVal = {
       ...paymentVal,
       payments: [payment]
     };
-
     // unconditionally set state
     this.setState({
       paymentVal: updatedPaymentVal
     });
-
     // check for validity of input fields
     const { balanceError, addressError } = this.validatePaymentInput(
       updatedPaymentVal
     );
-
     if (addressError || balanceError) {
       return;
     }
-
     // send payment
     await this._sendPayment(updatedPaymentVal);
   }
-
-  async custodialPaymentHandler() {
-    const { connext } = this.props;
-    const { paymentVal } = this.state;
-
-    // generate secret, set type, and set
-    // recipient to empty address
-    const payment = {
-      ...paymentVal.payments[0],
-      type: "PT_CUSTODIAL"
-    };
-
-    const updatedPaymentVal = {
-      ...paymentVal,
-      payments: [payment]
-    };
-
-    // unconditionally set state
-    this.setState({
-      paymentVal: updatedPaymentVal
-    });
-
-    // check for validity of input fields
-    const { balanceError, addressError } = this.validatePaymentInput(
-      updatedPaymentVal
-    );
-
-    if (addressError || balanceError) {
-      return;
-    }
-
-    // send payment
-    await this._sendPayment(updatedPaymentVal);
-  }
-
   async paymentHandler() {
     const { connext } = this.props;
     const { paymentVal } = this.state;
@@ -460,7 +387,6 @@ class PayCard extends Component {
     if (addressError || balanceError) {
       return;
     }
-
     // needs collateral can indicate that the recipient does
     // not have a channel, or that it does not have current funds
     // in either case, you need to send a failed payment
@@ -483,24 +409,20 @@ class PayCard extends Component {
         // send payment via fall through
       }
     }
-
     // send payment
     await this._sendPayment(paymentVal);
   }
-
   async collateralizeRecipient(paymentVal) {
     const { connext } = this.props;
     // do not collateralize on pt link payments
     if (paymentVal.payments[0].type === "PT_LINK") {
       return;
     }
-
     // collateralize otherwise
     this.setState({
       paymentState: PaymentStates.Collateralizing,
       showReceipt: true
     });
-
     // collateralize by sending payment
     const err = await this._sendPayment(paymentVal, true);
     // somehow it worked???
@@ -511,7 +433,6 @@ class PayCard extends Component {
       });
       return CollateralStates.PaymentMade;
     }
-
     // call to send payment failed, monitor collateral
     // watch for confirmation on the recipients side
     // of the channel for 20s
@@ -530,7 +451,6 @@ class PayCard extends Component {
       5000,
       { iterations: 20 }
     );
-
     if (needsCollateral) {
       this.setState({
         showReceipt: true,
@@ -538,15 +458,12 @@ class PayCard extends Component {
       });
       return CollateralStates.Timeout;
     }
-
     return CollateralStates.Success;
   }
-
   // returns a string if there was an error, null
   // if successful
   async _sendPayment(paymentVal, isCollateralizing = false) {
     const { connext } = this.props;
-
     const { balanceError, addressError } = this.validatePaymentInput(
       paymentVal
     );
@@ -557,31 +474,11 @@ class PayCard extends Component {
     if (balanceError || addressError) {
       return;
     }
-
     // collateralizing is handled before calling this send payment fn
     // by either payment or link handler
     // you can call the appropriate type here
     try {
-
-      console.log('_sendPayment', paymentVal.numberOfPayments)
-      if (parseInt(paymentVal.numberOfPayments) == 1 ) {
-        await connext.buy(paymentVal);
-      } else {
-        const numPayments = parseInt(paymentVal.numberOfPayments)
-        const totalAmt = paymentVal.payments[0].amount
-        const tokenAmtPerTx = new BN(totalAmt.amountToken).div(new BN(numPayments))
-        const weiAmountPerTx = new BN(totalAmt.amountWei).div(new BN(numPayments))
-        const delay = parseInt(paymentVal.timeSeparation)
-        paymentVal.payments[0].amount.amountToken=tokenAmtPerTx.toString(10)
-        paymentVal.payments[0].amount.amountWei=weiAmountPerTx.toString(10)
-        for (let i=0; i<numPayments; i++) {
-          setTimeout(async () => {
-              console.log('sending micropayment ', paymentVal.payments[0].amount.amountToken)
-              await connext.buy(paymentVal);
-          }, delay)
-        }
-      }
-
+      await connext.buy(paymentVal);
       if (paymentVal.payments[0].type === "PT_LINK") {
         // automatically route to redeem card
         const secret = paymentVal.payments[0].meta.secret;
@@ -615,61 +512,9 @@ class PayCard extends Component {
       return e.message;
     }
   }
-
-  async openThreadHandler() {
-    const { connext } = this.props;
-    const { paymentVal } = this.state;
-    // check if the recipient needs collateral
-    paymentVal.payments[0].type = "PT_THREAD";
-    // TODO - need this?
-    //const needsCollateral = await connext.recipientNeedsCollateral(
-    //  paymentVal.payments[0].recipient,
-    //  convertPayment("str", paymentVal.payments[0].amount)
-    //);
-
-    // do not send collateral request if it is not valid
-    // check if the values are reasonable
-    // before beginning the request for collateral
-    //const { balanceError, addressError } = this.validatePaymentInput(
-    //  paymentVal
-    //);
-    //if (addressError || balanceError) {
-    //  return;
-    //}
-
-    // needs collateral can indicate that the recipient does
-    // not have a channel, or that it does not have current funds
-    // in either case, you need to send a failed payment
-    // to begin auto collateralization process
-    /*
-    if (needsCollateral) {
-      // this can have 3 potential outcomes:
-      // - collateralization failed (return)
-      // - payment succeeded (return)
-      // - channel collateralized
-      const collateralizationStatus = await this.collateralizeRecipient(
-        paymentVal
-      );
-      switch (collateralizationStatus) {
-        // setting state for these cases done in collateralize
-        case CollateralStates.PaymentMade:
-        case CollateralStates.Timeout:
-          return;
-        case CollateralStates.Success:
-        default:
-        // send payment via fall through
-      }
-    }
-    */
-
-    // send payment
-    await this._sendPayment(paymentVal);
-  }
-
   closeModal = () => {
     this.setState({ showReceipt: false, paymentState: PaymentStates.None });
   };
-
   render() {
     const { classes, channelState, connextState } = this.props;
     const { paymentState } = this.state;
@@ -800,43 +645,6 @@ class PayCard extends Component {
             spacing={16}
           >
             <Grid item xs={6}>
-              <TextField
-                fullWidth
-                id="outlined-number"
-                label="Number of payments"
-                value={this.state.paymentVal.numberOfPayments}
-                type="number"
-                margin="normal"
-                variant="outlined"
-                placeholder="1"
-                onChange={evt => this.updateNumPaymentsHandler(evt.target.value)}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                id="outlined-number"
-                label="Time between"
-                value={this.state.paymentVal.timeSeparation}
-                type="number"
-                margin="normal"
-                variant="outlined"
-                helpertext="milliseconds between payments"
-                placeholder="0"
-                onChange={evt => this.updateTimeSeparationHandler(evt.target.value)}
-              />
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          <Grid
-            container
-            direction="row"
-            alignItems="center"
-            justify="center"
-            spacing={16}
-          >
-            <Grid item xs={6}>
               <Button
                 fullWidth
                 className={classes.button}
@@ -858,28 +666,6 @@ class PayCard extends Component {
               >
                 Send
                 <SendIcon style={{ marginLeft: "5px" }} />
-              </Button>
-            </Grid>
-            <Grid item xs={6}>
-              <Button
-                fullWidth
-                className={classes.button}
-                variant="contained"
-                size="large"
-                onClick={() => {this.openThreadHandler()}}
-              >
-                Open Thread
-              </Button>
-              </Grid>
-              <Grid item xs={6}>
-              <Button
-                fullWidth
-                className={classes.button}
-                variant="contained"
-                size="large"
-                onClick={() => {this.custodialPaymentHandler()}}
-              >
-                Custodial
               </Button>
             </Grid>
           </Grid>
@@ -918,5 +704,4 @@ class PayCard extends Component {
     );
   }
 }
-
 export default withStyles(styles)(PayCard);
