@@ -224,13 +224,10 @@ class PayCard extends Component {
             recipient: props.scanArgs.recipient
               ? props.scanArgs.recipient
               : "",
-            amount: {
-              amountToken: props.scanArgs.amount
-                ? Web3.utils.toWei(props.scanArgs.amount)
-                : "0",
-              amountWei: "0"
-            },
-            type: "PT_OPTIMISTIC"
+            amountToken: props.scanArgs.amount
+              ? Web3.utils.toWei(props.scanArgs.amount)
+              : "0",
+            amountWei: "0",
           }
         ]
       },
@@ -514,18 +511,21 @@ class PayCard extends Component {
     // by either payment or link handler
     // you can call the appropriate type here
     try {
+      console.log("+++++++++==+====================+++++++++++++++++++++++++======+++++==+")
+      console.log("3============================================================D~~~")
+      console.log(paymentVal)
       await connext.buy(paymentVal);
       if (paymentVal.payments[0].type === "PT_LINK") {
         // automatically route to redeem card
         const secret = paymentVal.payments[0].meta.secret;
-        const amount = paymentVal.payments[0].amount;
+        const amountToken = paymentVal.payments[0].amountToken;
         this.props.history.push({
           pathname: "/redeem",
           // TODO: add wei
           search: `?secret=${secret}&amountToken=${
-            Web3.utils.fromWei(amount.amountToken, "ether")
+            Web3.utils.fromWei(amountToken, "ether")
           }`,
-          state: { isConfirm: true, secret, amount }
+          state: { isConfirm: true, secret, amountToken }
         });
       } else {
         // display receipts

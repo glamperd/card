@@ -24,7 +24,7 @@ const humanTokenAbi = require("./abi/humanToken.json");
 
 const { Big, minBN } = Connext.big;
 const { CurrencyType, CurrencyConvertable } = Connext.types;
-const { getExchangeRates } = new Connext.Utils();
+const { getExchangeRates, hasPendingOps } = new Connext.Utils();
 
 let publicUrl;
 
@@ -177,18 +177,18 @@ class App extends React.Component {
         break;
       case "RINKEBY":
         hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
-        ethprovider = new eth.providers.getDefaultProvider("rinkeby");
+        ethprovider = new eth.getDefaultProvider("rinkeby");
         break;
       case "MAINNET":
         hubUrl = overrides.mainnetHub || `${publicUrl}/api/mainnet/hub`;
-        ethprovider = new eth.providers.getDefaultProvider();
+        ethprovider = new eth.getDefaultProvider();
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
     }
 
     const opts = {
-      hubUrl,
+      hubUrl: "https://rinkeby.hub.connext.network/api/hub",
       mnemonic
     };
     const connext = await Connext.getConnextClient(opts);
@@ -338,8 +338,8 @@ class App extends React.Component {
   }
 
   async autoSwap() {
-    const { channelState, connextState } = this.state;
-    if (!connextState || !connextState.runtime.canExchange) {
+    const { channelState, connextState, connext } = this.state;
+    if (!connextState || hasPendingOps(channelState)) {
       return;
     }
     const weiBalance = Big(channelState.balanceWeiUser);
