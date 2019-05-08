@@ -45,7 +45,7 @@ const overrides = {
 const DEPOSIT_ESTIMATED_GAS = Big("700000"); // 700k gas
 const HUB_EXCHANGE_CEILING = eth.constants.WeiPerEther.mul(Big(69)); // 69 TST
 const CHANNEL_DEPOSIT_MAX = eth.constants.WeiPerEther.mul(Big(30)); // 30 TST
-const MAX_GAS_PRICE = Big("10000000000"); // 10 gWei
+const MAX_GAS_PRICE = Big("20000000000"); // 20 gWei
 
 const styles = theme => ({
   paper: {
@@ -299,7 +299,9 @@ class App extends React.Component {
       if (Big(balance).lt(minWei)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
-        console.log(`Current balance is ${balance.toString()}, less than minBalance of ${minWei.toString()}`);
+        // We hit this repeatedly after first deposit & we have dust left over
+        // No need to clutter logs w the below
+        // console.log(`Current balance is ${balance.toString()}, less than minBalance of ${minWei.toString()}`);
         return;
       }
       // only proceed with deposit request if you can deposit
@@ -307,9 +309,9 @@ class App extends React.Component {
         // Either no state
         !connextState ||
         // Or something was submitted but also confirmed
-        (connextState.runtime.deposit.submitted && connextState.runtime.deposit.transactionHash) ||
-        (connextState.runtime.withdrawal.submitted && connextState.runtime.withdrawal.transactionHash) ||
-        (connextState.runtime.collateral.submitted && connextState.runtime.collateral.transactionHash)
+        (connextState.runtime.deposit.submitted)||// && connextState.runtime.deposit.transactionHash) ||
+        (connextState.runtime.withdrawal.submitted)||// && connextState.runtime.withdrawal.transactionHash) ||
+        (connextState.runtime.collateral.submitted)// && connextState.runtime.collateral.transactionHash)
         // exchangeRate === "0.00"
       ) {
         console.log(`Could not deposit because of runtime state: ${JSON.stringify(connextState.runtime, null, 2)}`);
