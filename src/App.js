@@ -1,6 +1,6 @@
 import "./App.css";
 import { Paper, withStyles, Grid } from "@material-ui/core";
-import * as eth from 'ethers';
+import * as eth from "ethers";
 import interval from "interval-promise";
 import React from "react";
 import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
@@ -22,9 +22,9 @@ import MySnackbar from "./components/snackBar";
 
 const bip39 = require("bip39");
 
-const { Big, maxBN, minBN } = Connext.big
-const { CurrencyType, CurrencyConvertable } = Connext.types
-const { getExchangeRates } = Connext.getters
+const { Big, maxBN, minBN } = Connext.big;
+const { CurrencyType, CurrencyConvertable } = Connext.types;
+const { getExchangeRates } = Connext.Utils;
 
 let publicUrl;
 
@@ -40,20 +40,20 @@ const overrides = {
   rinkebyHub: process.env.REACT_APP_RINKEBY_HUB_OVERRIDE,
   rinkebyEth: process.env.REACT_APP_RINKEBY_ETH_OVERRIDE,
   mainnetHub: process.env.REACT_APP_MAINNET_HUB_OVERRIDE,
-  mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE,
+  mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE
 };
 
 // Constants for channel max/min - this is also enforced on the hub
-const DEPOSIT_ESTIMATED_GAS = Big("700000") // 700k gas
+const DEPOSIT_ESTIMATED_GAS = Big("700000"); // 700k gas
 const HUB_EXCHANGE_CEILING = eth.constants.WeiPerEther.mul(Big(69)); // 69 TST
 const CHANNEL_DEPOSIT_MAX = eth.constants.WeiPerEther.mul(Big(30)); // 30 TST
-const MAX_GAS_PRICE = Big("10000000000") // 10 gWei
+const MAX_GAS_PRICE = Big("10000000000"); // 10 gWei
 
 const styles = theme => ({
   paper: {
     width: "100%",
     padding: `0px ${theme.spacing.unit}px 0 ${theme.spacing.unit}px`,
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up("sm")]: {
       width: "450px",
       height: "650px",
       marginTop: "5%",
@@ -61,7 +61,7 @@ const styles = theme => ({
     },
     [theme.breakpoints.down(600)]: {
       "box-shadow": "0px 0px"
-    },
+    }
   },
   app: {
     display: "flex",
@@ -71,7 +71,7 @@ const styles = theme => ({
     fontFamily: ["proxima-nova", "sans-serif"],
     backgroundColor: "#FFF",
     width: "100%",
-    margin: "0px",
+    margin: "0px"
   },
   zIndex: 1000,
   grid: {}
@@ -113,9 +113,9 @@ class App extends React.Component {
       status: {
         txHash: "",
         type: "",
-        reset: false,
+        reset: false
       },
-      browserMinimumBalance: null,
+      browserMinimumBalance: null
     };
 
     this.networkHandler = this.networkHandler.bind(this);
@@ -145,7 +145,7 @@ class App extends React.Component {
     if (!mnemonic) {
       mnemonic = bip39.generateMnemonic();
       localStorage.setItem("mnemonic", mnemonic);
-    }  
+    }
 
     await this.setConnext(rpc, mnemonic);
     await this.setTokenContract();
@@ -187,16 +187,16 @@ class App extends React.Component {
 
     const opts = {
       hubUrl: this.state.hubUrl,
-      mnemonic,
+      mnemonic
     };
-    const connext = await Connext.getConnextClient(opts)
+    const connext = await Connext.getConnextClient(opts);
     console.log(`Successfully set up connext! Connext config:`);
     console.log(`  - tokenAddress: ${connext.opts.tokenAddress}`);
     console.log(`  - hubAddress: ${connext.opts.hubAddress}`);
     console.log(`  - contractAddress: ${connext.opts.contractAddress}`);
     console.log(`  - ethNetworkId: ${connext.opts.ethNetworkId}`);
-    console.log(`  - public address: ${connext.wallet.getAddressString()}`)
-    const web3 = new eth.providers.JsonRpcProvider(connext.opts.rpcUrl)
+    console.log(`  - public address: ${connext.wallet.getAddressString()}`);
+    const web3 = new eth.providers.JsonRpcProvider(connext.opts.rpcUrl);
     this.setState({
       connext,
       tokenAddress: connext.opts.tokenAddress,
@@ -232,74 +232,49 @@ class App extends React.Component {
         channelState: state.persistent.channel,
         connextState: state,
         runtime: state.runtime,
-        exchangeRate: state.runtime.exchangeRate
-          ? state.runtime.exchangeRate.rates.USD
-          : 0
+        exchangeRate: state.runtime.exchangeRate ? state.runtime.exchangeRate.rates.USD : 0
       });
       this.checkStatus();
     });
     // start polling
     await connext.start();
-    this.setState({ loadingConnext: false })
+    this.setState({ loadingConnext: false });
   }
 
   async poller() {
     await this.autoDeposit();
     await this.autoSwap();
 
-    interval(
-      async (iteration, stop) => {
-        await this.autoDeposit();
-      },
-      5000
-    )
+    interval(async (iteration, stop) => {
+      await this.autoDeposit();
+    }, 5000);
 
-    interval(
-      async (iteration, stop) => {
-        await this.autoSwap();
-      },
-      1000
-    )
-
+    interval(async (iteration, stop) => {
+      await this.autoSwap();
+    }, 1000);
   }
 
   async setBrowserWalletMinimumBalance() {
-    const {connextState} = this.state
-    let gasEstimateJson = await eth.utils.fetchJson({url:`https://ethgasstation.info/json/ethgasAPI.json`})
-    let currentGasPrice = gasEstimateJson.safeLow
+    const { connextState } = this.state;
+    let gasEstimateJson = await eth.utils.fetchJson({ url: `https://ethgasstation.info/json/ethgasAPI.json` });
+    let currentGasPrice = gasEstimateJson.safeLow;
     // dont let gas price be any higher than the min
-    currentGasPrice = minBN(currentGasPrice, MAX_GAS_PRICE)
+    currentGasPrice = minBN(currentGasPrice, MAX_GAS_PRICE);
     // default connext multiple is 1.5, leave 2x for safety
-    const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS
-      .mul(Big(2))
-      .mul(currentGasPrice)
+    const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS.mul(Big(2)).mul(currentGasPrice);
 
     // add dai conversion
-    const minConvertable = new CurrencyConvertable(
-      CurrencyType.WEI, 
-      totalDepositGasWei, 
-      () => getExchangeRates(connextState)
-    )
-    const browserMinimumBalance = { 
-      wei: minConvertable.toWEI().amount, 
-      dai: minConvertable.toUSD().amount 
-    }
-    this.setState({ browserMinimumBalance })
-    return browserMinimumBalance
+    const minConvertable = new CurrencyConvertable(CurrencyType.WEI, totalDepositGasWei, () => getExchangeRates(connextState));
+    const browserMinimumBalance = {
+      wei: minConvertable.toWEI().amount,
+      dai: minConvertable.toUSD().amount
+    };
+    this.setState({ browserMinimumBalance });
+    return browserMinimumBalance;
   }
 
   async autoDeposit() {
-    const {
-      address,
-      tokenContract,
-      connextState,
-      tokenAddress,
-      exchangeRate,
-      channelState,
-      connext,
-      browserMinimumBalance,
-      web3,
-    } = this.state;
+    const { address, tokenContract, connextState, tokenAddress, exchangeRate, channelState, connext, browserMinimumBalance, web3 } = this.state;
     const refunding = localStorage.getItem("refunding");
 
     if (!connext || !browserMinimumBalance || refunding) return;
@@ -307,10 +282,7 @@ class App extends React.Component {
     const balance = await web3.eth.getBalance(address);
 
     const maxBalanceAfterRefund = localStorage.getItem("maxBalanceAfterRefund");
-    if (
-      maxBalanceAfterRefund &&
-      Big(balance).gte(Big(maxBalanceAfterRefund))
-    ) {
+    if (maxBalanceAfterRefund && Big(balance).gte(Big(maxBalanceAfterRefund))) {
       // wallet balance hasnt changed since submitting tx, returning
       return;
     } else {
@@ -331,7 +303,7 @@ class App extends React.Component {
     }
 
     if (balance !== "0" || tokenBalance !== "0") {
-      const minWei = Big(browserMinimumBalance.wei)
+      const minWei = Big(browserMinimumBalance.wei);
       if (Big(balance).lt(minWei)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
@@ -355,14 +327,10 @@ class App extends React.Component {
       // if you already have the maximum balance tokens hub will exchange
       // do not deposit any more eth to be swapped
       // TODO: figure out rounding error
-      if (
-        eth.utils
-          .bigNumberify(channelState.balanceTokenUser)
-          .gte(eth.utils.parseEther("29.8"))
-      ) {
+      if (eth.utils.bigNumberify(channelState.balanceTokenUser).gte(eth.utils.parseEther("29.8"))) {
         // refund any wei that is in the browser wallet
-        alert("TEMPORARY WARNING: You already have maximum balance. Refusing to deposit more for now.")
-        
+        alert("TEMPORARY WARNING: You already have maximum balance. Refusing to deposit more for now.");
+
         // const refundWei = maxBN(
         //   Big(balance).sub(minWei),
         //   Big(0)
@@ -372,35 +340,28 @@ class App extends React.Component {
       }
 
       let channelDeposit = {
-        amountWei: Big(balance)
-          .sub(minWei),
+        amountWei: Big(balance).sub(minWei),
         amountToken: tokenBalance
       };
 
-      if (
-        channelDeposit.amountWei === "0" &&
-        channelDeposit.amountToken === "0"
-      ) {
+      if (channelDeposit.amountWei === "0" && channelDeposit.amountToken === "0") {
         return;
       }
 
       // if amount to deposit into channel is over the channel max
       // then return excess deposit to the sending account
-      const weiToReturn = this.calculateWeiToRefund(
-        channelDeposit.amountWei,
-        connextState
-      );
+      const weiToReturn = this.calculateWeiToRefund(channelDeposit.amountWei, connextState);
 
       // return wei to sender
       if (weiToReturn !== "0") {
-        alert("TEMPORARY WARNING: You've deposited more balance than the maximum. Only balance up to the maximum will be deposited - retrieve remaining funds by recovering your seed phrase into a wallet")
+        alert(
+          "TEMPORARY WARNING: You've deposited more balance than the maximum. Only balance up to the maximum will be deposited - retrieve remaining funds by recovering your seed phrase into a wallet"
+        );
         // await this.returnWei(weiToReturn);
         return;
       }
       // update channel deposit
-      const weiDeposit = Big(channelDeposit.amountWei).sub(
-        Big(weiToReturn)
-      );
+      const weiDeposit = Big(channelDeposit.amountWei).sub(Big(weiToReturn));
       channelDeposit.amountWei = weiDeposit.toString();
 
       await this.state.connext.deposit(channelDeposit);
@@ -474,16 +435,11 @@ class App extends React.Component {
   calculateWeiToRefund(wei, connextState) {
     // channel max tokens is minimum of the ceiling that
     // the hub would exchange, or a set deposit max
-    const ceilingWei = new CurrencyConvertable(
-      CurrencyType.BEI,
-      minBN(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX),
-      () => getExchangeRates(connextState)
-    ).toWEI().amountBN
+    const ceilingWei = new CurrencyConvertable(CurrencyType.BEI, minBN(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX), () =>
+      getExchangeRates(connextState)
+    ).toWEI().amountBN;
 
-    const weiToRefund = maxBN(
-      Big(wei).sub(ceilingWei),
-      Big(0)
-    );
+    const weiToRefund = maxBN(Big(wei).sub(ceilingWei), Big(0));
 
     return weiToRefund.toString();
   }
@@ -495,52 +451,46 @@ class App extends React.Component {
     }
     const weiBalance = Big(channelState.balanceWeiUser);
     const tokenBalance = Big(channelState.balanceTokenUser);
-    if (
-      channelState &&
-      weiBalance.gt(Big("0")) &&
-      tokenBalance.lte(HUB_EXCHANGE_CEILING)
-    ) {
+    if (channelState && weiBalance.gt(Big("0")) && tokenBalance.lte(HUB_EXCHANGE_CEILING)) {
       await this.state.connext.exchange(channelState.balanceWeiUser, "wei");
     }
   }
 
   async checkStatus() {
     const { runtime, status } = this.state;
-    let log = () => {}
-    let newStatus
+    let log = () => {};
+    let newStatus;
 
-    if(runtime) {
-      log(`Hub Sync results: ${JSON.stringify(runtime.syncResultsFromHub[0],null,2)}`)
+    if (runtime) {
+      log(`Hub Sync results: ${JSON.stringify(runtime.syncResultsFromHub[0], null, 2)}`);
       if (runtime.deposit.submitted) {
         if (!runtime.deposit.detected) {
-          newStatus.type = "DEPOSIT_PENDING"
+          newStatus.type = "DEPOSIT_PENDING";
         } else {
-          newStatus.type = "DEPOSIT_SUCCESS"
-          newStatus.txHash = runtime.deposit.transactionHash
+          newStatus.type = "DEPOSIT_SUCCESS";
+          newStatus.txHash = runtime.deposit.transactionHash;
         }
       }
       if (runtime.withdrawal.submitted) {
-        if(!runtime.withdrawal.detected) {
-          newStatus.type = "WITHDRAWAL_PENDING"
+        if (!runtime.withdrawal.detected) {
+          newStatus.type = "WITHDRAWAL_PENDING";
         } else {
-          newStatus.type = "WITHDRAWAL_SUCCESS"
-          newStatus.txHash = runtime.withdrawal.transactionHash
+          newStatus.type = "WITHDRAWAL_SUCCESS";
+          newStatus.txHash = runtime.withdrawal.transactionHash;
         }
       }
     }
 
-    if(newStatus.type != status.type) {
-      status = newStatus
-      status.reset = true
-      console.log(`New channel status! ${JSON.stringify(status)}`)
+    if (newStatus.type !== status.type) {
+      newStatus = status;
+      newStatus.reset = true;
+      console.log(`New channel status! ${JSON.stringify(newStatus)}`);
     }
 
-    this.setState({status})
+    this.setState({ status: newStatus });
   }
 
-  closeConfirmations() {
-
-  }
+  closeConfirmations() {}
 
   // ************************************************* //
   //                    Handlers                       //
@@ -571,20 +521,10 @@ class App extends React.Component {
 
   async closeModal() {
     await this.setState({ loadingConnext: false });
-  };
+  }
 
   render() {
-    const {
-      address,
-      channelState,
-      sendScanArgs,
-      exchangeRate,
-      connext,
-      connextState,
-      runtime,
-      browserMinimumBalance,
-      web3
-    } = this.state;
+    const { address, channelState, sendScanArgs, exchangeRate, connext, connextState, runtime, browserMinimumBalance, web3, status } = this.state;
     const { classes } = this.props;
     return (
       <Router>
@@ -597,10 +537,7 @@ class App extends React.Component {
               message="Starting Channel Controllers.."
               duration={30000}
             />
-            <Confirmations
-              status={this.state.status}
-              closeConfirmations={this.closeConfirmations.bind(this)}
-            />
+            <Confirmations status={status} closeConfirmations={this.closeConfirmations.bind(this)} />
             <AppBarComponent address={address} />
             <Route
               exact
@@ -686,13 +623,7 @@ class App extends React.Component {
             <Route
               path="/redeem"
               render={props => (
-                <RedeemCard
-                  {...props}
-                  publicUrl={publicUrl}
-                  connext={connext}
-                  channelState={channelState}
-                  connextState={connextState}
-                />
+                <RedeemCard {...props} publicUrl={publicUrl} connext={connext} channelState={channelState} connextState={connextState} />
               )}
             />
             <Route
@@ -711,12 +642,7 @@ class App extends React.Component {
                 />
               )}
             />
-            <Route
-              path="/support"
-              render={props => (
-                <SupportCard {...props} channelState={channelState} />
-              )}
-            />
+            <Route path="/support" render={props => <SupportCard {...props} channelState={channelState} />} />
           </Paper>
         </Grid>
       </Router>
