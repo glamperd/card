@@ -22,7 +22,6 @@
     "@types/semaphore": "^1.1.0",
     "@types/web3": "^1.0.14",
     "axios": "^0.18.0",
-    "bip39": "2.3.1",
     "bluebird": "^3.5.3",
     "chai": "^4.2.0",
     "connext": "^3.1.9",

@@ -20,16 +20,13 @@ import SetupCard from "./components/setupCard";
 import Confirmations from "./components/Confirmations";
 import MySnackbar from "./components/snackBar";
 
-const bip39 = require("bip39");
+const humanTokenAbi = require("./abi/humanToken.json");
 
 const { Big, minBN } = Connext.big;
 const { CurrencyType, CurrencyConvertable } = Connext.types;
-const cUtils = new Connext.Utils();
-const { getExchangeRates } = cUtils;
+const { getExchangeRates } = new Connext.Utils();
 
 let publicUrl;
-
-const humanTokenAbi = require("./abi/humanToken.json");
 
 const env = process.env.NODE_ENV;
 const tokenAbi = humanTokenAbi;
@@ -87,7 +84,7 @@ class App extends React.Component {
       tokenAddress: null,
       contractAddress: null,
       hubWalletAddress: null,
-      ethers: null,
+      ethprovider: null,
       tokenContract: null,
       connext: null,
       modals: {
@@ -144,7 +141,7 @@ class App extends React.Component {
     }
     // If no mnemonic, create one and save to local storage
     if (!mnemonic) {
-      mnemonic = bip39.generateMnemonic();
+      mnemonic = eth.Wallet.createRandom().mnemonic
       localStorage.setItem("mnemonic", mnemonic);
     }
 
@@ -172,19 +169,19 @@ class App extends React.Component {
 
   async setConnext(rpc, mnemonic) {
     let hubUrl;
-    let ethers;
+    let ethprovider;
     switch (rpc) {
       case "LOCALHOST":
         hubUrl = overrides.localHub || `${publicUrl}/api/local/hub`;
-        ethers = new eth.providers.JsonRpcProvider("http://localhost:8545");
+        ethprovider = new eth.providers.JsonRpcProvider("http://localhost:8545");
         break;
       case "RINKEBY":
         hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
-        ethers = new eth.providers.getDefaultProvider("rinkeby");
+        ethprovider = new eth.providers.getDefaultProvider("rinkeby");
         break;
       case "MAINNET":
         hubUrl = overrides.mainnetHub || `${publicUrl}/api/mainnet/hub`;
-        ethers = new eth.providers.getDefaultProvider();
+        ethprovider = new eth.providers.getDefaultProvider();
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
@@ -210,14 +207,14 @@ class App extends React.Component {
       hubWalletAddress: connext.opts.hubAddress,
       ethNetworkId: connext.opts.ethNetworkId,
       address,
-      ethers
+      ethprovider
     });
   }
 
   async setTokenContract() {
     try {
-      let { tokenAddress, ethers } = this.state;
-      const tokenContract = new eth.Contract(tokenAddress, tokenAbi, ethers);
+      let { tokenAddress, ethprovider } = this.state;
+      const tokenContract = new eth.Contract(tokenAddress, tokenAbi, ethprovider);
       this.setState({ tokenContract });
     } catch (e) {
       console.log("Error setting token contract");
@@ -280,18 +277,18 @@ class App extends React.Component {
   }
 
   async autoDeposit() {
-    const { address, tokenContract, connextState, tokenAddress, connext, browserMinimumBalance, ethers } = this.state;
+    const { address, tokenContract, connextState, tokenAddress, connext, browserMinimumBalance, ethprovider } = this.state;
 
     if (!connext || !browserMinimumBalance) return;
 
-    const balance = await ethers.getBalance(address);
+    const balance = await ethprovider.getBalance(address);
 
     let tokenBalance = "0";
     try {
       tokenBalance = await tokenContract.balanceOf(address);
     } catch (e) {
       console.warn(
-        `Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${await ethers.getNetwork()}))? Error: ${
+        `Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${await ethprovider.getNetwork()}))? Error: ${
           e.message
         }`
       );
@@ -328,6 +325,7 @@ class App extends React.Component {
         return;
       }
 
+      console.log(`connext.deposit activated w runtime state: ${JSON.stringify(connextState.runtime,null,2)}`)
       await this.state.connext.deposit({ amountWei: channelDeposit.amountWei.toString() });
     }
   }
@@ -412,7 +410,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { address, channelState, sendScanArgs, exchangeRate, connext, connextState, runtime, browserMinimumBalance, ethers, status } = this.state;
+    const { address, channelState, sendScanArgs, exchangeRate, connext, connextState, runtime, browserMinimumBalance, ethprovider, status } = this.state;
     const { classes } = this.props;
     return (
       <Router>
@@ -498,7 +496,7 @@ class App extends React.Component {
               render={props => (
                 <SendCard
                   {...props}
-                  web3={ethers}
+                  web3={ethprovider}
                   connext={connext}
                   address={address}
                   channelState={channelState}
@@ -523,7 +521,7 @@ class App extends React.Component {
                   channelState={channelState}
                   publicUrl={publicUrl}
                   exchangeRate={exchangeRate}
-                  web3={ethers}
+                  web3={ethprovider}
                   connext={connext}
                   connextState={connextState}
                   runtime={runtime}
