@@ -305,7 +305,6 @@ class App extends React.Component {
         console.log(`Current balance is ${balance.toString()}, less than minBalance of ${minWei.toString()}`);
         return;
       }
-      console.log(JSON.stringify(connextState.runtime, null, 2));
       // only proceed with deposit request if you can deposit
       if (
         // Either no state
