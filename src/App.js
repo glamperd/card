@@ -186,7 +186,8 @@ class App extends React.Component {
         ethers = new eth.providers.getDefaultProvider("rinkeby");
         break;
       case "ROPSTEN":
-        rpcUrl = overrides.ropstenEth || `${publicUrl}/api/ropsten/eth`;
+        const rpcUrl = overrides.ropstenEth || `${publicUrl}/api/ropsten/eth`;
+        ethers = new eth.providers.JsonRpcProvider(rpcUrl);
         hubUrl = overrides.ropstenHub || `${publicUrl}/api/ropsten/hub`;
         break;
       case "MAINNET":
@@ -279,7 +280,7 @@ class App extends React.Component {
     // add dai conversion
     const minConvertable = new CurrencyConvertable(
       CurrencyType.WEI,
-      depositGasPrice,
+      totalDepositGasWei,
       () => getExchangeRates(connextState)
     )
     const browserMinimumBalance = {
@@ -411,47 +412,6 @@ class App extends React.Component {
   // ************************************************* //
   //                    Handlers                       //
   // ************************************************* //
-
-  async authorizeHandler() {
-    const { customWeb3, hubUrl, opts } = this.state;
-    const web3 = customWeb3;
-    const challengeRes = await axios.post(`${hubUrl}/auth/challenge`, opts);
-    console.log('authorizeHandler ', challengeRes)
-
-    const nonce = challengeRes.data.nonce
-    const ORIGIN = "hub.spankchain.com"
-    const hash = web3.utils.sha3(
-      `${HASH_PREAMBLE} ${web3.utils.sha3(nonce)} ${web3.utils.sha3(ORIGIN)}`
-    );
-
-    const signature = await web3.eth.personal.sign(hash, this.state.address);
-    console.log('auth sig: ', signature)
-    try {
-      let authRes = await axios.post(
-        `${hubUrl}/auth/response`,
-        {
-          nonce: challengeRes.data.nonce,
-          address: this.state.address,
-          origin: ORIGIN,
-          signature
-        },
-        opts
-      );
-      const token = authRes.data.token;
-      document.cookie = `hub.sid=${token}`;
-      console.log(`cookie set: ${token}`);
-      const res = await axios.get(`${hubUrl}/auth/status`, opts);
-      if (res.data.success) {
-        this.setState({ authorized: true });
-        return res.data.success
-      } else {
-        this.setState({ authorized: false });
-      }
-      console.log(`Auth status: ${JSON.stringify(res.data)}`);
-    } catch (e) {
-      console.log(e);
-    }
-  }
 
   updateApprovalHandler(evt) {
     this.setState({
