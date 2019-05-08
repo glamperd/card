@@ -177,11 +177,11 @@ class App extends React.Component {
         break;
       case "RINKEBY":
         hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
-        ethprovider = new eth.providers.getDefaultProvider("rinkeby");
+        ethprovider = new eth.getDefaultProvider("rinkeby");
         break;
       case "MAINNET":
         hubUrl = overrides.mainnetHub || `${publicUrl}/api/mainnet/hub`;
-        ethprovider = new eth.providers.getDefaultProvider();
+        ethprovider = new eth.getDefaultProvider();
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
@@ -293,10 +293,11 @@ class App extends React.Component {
       tokenBalance = await tokenContract.balanceOf(address);
     } catch (e) {
       console.warn(
-        `Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${await ethprovider.getNetwork()}))? Error: ${
+        `Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${JSON.stringify(await ethprovider.getNetwork())}))? Error: ${
           e.message
         }`
       );
+      return
     }
 
     if (balance.gt("0") || tokenBalance.gt("0")) {
