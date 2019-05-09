@@ -184,7 +184,7 @@ class App extends React.Component {
         break;
       case "ROPSTEN":
         const rpcUrl = overrides.ropstenEth || `${publicUrl}/api/ropsten/eth`;
-        ethers = new eth.providers.JsonRpcProvider(rpcUrl);
+        ethprovider = new eth.providers.JsonRpcProvider(rpcUrl);
         hubUrl = overrides.ropstenHub || `${publicUrl}/api/ropsten/hub`;
         break;
       case "MAINNET":
