@@ -12,6 +12,10 @@ import QRScan from "./qrScan";
 import { withStyles, Grid, Typography, CircularProgress } from "@material-ui/core";
 import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
 import interval from "interval-promise";
+import * as Connext from "connext";
+import Web3 from "web3";
+
+const { hasPendingOps } = new Connext.Utils();
 
 const styles = theme => ({
   icon: {
@@ -159,13 +163,13 @@ class CashOutCard extends Component {
   };
 
   async withdrawalHandler(withdrawEth) {
-    const { connext, web3 } = this.props;
+    const { connext } = this.props;
     const withdrawalVal = await this.updateWithdrawalVals(withdrawEth);
     this.setState({ addressError: null, balanceError: null });
     // check for valid address
     // let addressError = null
     // let balanceError = null
-    if (!web3.utils.isAddress(withdrawalVal.recipient)) {
+    if (!Web3.utils.isAddress(withdrawalVal.recipient)) {
       const addressError = `${
         withdrawalVal.recipient === "0x0..."
           ? "Must provide address."
@@ -186,7 +190,7 @@ class CashOutCard extends Component {
   }
 
   render() {
-    const { classes, exchangeRate, connextState } = this.props;
+    const { classes, exchangeRate, connextState, channelState } = this.props;
     const {
       recipientDisplayVal,
       addressError,
@@ -301,7 +305,7 @@ class CashOutCard extends Component {
                 className={classes.button}
                 fullWidth
                 onClick={() => this.withdrawalHandler(true)}
-                disabled={!connextState || !connextState.runtime.canWithdraw}
+                disabled={!connextState || hasPendingOps(channelState)}
               >
                 Cash Out Eth
                 <img

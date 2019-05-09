@@ -20,16 +20,13 @@ import SetupCard from "./components/setupCard";
 import Confirmations from "./components/Confirmations";
 import MySnackbar from "./components/snackBar";
 
-const bip39 = require("bip39");
+const humanTokenAbi = require("./abi/humanToken.json");
 
 const { Big, minBN } = Connext.big;
 const { CurrencyType, CurrencyConvertable } = Connext.types;
-const cUtils = new Connext.Utils();
-const { getExchangeRates } = cUtils;
+const { getExchangeRates, hasPendingOps } = new Connext.Utils();
 
 let publicUrl;
-
-const humanTokenAbi = require("./abi/humanToken.json");
 
 const env = process.env.NODE_ENV;
 const tokenAbi = humanTokenAbi;
@@ -50,7 +47,7 @@ const overrides = {
 const DEPOSIT_ESTIMATED_GAS = Big("700000"); // 700k gas
 const HUB_EXCHANGE_CEILING = eth.constants.WeiPerEther.mul(Big(69)); // 69 TST
 const CHANNEL_DEPOSIT_MAX = eth.constants.WeiPerEther.mul(Big(30)); // 30 TST
-const MAX_GAS_PRICE = Big("10000000000"); // 10 gWei
+const MAX_GAS_PRICE = Big("20000000000"); // 20 gWei
 
 const styles = theme => ({
   paper: {
@@ -89,7 +86,7 @@ class App extends React.Component {
       tokenAddress: null,
       contractAddress: null,
       hubWalletAddress: null,
-      ethers: null,
+      ethprovider: null,
       tokenContract: null,
       connext: null,
       modals: {
@@ -147,7 +144,7 @@ class App extends React.Component {
     }
     // If no mnemonic, create one and save to local storage
     if (!mnemonic) {
-      mnemonic = bip39.generateMnemonic();
+      mnemonic = eth.Wallet.createRandom().mnemonic;
       localStorage.setItem("mnemonic", mnemonic);
     }
 
@@ -175,15 +172,15 @@ class App extends React.Component {
 
   async setConnext(rpc, mnemonic) {
     let hubUrl;
-    let ethers;
+    let ethprovider;
     switch (rpc) {
       case "LOCALHOST":
         hubUrl = overrides.localHub || `${publicUrl}/api/local/hub`;
-        ethers = new eth.providers.JsonRpcProvider("http://localhost:8545");
+        ethprovider = new eth.providers.JsonRpcProvider("http://localhost:8545");
         break;
       case "RINKEBY":
         hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
-        ethers = new eth.providers.getDefaultProvider("rinkeby");
+        ethprovider = new eth.getDefaultProvider("rinkeby");
         break;
       case "ROPSTEN":
         const rpcUrl = overrides.ropstenEth || `${publicUrl}/api/ropsten/eth`;
@@ -192,7 +189,7 @@ class App extends React.Component {
         break;
       case "MAINNET":
         hubUrl = overrides.mainnetHub || `${publicUrl}/api/mainnet/hub`;
-        ethers = new eth.providers.getDefaultProvider();
+        ethprovider = new eth.getDefaultProvider();
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
@@ -218,14 +215,14 @@ class App extends React.Component {
       hubWalletAddress: connext.opts.hubAddress,
       ethNetworkId: connext.opts.ethNetworkId,
       address,
-      ethers
+      ethprovider
     });
   }
 
   async setTokenContract() {
     try {
-      let { tokenAddress, ethers } = this.state;
-      const tokenContract = new eth.Contract(tokenAddress, tokenAbi, ethers);
+      let { tokenAddress, ethprovider } = this.state;
+      const tokenContract = new eth.Contract(tokenAddress, tokenAbi, ethprovider);
       this.setState({ tokenContract });
     } catch (e) {
       console.log("Error setting token contract");
@@ -241,7 +238,6 @@ class App extends React.Component {
     let connext = this.state.connext;
     // register connext listeners
     connext.on("onStateChange", state => {
-      console.log("Connext state changed:", state);
       this.setState({
         channelState: state.persistent.channel,
         connextState: state,
@@ -269,11 +265,16 @@ class App extends React.Component {
   }
 
   async setBrowserWalletMinimumBalance() {
-    const { connextState } = this.state;
+    const { connextState, ethprovider } = this.state;
     let gasEstimateJson = await eth.utils.fetchJson({ url: `https://ethgasstation.info/json/ethgasAPI.json` });
-    let currentGasPrice = Math.round(gasEstimateJson.average / 10);
+    let providerGasPrice = await ethprovider.getGasPrice();
+    let currentGasPrice = Math.round((gasEstimateJson.average / 10) * 2); // multiply gas price by two to be safe
     // dont let gas price be any higher than the max
-    currentGasPrice = minBN(Big(currentGasPrice.toString()), MAX_GAS_PRICE);
+    currentGasPrice = eth.utils.parseUnits(minBN(Big(currentGasPrice.toString()), MAX_GAS_PRICE).toString(), "gwei");
+    // unless it really needs to be: average eth gas station price w ethprovider's
+    currentGasPrice = currentGasPrice.add(providerGasPrice).div(eth.constants.Two);
+    console.log(`Gas Price = ${currentGasPrice}`);
+
     // default connext multiple is 1.5, leave 2x for safety
     const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS.mul(Big(2)).mul(currentGasPrice);
 
@@ -292,21 +293,22 @@ class App extends React.Component {
   }
 
   async autoDeposit() {
-    const { address, tokenContract, connextState, tokenAddress, connext, browserMinimumBalance, ethers } = this.state;
+    const { address, tokenContract, connextState, tokenAddress, connext, browserMinimumBalance, ethprovider } = this.state;
 
     if (!connext || !browserMinimumBalance) return;
 
-    const balance = await ethers.getBalance(address);
+    const balance = await ethprovider.getBalance(address);
 
     let tokenBalance = "0";
     try {
       tokenBalance = await tokenContract.balanceOf(address);
     } catch (e) {
       console.warn(
-        `Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${await ethers.getNetwork()}))? Error: ${
-          e.message
-        }`
+        `Error fetching token balance, are you sure the token address (addr: ${tokenAddress}) is correct for the selected network (id: ${JSON.stringify(
+          await ethprovider.getNetwork()
+        )}))? Error: ${e.message}`
       );
+      return;
     }
 
     if (balance.gt("0") || tokenBalance.gt("0")) {
@@ -314,20 +316,22 @@ class App extends React.Component {
       if (Big(balance).lt(minWei)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
-        console.log(`Current balance is ${balance.toString()}, less than minBalance of ${minWei.toString()}`);
+        // We hit this repeatedly after first deposit & we have dust left over
+        // No need to clutter logs w the below
+        // console.log(`Current balance is ${balance.toString()}, less than minBalance of ${minWei.toString()}`);
         return;
       }
       // only proceed with deposit request if you can deposit
+      if (!connextState) {
+        return;
+      }
       if (
-        // Either no state
-        !connextState ||
-        // Or something was submitted but also confirmed
-        (connextState.runtime.deposit.submitted && connextState.runtime.deposit.transactionHash) ||
-        (connextState.runtime.withdrawal.submitted && connextState.runtime.withdrawal.transactionHash) ||
-        (connextState.runtime.collateral.submitted && connextState.runtime.collateral.transactionHash)
-        // exchangeRate === "0.00"
+        // something was submitted
+        connextState.runtime.deposit.submitted ||
+        connextState.runtime.withdrawal.submitted ||
+        connextState.runtime.collateral.submitted
       ) {
-        console.log(`Could not deposit because of runtime state: ${JSON.stringify(connextState.runtime, null, 2)}`);
+        console.log(`Deposit or withdrawal transaction in progress, will not auto-deposit`);
         return;
       }
 
@@ -346,7 +350,7 @@ class App extends React.Component {
 
   async autoSwap() {
     const { channelState, connextState } = this.state;
-    if (!connextState || !connextState.runtime.canExchange) {
+    if (!connextState || hasPendingOps(channelState)) {
       return;
     }
     const weiBalance = Big(channelState.balanceWeiUser);
@@ -382,7 +386,6 @@ class App extends React.Component {
     }
 
     if (newStatus.type !== status.type) {
-      newStatus = status;
       newStatus.reset = true;
       console.log(`New channel status! ${JSON.stringify(newStatus)}`);
     }
@@ -443,7 +446,18 @@ class App extends React.Component {
   }
 
   render() {
-    const { address, channelState, sendScanArgs, exchangeRate, connext, connextState, runtime, browserMinimumBalance, ethers, status } = this.state;
+    const {
+      address,
+      channelState,
+      sendScanArgs,
+      exchangeRate,
+      connext,
+      connextState,
+      runtime,
+      browserMinimumBalance,
+      ethprovider,
+      status
+    } = this.state;
     const { classes } = this.props;
     return (
       <Router>
@@ -529,7 +543,7 @@ class App extends React.Component {
               render={props => (
                 <SendCard
                   {...props}
-                  web3={ethers}
+                  web3={ethprovider}
                   connext={connext}
                   address={address}
                   channelState={channelState}
@@ -554,7 +568,6 @@ class App extends React.Component {
                   channelState={channelState}
                   publicUrl={publicUrl}
                   exchangeRate={exchangeRate}
-                  web3={ethers}
                   connext={connext}
                   connextState={connextState}
                   runtime={runtime}
