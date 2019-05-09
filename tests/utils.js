@@ -154,7 +154,6 @@ my.deposit = (value) => {
       })).then(tx => {
         return cy.wrap(wallet.provider.waitForTransaction(tx.hash).then(() => {
           cy.contains('span', /processing deposit/i).should('exist')
-          cy.contains('span', /processing deposit/i).should('not.exist')
           cy.contains('span', /deposit confirmed/i).should('exist')
           cy.resolve(my.getBalance).should('not.contain', '0.00')
           my.getBalance().then(resolve)
