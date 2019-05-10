@@ -198,6 +198,7 @@ class App extends React.Component {
 
     const opts = {
       hubUrl,
+      ethUrl: ethprovider,
       mnemonic
     };
     const connext = await Connext.getConnextClient(opts);
