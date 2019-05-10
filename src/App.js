@@ -183,9 +183,9 @@ class App extends React.Component {
         ethprovider = new eth.getDefaultProvider("rinkeby");
         break;
       case "ROPSTEN":
-        //const rpcUrl = overrides.ropstenEth || `${publicUrl}/api/ropsten/eth`;
-        //ethprovider = new eth.providers.JsonRpcProvider(rpcUrl);
-        ethprovider = new eth.getDefaultProvider("ropsten");
+        const rpcUrl = overrides.ropstenEth || `${publicUrl}/api/ropsten/eth`;
+        ethprovider = new eth.providers.JsonRpcProvider(rpcUrl);
+        //ethprovider = new eth.getDefaultProvider("ropsten");
         hubUrl = overrides.ropstenHub || `${publicUrl}/api/ropsten/hub`;
         break;
       case "MAINNET":
