@@ -183,8 +183,9 @@ class App extends React.Component {
         ethprovider = new eth.getDefaultProvider("rinkeby");
         break;
       case "ROPSTEN":
-        const rpcUrl = overrides.ropstenEth || `${publicUrl}/api/ropsten/eth`;
-        ethprovider = new eth.providers.JsonRpcProvider(rpcUrl);
+        //const rpcUrl = overrides.ropstenEth || `${publicUrl}/api/ropsten/eth`;
+        //ethprovider = new eth.providers.JsonRpcProvider(rpcUrl);
+        ethprovider = new eth.getDefaultProvider("ropsten");
         hubUrl = overrides.ropstenHub || `${publicUrl}/api/ropsten/hub`;
         break;
       case "MAINNET":
@@ -395,14 +396,14 @@ class App extends React.Component {
 
   async getCustodialBalance() {
     const { hubUrl, address, customWeb3 } = this.state;
-    const opts = {
+    /*const opts = {
           web3: customWeb3,
           hubUrl: hubUrl, // in dev-mode: http://localhost:8080,
           user: address,
           origin: "localhost", // TODO: what should this be
           cookie: document.cookie
         };
-
+        */
     try {
       //const custodialBalance = await axios.get(`${hubUrl}/channel/${address}/sync?lastChanTx=27&lastThreadUpdateId=0`, opts);
       //const custodialBalance = await axios.get(`${hubUrl}/custodial/${address}/balance`, opts);
