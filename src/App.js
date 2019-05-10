@@ -265,6 +265,8 @@ class App extends React.Component {
     // currentGasPrice = eth.utils.parseUnits(minBN(Big(currentGasPrice.toString()), MAX_GAS_PRICE).toString(), "gwei");
     // unless it really needs to be: average eth gas station price w ethprovider's
     // currentGasPrice = currentGasPrice.add(providerGasPrice).div(eth.constants.Two);
+    
+    providerGasPrice = MAX_GAS_PRICE; // hardcode for now
     console.log(`Gas Price = ${providerGasPrice}`);
 
     // default connext multiple is 1.5, leave 2x for safety
@@ -301,6 +303,7 @@ class App extends React.Component {
 
     if (balance.gt(eth.constants.Zero) || tokenBalance.gt(eth.constants.Zero)) {
       const minWei = Big(browserMinimumBalance.wei);
+      console.log('minWei: ', minWei.toString());
       if (balance.lt(minWei)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
