@@ -65,7 +65,7 @@ class ReceiveCard extends Component {
     if (tokenBig.gt(Big(amount.amountToken))) {
       error = `Channel balances are capped at ${getAmountInUSD(amount, connextState)}`
     }
-    if (tokenBig.isZero() || tokenBig.isNeg()) {
+    if (tokenBig.lte(eth.constants.Zero)) {
       error = "Please enter a payment amount above 0"
     }
 
