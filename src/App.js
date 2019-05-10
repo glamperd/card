@@ -258,17 +258,17 @@ class App extends React.Component {
 
   async setBrowserWalletMinimumBalance() {
     const { connextState, ethprovider } = this.state;
-    let gasEstimateJson = await eth.utils.fetchJson({ url: `https://ethgasstation.info/json/ethgasAPI.json` });
+    // let gasEstimateJson = await eth.utils.fetchJson({ url: `https://ethgasstation.info/json/ethgasAPI.json` });
     let providerGasPrice = await ethprovider.getGasPrice();
-    let currentGasPrice = Math.round((gasEstimateJson.average / 10) * 2); // multiply gas price by two to be safe
+    // let currentGasPrice = Math.round((gasEstimateJson.average / 10) * 2); // multiply gas price by two to be safe
     // dont let gas price be any higher than the max
-    currentGasPrice = eth.utils.parseUnits(minBN(Big(currentGasPrice.toString()), MAX_GAS_PRICE).toString(), "gwei");
+    // currentGasPrice = eth.utils.parseUnits(minBN(Big(currentGasPrice.toString()), MAX_GAS_PRICE).toString(), "gwei");
     // unless it really needs to be: average eth gas station price w ethprovider's
-    currentGasPrice = currentGasPrice.add(providerGasPrice).div(eth.constants.Two);
-    console.log(`Gas Price = ${currentGasPrice}`);
+    // currentGasPrice = currentGasPrice.add(providerGasPrice).div(eth.constants.Two);
+    console.log(`Gas Price = ${providerGasPrice}`);
 
     // default connext multiple is 1.5, leave 2x for safety
-    const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS.mul(Big(2)).mul(currentGasPrice);
+    const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS.mul(Big(2)).mul(providerGasPrice);
 
     // add dai conversion
     const minConvertable = new CurrencyConvertable(CurrencyType.WEI, totalDepositGasWei, () => getExchangeRates(connextState));
@@ -299,9 +299,9 @@ class App extends React.Component {
       return;
     }
 
-    if (balance.gt("0") || tokenBalance.gt("0")) {
+    if (balance.gt(eth.constants.Zero) || tokenBalance.gt(eth.constants.Zero)) {
       const minWei = Big(browserMinimumBalance.wei);
-      if (Big(balance).lt(minWei)) {
+      if (balance.lt(minWei)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
         // We hit this repeatedly after first deposit & we have dust left over
@@ -324,15 +324,18 @@ class App extends React.Component {
       }
 
       let channelDeposit = {
-        amountWei: Big(balance).sub(minWei),
+        amountWei: balance.sub(minWei),
         amountToken: tokenBalance
       };
 
-      if (channelDeposit.amountWei === "0" && channelDeposit.amountToken === "0") {
+      if (channelDeposit.amountWei.eq(eth.constants.Zero) && channelDeposit.amountToken.eq(eth.constants.Zero)) {
         return;
       }
 
-      await this.state.connext.deposit({ amountWei: channelDeposit.amountWei.toString() });
+      await this.state.connext.deposit({ 
+        amountWei: channelDeposit.amountWei.toString(), 
+        amountToken: channelDeposit.amountToken.toString() 
+      });
     }
   }
 
@@ -351,7 +354,9 @@ class App extends React.Component {
   async checkStatus() {
     const { runtime, status } = this.state;
     let log = () => {};
-    let newStatus = {};
+    let newStatus = {
+      reset: status.reset
+    };
 
     if (runtime) {
       log(`Hub Sync results: ${JSON.stringify(runtime.syncResultsFromHub[0], null, 2)}`);
@@ -381,7 +386,10 @@ class App extends React.Component {
     this.setState({ status: newStatus });
   }
 
-  closeConfirmations() {}
+  closeConfirmations() {
+    const { status } = this.state;
+    this.setState({ status: { ...status, reset: false }})
+  }
 
   // ************************************************* //
   //                    Handlers                       //
