@@ -354,7 +354,9 @@ class App extends React.Component {
   async checkStatus() {
     const { runtime, status } = this.state;
     let log = () => {};
-    let newStatus = {};
+    let newStatus = {
+      reset: status.reset
+    };
 
     if (runtime) {
       log(`Hub Sync results: ${JSON.stringify(runtime.syncResultsFromHub[0], null, 2)}`);
@@ -385,7 +387,8 @@ class App extends React.Component {
   }
 
   closeConfirmations() {
-    this.setState({ status: { type: "" }})
+    const { status } = this.state;
+    this.setState({ status: { ...status, reset: false }})
   }
 
   // ************************************************* //
