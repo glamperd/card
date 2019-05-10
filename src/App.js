@@ -286,8 +286,6 @@ class App extends React.Component {
     if (!connext || !browserMinimumBalance) return;
 
     const balance = await ethprovider.getBalance(address);
-    const gasPrice = await ethprovider.getGasPrice();
-    console.log('gasPrice: ', gasPrice.toString());
 
     let tokenBalance = "0";
     try {
