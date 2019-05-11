@@ -170,18 +170,22 @@ class App extends React.Component {
   async setConnext(rpc, mnemonic) {
     let hubUrl;
     let ethprovider;
+    let ethUrl;
     switch (rpc) {
       case "LOCALHOST":
         hubUrl = overrides.localHub || `${publicUrl}/api/local/hub`;
         ethprovider = new eth.providers.JsonRpcProvider("http://localhost:8545");
+        ethUrl = overrides.localEth || null
         break;
       case "RINKEBY":
         hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
         ethprovider = new eth.getDefaultProvider("rinkeby");
+        ethUrl = overrides.rinkebyEth || null
         break;
       case "MAINNET":
         hubUrl = overrides.mainnetHub || `${publicUrl}/api/mainnet/hub`;
         ethprovider = new eth.getDefaultProvider();
+        ethUrl = overrides.mainnetEth || null
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
@@ -189,7 +193,8 @@ class App extends React.Component {
 
     const opts = {
       hubUrl,
-      mnemonic
+      mnemonic,
+      ethUrl,
     };
     const connext = await Connext.getConnextClient(opts);
     const address = await connext.wallet.getAddress();
