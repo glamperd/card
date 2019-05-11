@@ -241,7 +241,7 @@ class PayCard extends Component {
     const query = queryString.parse(location.search);
     if (query.amountToken) {
       await this.setState(oldState => {
-        oldState.paymentVal.payments[0].amount.amountToken = Web3.utils.toWei(
+        oldState.paymentVal.payments[0].amountToken = Web3.utils.toWei(
           query.amountToken
         );
         oldState.displayVal = query.amountToken;
@@ -475,9 +475,6 @@ class PayCard extends Component {
     // by either payment or link handler
     // you can call the appropriate type here
     try {
-      console.log("+++++++++==+====================+++++++++++++++++++++++++======+++++==+")
-      console.log("3============================================================D~~~")
-      console.log(paymentVal)
       await connext.buy(paymentVal);
       if (paymentVal.payments[0].type === "PT_LINK") {
         // automatically route to redeem card
