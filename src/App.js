@@ -5,9 +5,10 @@ import Connext from 'connext';
 import { types, getters, big, createClient } from "connext/dist";
 import ProviderOptions from "../dist/utils/ProviderOptions.js";
 import clientProvider from "../dist/utils/web3/clientProvider.js";
+import { Big, maxBN, minBN } from 'connext/dist/lib/bn.js';
 import { createWalletFromMnemonic, createWallet } from "./walletGen";
 import axios from "axios";
-import BigNumber from "bignumber.js";
+//import BigNumber from "bignumber.js";
 //import {CurrencyType} from "connext/dist/state/ConnextState/CurrencyTypes";
 //import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
 //import getExchangeRates from "connext/dist/lib/getExchangeRates";
@@ -19,8 +20,8 @@ import Http from 'http';
 import socketIo from 'socket.io';
 
 const { CurrencyType, CurrencyConvertable } = types
-const { getExchangeRates } = getters
-const { Big, maxBN, minBN } = big
+const { getExchangeRates, hasPendingOps } = new Connext.Utils();
+//const { Big, maxBN, minBN } = Connext.big
 export const store = createStore(setWallet, null);
 
 
@@ -30,7 +31,7 @@ let webSocket;
 
 const Web3 = require("web3");
 const eth = require("ethers");
-const BN = Web3.utils.BN;
+//const BN = Web3.utils.BN;
 //const humanTokenAbi = require("./abi/humanToken.json");
 
 const env = process.env.NODE_ENV;
@@ -53,12 +54,12 @@ const overrides = {
   mainnetEth: process.env.REACT_APP_MAINNET_ETH_OVERRIDE
 };
 
-const DEPOSIT_ESTIMATED_GAS = new BigNumber("700000") // 700k gas
+const DEPOSIT_ESTIMATED_GAS = new Big("700000") // 700k gas
 //const DEPOSIT_MINIMUM_WEI = new BigNumber(Web3.utils.toWei("0.020", "ether")); // 30 FIN
-const HUB_EXCHANGE_CEILING = new BigNumber(Web3.utils.toWei("69", "ether")); // 69 TST
-const CHANNEL_DEPOSIT_MAX = new BigNumber(Web3.utils.toWei("30", "ether")); // 30 TST
+const HUB_EXCHANGE_CEILING = eth.constants.WeiPerEther.mul(Big(69)); // 69 TST
+const CHANNEL_DEPOSIT_MAX = eth.constants.WeiPerEther.mul(Big(30)); // 30 TST
 const HASH_PREAMBLE = "SpankWallet authentication message:"
-const LOW_BALANCE_THRESHOLD = new BN(process.env.LOW_BALANCE_THRESHOLD);
+const LOW_BALANCE_THRESHOLD = Big(process.env.LOW_BALANCE_THRESHOLD);
 
 export function start() {
   const app = new App();
@@ -319,8 +320,8 @@ class App  {
     debugger;
     let balance = this.state.channelState ? this.state.channelState.balanceTokenUser : 0;
     const amtWei = Web3.utils.toWei(amount);
-    const payAmount = Web3.utils.isBN(amtWei) ? amtWei : new BN(amtWei);
-    let bnBal = new BN(balance);
+    const payAmount = Web3.utils.isBN(amtWei) ? amtWei : Big(amtWei);
+    let bnBal = Big(balance);
     if (bnBal.lt(payAmount)) {
       console.log(` Payment declined. Requested payment amount: ${payAmount} exceeds balance: ${balance}.`);
       return
@@ -353,7 +354,7 @@ class App  {
 
       // Evaluate new balance. See if autosigning should be paused.
       balance = this.state.channelState ? this.state.channelState.balanceTokenUser : '0';
-      bnBal = new BN(balance);
+      bnBal = Big(balance);
       if (bnBal.lte(LOW_BALANCE_THRESHOLD)) {
         this.pausePaymentsAndNotify();
       }
@@ -374,7 +375,7 @@ class App  {
   checkForTopup() {
     if  (this.state.autopayState === StatusEnum.paused) {
       const balance = this.state.channelState ? this.state.channelState.balanceTokenUser : 0;
-      let bnBal = new BN(balance);
+      let bnBal = Big(balance);
       if (bnBal.gt(LOW_BALANCE_THRESHOLD)) {
         this.resumePaymentsAndNotify();
       }
@@ -505,10 +506,10 @@ class App  {
     if (!customWeb3 || !connextState) {
       return
     }
-    const defaultGas = new BigNumber(await customWeb3.eth.getGasPrice())
+    const defaultGas = new Big(await customWeb3.eth.getGasPrice())
     // default connext multiple is 1.5, leave 2x for safety
     const depositGasPrice = DEPOSIT_ESTIMATED_GAS
-      .multipliedBy(new BigNumber(2))
+      .multipliedBy(new Big(2))
       .multipliedBy(defaultGas)
     // add dai conversion
     const minConvertable = new CurrencyConvertable(
@@ -554,7 +555,7 @@ class App  {
     const maxBalanceAfterRefund = localStorage.getItem("maxBalanceAfterRefund");
     if (
       maxBalanceAfterRefund &&
-      new BigNumber(balance).gte(new BigNumber(maxBalanceAfterRefund))
+      new Big(balance).gte(new Big(maxBalanceAfterRefund))
     ) {
       // wallet balance hasnt changed since submitting tx, returning
       return;
@@ -576,8 +577,8 @@ class App  {
     }
 
     if (balance !== "0" || tokenBalance !== "0") {
-      const minWei = new BigNumber(browserMinimumBalance.wei)
-      if (new BigNumber(balance).lt(minWei)) {
+      const minWei = new Big(browserMinimumBalance.wei)
+      if (new Big(balance).lt(minWei)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
         return;
@@ -601,8 +602,8 @@ class App  {
       ) {
         // refund any wei that is in the browser wallet
         // above the minimum
-        const refundWei = BigNumber.max(
-          new BigNumber(balance).minus(minWei),
+        const refundWei = Big.max(
+          new Big(balance).minus(minWei),
           0
         );
         await this.returnWei(refundWei.toFixed(0));
@@ -610,7 +611,7 @@ class App  {
       }
 
       let channelDeposit = {
-        amountWei: new BigNumber(balance)
+        amountWei: new Big(balance)
           .minus(minWei)
           .toFixed(0),
         amountToken: tokenBalance
@@ -636,8 +637,8 @@ class App  {
         return;
       }
       // update channel deposit
-      const weiDeposit = new BigNumber(channelDeposit.amountWei).minus(
-        new BigNumber(weiToReturn)
+      const weiDeposit = new Big(channelDeposit.amountWei).minus(
+        new Big(weiToReturn)
       );
       channelDeposit.amountWei = weiDeposit.toFixed(0);
 
@@ -684,8 +685,8 @@ class App  {
       Web3.utils.fromWei(wei, "finney") + "," + mostRecent.from
     );
     console.log(`Refunding ${wei} to ${mostRecent.from} from ${address}`);
-    const origBalance = new BigNumber(await customWeb3.eth.getBalance(address));
-    const newMax = origBalance.minus(new BigNumber(wei));
+    const origBalance = new Big(await customWeb3.eth.getBalance(address));
+    const newMax = origBalance.minus(new Big(wei));
 
     try {
       const res = await customWeb3.eth.sendTransaction({
@@ -714,13 +715,13 @@ class App  {
     // the hub would exchange, or a set deposit max
     const ceilingWei = new CurrencyConvertable(
       CurrencyType.BEI,
-      BigNumber.min(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX),
+      Big.min(HUB_EXCHANGE_CEILING, CHANNEL_DEPOSIT_MAX),
       () => getExchangeRates(connextState)
     ).toWEI().amountBigNumber
 
-    const weiToRefund = BigNumber.max(
-      new BigNumber(wei).minus(ceilingWei),
-      new BigNumber(0)
+    const weiToRefund = Big.max(
+      new Big(wei).minus(ceilingWei),
+      new Big(0)
     );
 
     return weiToRefund.toFixed(0);
@@ -731,11 +732,11 @@ class App  {
     if (!connextState || !connextState.runtime.canExchange) {
       return;
     }
-    const weiBalance = new BigNumber(channelState.balanceWeiUser);
-    const tokenBalance = new BigNumber(channelState.balanceTokenUser);
+    const weiBalance = new Big(channelState.balanceWeiUser);
+    const tokenBalance = new Big(channelState.balanceTokenUser);
     if (
       channelState &&
-      weiBalance.gt(new BigNumber("0")) &&
+      weiBalance.gt(new Big("0")) &&
       tokenBalance.lte(HUB_EXCHANGE_CEILING)
     ) {
       await this.state.connext.exchange(channelState.balanceWeiUser, "wei");
