@@ -1,7 +1,7 @@
-import CurrencyConvertable from "connext/dist/lib/currency/CurrencyConvertable";
-import { CurrencyType } from "connext/dist/state/ConnextState/CurrencyTypes";
-import getExchangeRates from "connext/dist/lib/getExchangeRates";
-import Currency from "connext/dist/lib/currency/Currency";
+import * as Connext from "connext";
+
+const { CurrencyConvertable, CurrencyType, Currency } = Connext.types
+const { getExchangeRates } = new Connext.Utils()
 
 export function getChannelBalanceInUSD(channelState, connextState, onlyTokens = true) {
   if (!connextState || !channelState) {
