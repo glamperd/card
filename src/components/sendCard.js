@@ -515,6 +515,13 @@ class PayCard extends Component {
   render() {
     const { classes, channelState, connextState } = this.props;
     const { paymentState, paymentVal, displayVal, balanceError, addressError, scan, showReceipt, sendError } = this.state;
+
+    const payAmt = paymentVal.payments[0].amountToken
+      ? Web3Utils.fromWei(
+          paymentVal.payments[0].amountToken
+        )
+      : "0"
+
     return (
       <Grid
         container
@@ -685,13 +692,7 @@ class PayCard extends Component {
         <PaymentConfirmationDialog
           showReceipt={showReceipt}
           sendError={sendError}
-          amountToken={
-            paymentVal.payments[0].amountToken
-              ? Web3Utils.fromWei(
-                  paymentVal.payments[0].amountToken
-                )
-              : "0"
-          }
+          amountToken={ payAmt }
           recipient={paymentVal.payments[0].recipient}
           history={this.props.history}
           closeModal={this.closeModal}
