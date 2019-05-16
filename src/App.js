@@ -171,7 +171,7 @@ class App extends React.Component {
   }
 
   async setConnext(rpc, mnemonic) {
-    let hubUrl;
+    let hubUrl, rpcUrl;
     let ethprovider;
     switch (rpc) {
       case "LOCALHOST":
@@ -183,7 +183,7 @@ class App extends React.Component {
         ethprovider = new eth.getDefaultProvider("rinkeby");
         break;
       case "ROPSTEN":
-        const rpcUrl = overrides.ropstenEth || `${publicUrl}/api/ropsten/eth`;
+        rpcUrl = overrides.ropstenEth || `${publicUrl}/api/ropsten/eth`;
         ethprovider = new eth.providers.JsonRpcProvider(rpcUrl);
         //ethprovider = new eth.getDefaultProvider("ropsten");
         hubUrl = overrides.ropstenHub || `${publicUrl}/api/ropsten/hub`;
@@ -198,7 +198,7 @@ class App extends React.Component {
 
     const opts = {
       hubUrl,
-      ethUrl: ethprovider,
+      ethUrl: rpcUrl,
       mnemonic
     };
     const connext = await Connext.getConnextClient(opts);
@@ -217,7 +217,8 @@ class App extends React.Component {
       hubWalletAddress: connext.opts.hubAddress,
       ethNetworkId: connext.opts.ethNetworkId,
       address,
-      ethprovider
+      ethprovider,
+      rpcUrl
     });
   }
 
