@@ -9,7 +9,7 @@ import * as eth from 'ethers';
 import QRGenerate from "./qrGenerate";
 import { withStyles, Grid } from "@material-ui/core";
 import MySnackbar from "./snackBar";
-import Web3 from "web3";
+import Web3Utils from "web3-utils";
 import { getAmountInUSD } from "../utils/currencyFormatting";
 import * as Connext from 'connext';
 const { Big } = Connext.big
@@ -84,10 +84,10 @@ class ReceiveCard extends Component {
     if (decimal && decimal.length > 18) {
       tokenVal = value.startsWith('.') ? value.substr(0, 19) : value.split('.')[0] + '.' + decimal.substr(0, 18)
       error = `Value too precise! Using ${tokenVal}`
-    }    
+    }
     this.setState({
       qrUrl: this.generateQrUrl(value),
-      amountToken: Web3.utils.toWei(tokenVal, "ether"),
+      amountToken: Web3Utils.toWei(tokenVal, "ether"),
       displayValue: value,
       error,
     });

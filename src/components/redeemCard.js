@@ -8,7 +8,7 @@ import Typography from "@material-ui/core/Typography";
 import Tooltip from "@material-ui/core/Tooltip";
 import QRGenerate from "./qrGenerate";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import Web3 from "web3";
+import Web3Utils from "web3-utils";
 import { getAmountInUSD } from "../utils/currencyFormatting";
 import interval from "interval-promise";
 import MySnackbar from "../components/snackBar";
@@ -94,7 +94,7 @@ const RedeemConfirmationDialog = props => (
       {props.redeemPaymentState === RedeemPaymentStates.Collateralizing ? (
         <></>
       ) : (
-        <DialogActions 
+        <DialogActions
           style={{
             textAlign: "center",
             justifyContent: "center",
@@ -280,7 +280,7 @@ class RedeemCard extends Component {
     this.setState({
       secret: query.secret,
       amount: {
-        amountToken: Web3.utils.toWei(query.amountToken, "ether"),
+        amountToken: Web3Utils.toWei(query.amountToken, "ether"),
         amountWei: "0" // TODO: add wei
       }
     });
@@ -288,7 +288,7 @@ class RedeemCard extends Component {
     // set state vars if they exist
     if (location.state && location.state.isConfirm) {
       // TODO: test what happens if not routed with isConfirm
-      this.setState({ 
+      this.setState({
         redeemPaymentState: RedeemPaymentStates.IsSender,
         showReceipt: false,
       });
@@ -321,7 +321,7 @@ class RedeemCard extends Component {
     // TODO: add wei
     const url = `${publicUrl}/redeem?secret=${
       secret ? secret : ""
-    }&amountToken=${amount ? Web3.utils.fromWei(amount.amountToken, "ether") : "0"}`;
+    }&amountToken=${amount ? Web3Utils.fromWei(amount.amountToken, "ether") : "0"}`;
     return url;
   }
 
@@ -392,7 +392,7 @@ class RedeemCard extends Component {
     // only proceed if status is redeeming
     if (redeemPaymentState !== RedeemPaymentStates.Redeeming) {
       console.log("Incorrect payment state, expected Redeeming, got", Object.keys(RedeemPaymentStates)[redeemPaymentState]);
-      this.setState({ 
+      this.setState({
         showReceipt: true,
       })
       return;
@@ -400,7 +400,7 @@ class RedeemCard extends Component {
 
     if (!secret) {
       console.log("No secret detected, cannot redeem payment.");
-      this.setState({ 
+      this.setState({
         redeemPaymentState: RedeemPaymentStates.SecretError,
         showReceipt: true,
       })
@@ -430,8 +430,8 @@ class RedeemCard extends Component {
       // known potential failures: not collateralized, or
       // already redeemed
       if (e.message.indexOf("Payment has been redeemed") !== -1) {
-        this.setState({ 
-          // red: true, 
+        this.setState({
+          // red: true,
           redeemPaymentState: RedeemPaymentStates.PaymentAlreadyRedeemed,
           showReceipt: true,
         });
@@ -449,7 +449,7 @@ class RedeemCard extends Component {
         return;
       }
 
-      this.setState({ 
+      this.setState({
         redeemPaymentState: RedeemPaymentStates.OtherError,
         showReceipt: true,
       })
@@ -477,7 +477,7 @@ class RedeemCard extends Component {
       return errs
     }
     // valid secret
-    if (!Web3.utils.isHex(secret)) {
+    if (!Web3Utils.isHex(secret)) {
       errs.push("Secret copied is invalid")
     }
     // valid amount
@@ -496,7 +496,7 @@ class RedeemCard extends Component {
       errs.push(`Amount: ${getAmountInUSD(amount, connextState)}`)
       errs.push(`Secret: ${secret.substr(0, 10)}...`)
     }
-    
+
     return errs
   }
 
@@ -547,7 +547,7 @@ class RedeemCard extends Component {
             closeModal={this.closeModal}
           />
         </Grid>
-      
+
         <Grid item xs={12}>
           <ReceiveIcon className={classes.icon} />
         </Grid>
