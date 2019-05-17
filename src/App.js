@@ -173,15 +173,21 @@ class App extends React.Component {
     switch (rpc) {
       case "LOCALHOST":
         hubUrl = overrides.localHub || `${publicUrl}/api/local/hub`;
-        ethprovider = new eth.providers.JsonRpcProvider("http://localhost:8545");
+        ethprovider = overrides.localEth
+          ? new eth.providers.JsonRpcProvider(overrides.localEth)
+          : new eth.providers.JsonRpcProvider("http://localhost:8545")
         break;
       case "RINKEBY":
         hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
-        ethprovider = new eth.getDefaultProvider("rinkeby");
+        ethprovider = overrides.rinkebyEth
+          ? new eth.providers.JsonRpcProvider(overrides.rinkebyEth)
+          : new eth.getDefaultProvider("rinkeby")
         break;
       case "MAINNET":
         hubUrl = overrides.mainnetHub || `${publicUrl}/api/mainnet/hub`;
-        ethprovider = new eth.getDefaultProvider();
+        ethprovider = overrides.mainnetEth
+          ? new eth.providers.JsonRpcProvider(overrides.mainnetEth)
+          : new eth.getDefaultProvider()
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
