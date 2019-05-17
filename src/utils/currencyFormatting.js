@@ -1,20 +1,22 @@
 import * as Connext from "connext";
 
 const { CurrencyConvertable, CurrencyType, Currency } = Connext.types
-const { getExchangeRates } = new Connext.Utils()
+const { getExchangeRates, getCustodialAndChannelBalance } = new Connext.Utils()
 
-export function getChannelBalanceInUSD(channelState, connextState, onlyTokens = true) {
-  if (!connextState || !channelState) {
+export function getOwedBalanceInUSD(connextState, onlyTokens = true) {
+  if (!connextState) {
     return "$0.00"
   }
 
-  const convertableTokens = new CurrencyConvertable(CurrencyType.BEI, channelState.balanceTokenUser, () => getExchangeRates(connextState))
+  const totalOwed = getCustodialAndChannelBalance(connextState)
+
+  const convertableTokens = new CurrencyConvertable(CurrencyType.BEI, totalOwed.amountToken, () => getExchangeRates(connextState))
 
   if (onlyTokens) {
     return Currency.USD(convertableTokens.toUSD().amountBigNumber).format({})
   }
 
-  const convertableWei = new CurrencyConvertable(CurrencyType.WEI, channelState.balanceWeiUser, () => getExchangeRates(connextState))
+  const convertableWei = new CurrencyConvertable(CurrencyType.WEI, totalOwed.amountWei, () => getExchangeRates(connextState))
 
   console.log('total:', convertableTokens.toBEI().amountBigNumber.plus(convertableWei.toBEI().amountBigNumber).toFixed(0))
 
@@ -31,6 +33,7 @@ export function getAmountInUSD(amount, connextState, onlyTokens = true) {
   if (!connextState || !amount) {
     return "$0.00"
   }
+
   const convertableTokens = new CurrencyConvertable(CurrencyType.BEI, amount.amountToken, () => getExchangeRates(connextState))
 
   if (onlyTokens) {
