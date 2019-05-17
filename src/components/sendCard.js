@@ -23,7 +23,7 @@ import {
 import * as Connext from 'connext';
 import interval from "interval-promise";
 import Web3 from "web3";
-import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
+import { getOwedBalanceInUSD } from "../utils/currencyFormatting";
 
 const { convertPayment } = Connext.types
 const { Big } = Connext.big
@@ -228,6 +228,7 @@ class PayCard extends Component {
               ? Web3.utils.toWei(props.scanArgs.amount)
               : "0",
             amountWei: "0",
+            type: "PT_CUSTODIAL" // TODO: REMOVE BEFORE MERGE!!!!!
           }
         ]
       },
@@ -583,7 +584,7 @@ class PayCard extends Component {
           <Grid container direction="row" justify="center" alignItems="center">
             <Typography variant="h2">
               <span>
-                {getChannelBalanceInUSD(channelState, connextState)}
+                {getOwedBalanceInUSD(connextState)}
               </span>
             </Typography>
           </Grid>
