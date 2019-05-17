@@ -1,6 +1,6 @@
 import "./App.css";
 import { Paper, withStyles, Grid } from "@material-ui/core";
-import * as eth from "ethers";
+import { ethers as eth } from "ethers";
 import interval from "interval-promise";
 import React from "react";
 import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
@@ -22,8 +22,8 @@ import MySnackbar from "./components/snackBar";
 
 const humanTokenAbi = require("./abi/humanToken.json");
 
-const { Big, minBN } = Connext.big;
-const { CurrencyType, CurrencyConvertable } = Connext.types;
+const Big = (n) => eth.utils.bigNumberify(n.toString())
+const { CurrencyType, CurrencyConvertable } = Connext;
 const { getExchangeRates, hasPendingOps } = new Connext.Utils();
 
 let publicUrl;
