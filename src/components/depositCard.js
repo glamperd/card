@@ -10,8 +10,8 @@ import MySnackbar from "./snackBar";
 import { withStyles } from "@material-ui/core";
 import * as Connext from 'connext';
 
-const { Currency, CurrencyConvertable, CurrencyType } = Connext.types
-const { getExchangeRates } = Connext.Utils
+const { Currency, CurrencyConvertable, CurrencyType } = Connext
+const { getExchangeRates } = new Connext.Utils()
 
 const styles = theme => ({
   icon: {

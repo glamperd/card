@@ -16,9 +16,8 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import CopyIcon from "@material-ui/icons/FileCopy";
 import * as Connext from 'connext';
 
-const { Currency, CurrencyConvertable, CurrencyType } = Connext.types
-const cUtils = new Connext.Utils()
-const { getExchangeRates } = cUtils
+const { Currency, CurrencyConvertable, CurrencyType } = Connext
+const { getExchangeRates } = new Connext.Utils()
 
 const styles = theme => ({
   icon: {

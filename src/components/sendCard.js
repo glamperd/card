@@ -25,8 +25,8 @@ import interval from "interval-promise";
 import Web3 from "web3";
 import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
 
-const { convertPayment } = Connext.types
-const { Big } = Connext.big
+const Big = (n) => eth.utils.bigNumberify(n.toString())
+const { convertPayment } = Connext
 const emptyAddress = eth.constants.AddressZero
 const queryString = require("query-string");
 // $10 capped linked payments
