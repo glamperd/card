@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Grid, Typography } from "@material-ui/core";
 import { withStyles } from "@material-ui/core";
-import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
+import { getOwedBalanceInUSD } from "../utils/currencyFormatting";
 
 const styles = theme => ({
   row: {
@@ -18,9 +18,9 @@ const styles = theme => ({
 
 class ChannelCard extends Component {
   render() {
-    const { classes, channelState, connextState } = this.props;
+    const { classes, connextState } = this.props;
     // only displays token value by default
-    const display = getChannelBalanceInUSD(channelState, connextState)
+    const display = getOwedBalanceInUSD(connextState)
     return (
         <Grid>
           <Grid 
