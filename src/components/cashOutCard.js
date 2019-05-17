@@ -10,10 +10,11 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography, CircularProgress } from "@material-ui/core";
-import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
+import { getOwedBalanceInUSD } from "../utils/currencyFormatting";
 import interval from "interval-promise";
 import * as Connext from "connext";
 import Web3 from "web3";
+import { hasPendingTransaction } from '../utils/hasOnchainTransaction'
 
 const { hasPendingOps } = new Connext.Utils();
 
@@ -108,7 +109,10 @@ class CashOutCard extends Component {
       return;
     }
 
-    const usd = getChannelBalanceInUSD(channelState, connextState, false);
+    const usd = getOwedBalanceInUSD(
+      connextState, 
+      false
+    );
 
     this.setState({ aggregateBalance: usd });
   }
@@ -138,21 +142,11 @@ class CashOutCard extends Component {
     });
   }
 
-  async checkState() {
-    const { channelState } = this.props;
-    if (channelState.pendingWithdrawalWeiUser !== "0") {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   poller = async () => {
     await interval(
       async (iteration, stop) => {
         const { runtime } = this.props
-
-        if (!runtime.awaitingOnchainTransaction) {
+        if (!hasPendingTransaction(runtime)) {
           stop()
         }
       },
@@ -165,10 +159,8 @@ class CashOutCard extends Component {
   async withdrawalHandler(withdrawEth) {
     const { connext } = this.props;
     const withdrawalVal = await this.updateWithdrawalVals(withdrawEth);
-    this.setState({ addressError: null, balanceError: null });
+    this.setState({ addressError: null });
     // check for valid address
-    // let addressError = null
-    // let balanceError = null
     if (!Web3.utils.isAddress(withdrawalVal.recipient)) {
       const addressError = `${
         withdrawalVal.recipient === "0x0..."
@@ -179,8 +171,7 @@ class CashOutCard extends Component {
       return;
     }
     // check the input balance is under channel balance
-    // TODO: allow partial withdrawals?
-    //invoke withdraw modal
+    // invoke withdraw modal
     this.setState({ withdrawing: true });
 
     console.log(`Withdrawing: ${JSON.stringify(withdrawalVal, null, 2)}`);
