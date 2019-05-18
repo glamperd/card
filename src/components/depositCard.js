@@ -10,7 +10,7 @@ import MySnackbar from "./snackBar";
 import { withStyles } from "@material-ui/core";
 import * as Connext from 'connext';
 
-const { Currency, CurrencyConvertable, CurrencyType } = Connext
+const { Currency, CurrencyConvertable, CurrencyType } = Connext.types
 const { getExchangeRates } = new Connext.Utils()
 
 const styles = theme => ({
@@ -41,7 +41,7 @@ class DepositCard extends Component {
 
     let minEth//, minDai
     let maxDai, maxEth
-    if (connextState && connextState.runtime.canDeposit && browserMinimumBalance) {
+    if (connextState && browserMinimumBalance) {
       const minConvertable = new CurrencyConvertable(
         CurrencyType.WEI,
         browserMinimumBalance.wei,

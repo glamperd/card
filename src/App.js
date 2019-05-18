@@ -23,7 +23,7 @@ import MySnackbar from "./components/snackBar";
 const humanTokenAbi = require("./abi/humanToken.json");
 
 const Big = (n) => eth.utils.bigNumberify(n.toString())
-const { CurrencyType, CurrencyConvertable } = Connext;
+const { CurrencyType, CurrencyConvertable } = Connext.types;
 const { getExchangeRates, hasPendingOps } = new Connext.Utils();
 
 let publicUrl;
@@ -170,21 +170,27 @@ class App extends React.Component {
   async setConnext(rpc, mnemonic) {
     let hubUrl;
     let ethprovider;
+    let ethUrl;
     switch (rpc) {
       case "LOCALHOST":
         hubUrl = overrides.localHub || `${publicUrl}/api/local/hub`;
+        ethUrl = overrides.localEth || undefined
         ethprovider = overrides.localEth
           ? new eth.providers.JsonRpcProvider(overrides.localEth)
           : new eth.providers.JsonRpcProvider("http://localhost:8545")
         break;
       case "RINKEBY":
+      // TODO: overrides so it works with hub
         hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
+        ethprovider = new eth.getDefaultProvider("rinkeby");
+        ethUrl = overrides.rinkebyEth || undefined
         ethprovider = overrides.rinkebyEth
           ? new eth.providers.JsonRpcProvider(overrides.rinkebyEth)
           : new eth.getDefaultProvider("rinkeby")
         break;
       case "MAINNET":
         hubUrl = overrides.mainnetHub || `${publicUrl}/api/mainnet/hub`;
+        ethUrl = overrides.mainnetEth || undefined
         ethprovider = overrides.mainnetEth
           ? new eth.providers.JsonRpcProvider(overrides.mainnetEth)
           : new eth.getDefaultProvider()
@@ -195,7 +201,8 @@ class App extends React.Component {
 
     const opts = {
       hubUrl,
-      mnemonic
+      mnemonic,
+      ethUrl
     };
     const connext = await Connext.getConnextClient(opts);
     const address = await connext.wallet.getAddress();
@@ -242,6 +249,7 @@ class App extends React.Component {
         runtime: state.runtime,
         exchangeRate: state.runtime.exchangeRate ? state.runtime.exchangeRate.rates.USD : 0
       });
+      console.log('Connext updated:', state)
       this.checkStatus();
     });
     // start polling
