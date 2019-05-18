@@ -26,7 +26,7 @@ import Web3 from "web3";
 import { getOwedBalanceInUSD } from "../utils/currencyFormatting";
 
 const Big = (n) => eth.utils.bigNumberify(n.toString())
-const { convertPayment } = Connext
+const { convertPayment } = Connext.types
 const emptyAddress = eth.constants.AddressZero
 const queryString = require("query-string");
 // $10 capped linked payments
@@ -228,7 +228,6 @@ class PayCard extends Component {
               ? Web3.utils.toWei(props.scanArgs.amount)
               : "0",
             amountWei: "0",
-            type: "PT_CUSTODIAL" // TODO: REMOVE BEFORE MERGE!!!!!
           }
         ]
       },
@@ -274,7 +273,7 @@ class PayCard extends Component {
     if (decimal && decimal.length > 18) {
       tokenVal = value.startsWith('.') ? value.substr(0, 19) : value.split('.')[0] + '.' + decimal.substr(0, 18)
       balanceError = `Value too precise! Using ${tokenVal}`
-    }    
+    }
     await this.setState(oldState => {
       oldState.paymentVal.payments[0].amountToken = value
         ? Web3.utils.toWei(`${tokenVal}`, "ether")

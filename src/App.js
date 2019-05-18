@@ -23,7 +23,7 @@ import MySnackbar from "./components/snackBar";
 const humanTokenAbi = require("./abi/humanToken.json");
 
 const Big = (n) => eth.utils.bigNumberify(n.toString())
-const { CurrencyType, CurrencyConvertable } = Connext;
+const { CurrencyType, CurrencyConvertable } = Connext.types;
 const { getExchangeRates, hasPendingOps } = new Connext.Utils();
 
 let publicUrl;
