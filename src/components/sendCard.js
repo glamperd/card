@@ -684,7 +684,7 @@ class PayCard extends Component {
           </Grid>
           <Grid>
             <FormControl component="fieldset" className={classes.formControl}>
-              <RadioGroup value = {this.state.paymentType} onChange={this.handleChange} >
+              <RadioGroup style={{ display: 'flex' }}  value={this.state.paymentType} onChange={this.handleChange} >
                 <FormControlLabel value="channel" control={<Radio />} label="Channel" />
                 <FormControlLabel value="thread" control={<Radio />} label="Thread" />
                 <FormControlLabel value="custodial" control={<Radio />} label="Custodial" />
