@@ -67,9 +67,9 @@ class CashOutCard extends Component {
 
     // set the state to contain the proper withdrawal args for
     // eth or dai withdrawal
-    const { channelState, connextState, } = this.props;
+    const { channelState, connextState, exchangeRate } = this.props
     let { withdrawalVal, aggregateBalance } = this.state;
-    
+
     if (withdrawEth && channelState && connextState) {
       const noComma = (aggregateBalance.split(',')).join('')
       const totalWd = new CurrencyConvertable(
@@ -80,8 +80,12 @@ class CashOutCard extends Component {
       // withdraw all channel balance in eth
       withdrawalVal = {
         ...withdrawalVal,
-        amountToken: toWeiString(totalWd.toUSD().amount),
-      }
+        exchangeRate,
+        tokensToSell: channelState.balanceTokenUser,
+        withdrawalWeiUser: channelState.balanceWeiUser,
+        weiToSell: "0",
+        withdrawalTokenUser: "0"
+      };
     } else {
       console.error("Not permitting withdrawal of tokens at this time")
       return
