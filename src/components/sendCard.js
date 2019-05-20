@@ -27,7 +27,7 @@ import {
 } from "@material-ui/core";
 import * as Connext from 'connext';
 import interval from "interval-promise";
-import Web3Utils from "web3-utils";
+import * as Web3Utils from "web3-utils";
 import { getOwedBalanceInUSD } from "../utils/currencyFormatting";
 
 const Big = (n) => eth.utils.bigNumberify(n.toString())
@@ -525,6 +525,7 @@ class PayCard extends Component {
     const { classes, channelState, connextState } = this.props;
     const { paymentState, paymentVal, displayVal, balanceError, addressError, scan, showReceipt, sendError } = this.state;
 
+	
     const payAmt = paymentVal.payments[0].amountToken
       ? Web3Utils.fromWei(
           paymentVal.payments[0].amountToken
