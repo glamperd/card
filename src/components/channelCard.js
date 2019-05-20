@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import Card from "@material-ui/core/Card";
 import { Grid, Typography } from "@material-ui/core";
 import { withStyles } from "@material-ui/core";
-import { getOwedBalanceInUSD, getBalanceEth, getBalanceToken, getBalanceEth } from "../utils/currencyFormatting";
+import { getOwedBalanceInUSD, getBalanceEth, getBalanceToken } from "../utils/currencyFormatting";
 
 const styles = theme => ({
   row: {
