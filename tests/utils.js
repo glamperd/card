@@ -37,16 +37,13 @@ my.closeIntroModal = () => {
   my.doneStarting()
 }
 
-my.burnCard = (isCollateralized) => {
+my.burnCard = () => {
   my.goToSettings()
   cy.contains('button', /burn card/i).click()
   cy.contains('button', /burn$/i).click()
-  if (isCollateralized) cy.contains('span', /processing withdrawal/i).should('exist')
   cy.contains('p', /burning/i).should('exist')
-  if (isCollateralized) cy.contains('span', /processing withdrawal/i).should('not.exist')
   cy.contains('p', /burning/i).should('not.exist')
   cy.reload()
-  my.closeIntroModal()
 }
 
 my.restoreMnemonic = (mnemonic) => {

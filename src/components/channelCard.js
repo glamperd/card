@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import Card from "@material-ui/core/Card";
 import { Grid, Typography } from "@material-ui/core";
 import { withStyles } from "@material-ui/core";
-import { getChannelBalanceInUSD, getBalanceEth, getBalanceToken } from "../utils/currencyFormatting";
+import { getOwedBalanceInUSD, getBalanceEth, getBalanceToken, getBalanceEth } from "../utils/currencyFormatting";
 
 const styles = theme => ({
   row: {
@@ -20,7 +20,7 @@ const styles = theme => ({
 class ChannelCard extends Component {
   render() {
     const { classes, channelState, connextState } = this.props;
-    const display = getChannelBalanceInUSD(channelState, connextState);
+    const display = getOwedBalanceInUSD(connextState);
     //const substr = channelState ? channelState.balanceTokenUser : "0";
     const hubWei = channelState ? getBalanceEth(channelState.balanceWeiHub, connextState) : "0";
     const hubToken = channelState ? getBalanceToken(channelState.balanceTokenHub, connextState) : "0";

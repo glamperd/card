@@ -1,6 +1,6 @@
 import "./App.css";
 import { Paper, withStyles, Grid } from "@material-ui/core";
-import * as eth from "ethers";
+import { ethers as eth } from "ethers";
 import interval from "interval-promise";
 import React from "react";
 import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
@@ -22,7 +22,7 @@ import MySnackbar from "./components/snackBar";
 
 const humanTokenAbi = require("./abi/humanToken.json");
 
-const { Big, minBN } = Connext.big;
+const Big = (n) => eth.utils.bigNumberify(n.toString())
 const { CurrencyType, CurrencyConvertable } = Connext.types;
 const { getExchangeRates, hasPendingOps } = new Connext.Utils();
 
@@ -173,14 +173,23 @@ class App extends React.Component {
   async setConnext(rpc, mnemonic) {
     let hubUrl, rpcUrl;
     let ethprovider;
+    let ethUrl;
     switch (rpc) {
       case "LOCALHOST":
         hubUrl = overrides.localHub || `${publicUrl}/api/local/hub`;
-        ethprovider = new eth.providers.JsonRpcProvider("http://localhost:8545");
+        ethUrl = overrides.localEth || undefined
+        ethprovider = overrides.localEth
+          ? new eth.providers.JsonRpcProvider(overrides.localEth)
+          : new eth.providers.JsonRpcProvider("http://localhost:8545")
         break;
       case "RINKEBY":
+      // TODO: overrides so it works with hub
         hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
         ethprovider = new eth.getDefaultProvider("rinkeby");
+        ethUrl = overrides.rinkebyEth || undefined
+        ethprovider = overrides.rinkebyEth
+          ? new eth.providers.JsonRpcProvider(overrides.rinkebyEth)
+          : new eth.getDefaultProvider("rinkeby")
         break;
       case "ROPSTEN":
         rpcUrl = overrides.ropstenEth || `${publicUrl}/api/ropsten/eth`;
@@ -190,7 +199,10 @@ class App extends React.Component {
         break;
       case "MAINNET":
         hubUrl = overrides.mainnetHub || `${publicUrl}/api/mainnet/hub`;
-        ethprovider = new eth.getDefaultProvider();
+        ethUrl = overrides.mainnetEth || undefined
+        ethprovider = overrides.mainnetEth
+          ? new eth.providers.JsonRpcProvider(overrides.mainnetEth)
+          : new eth.getDefaultProvider()
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
@@ -247,6 +259,7 @@ class App extends React.Component {
         runtime: state.runtime,
         exchangeRate: state.runtime.exchangeRate ? state.runtime.exchangeRate.rates.USD : 0
       });
+      console.log('Connext updated:', state)
       this.checkStatus();
     });
     // start polling

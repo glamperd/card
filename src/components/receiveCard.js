@@ -1,3 +1,4 @@
+import { ethers as eth } from "ethers";
 import React, { Component } from "react";
 import Button from "@material-ui/core/Button";
 import ReceiveIcon from "@material-ui/icons/SaveAlt";
@@ -5,14 +6,13 @@ import TextField from "@material-ui/core/TextField";
 import Tooltip from "@material-ui/core/Tooltip";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import Typography from "@material-ui/core/Typography";
-import * as eth from 'ethers';
 import QRGenerate from "./qrGenerate";
 import { withStyles, Grid } from "@material-ui/core";
 import MySnackbar from "./snackBar";
 import Web3Utils from "web3-utils";
 import { getAmountInUSD } from "../utils/currencyFormatting";
-import * as Connext from 'connext';
-const { Big } = Connext.big
+
+const Big = (n) => eth.utils.bigNumberify(n.toString())
 
 const styles = theme => ({
   icon: {

@@ -10,12 +10,15 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography, CircularProgress } from "@material-ui/core";
-import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
+import { getOwedBalanceInUSD } from "../utils/currencyFormatting";
 import interval from "interval-promise";
 import * as Connext from "connext";
 import Web3 from "web3";
+import { hasPendingTransaction } from '../utils/hasOnchainTransaction'
 
-const { hasPendingOps } = new Connext.Utils();
+const { CurrencyConvertable, CurrencyType } = Connext.types
+const { toWeiString } = Connext.big
+const { hasPendingOps, getExchangeRates } = new Connext.Utils();
 
 const styles = theme => ({
   icon: {
@@ -44,10 +47,10 @@ class CashOutCard extends Component {
 
     this.state = {
       withdrawalVal: {
-        withdrawalWeiUser: "0",
-        tokensToSell: "0",
-        withdrawalTokenUser: "0",
-        weiToSell: "0",
+        // withdrawalWeiUser: "0",
+        // tokensToSell: "0",
+        // withdrawalTokenUser: "0",
+        // weiToSell: "0",
         recipient: "0x0..."
       },
       addressError: null,
@@ -64,28 +67,24 @@ class CashOutCard extends Component {
 
     // set the state to contain the proper withdrawal args for
     // eth or dai withdrawal
-    const { channelState, exchangeRate } = this.props;
-    let { withdrawalVal } = this.state;
-    if (withdrawEth) {
+    const { channelState, connextState, } = this.props;
+    let { withdrawalVal, aggregateBalance } = this.state;
+    
+    if (withdrawEth && channelState && connextState) {
+      const noComma = (aggregateBalance.split(',')).join('')
+      const totalWd = new CurrencyConvertable(
+        CurrencyType.USD,
+        noComma.split('$')[1],
+        () => getExchangeRates(connextState)
+      )
       // withdraw all channel balance in eth
       withdrawalVal = {
         ...withdrawalVal,
-        exchangeRate,
-        tokensToSell: channelState.balanceTokenUser,
-        withdrawalWeiUser: channelState.balanceWeiUser,
-        weiToSell: "0",
-        withdrawalTokenUser: "0"
-      };
+        amountToken: toWeiString(totalWd.toUSD().amount),
+      }
     } else {
-      // handle withdrawing all channel balance in dai
-      withdrawalVal = {
-        ...withdrawalVal,
-        exchangeRate,
-        tokensToSell: "0",
-        withdrawalWeiUser: "0",
-        weiToSell: channelState.balanceWeiUser,
-        withdrawalTokenUser: channelState.balanceTokenUser
-      };
+      console.error("Not permitting withdrawal of tokens at this time")
+      return
     }
 
     this.setState({ withdrawalVal });
@@ -99,16 +98,15 @@ class CashOutCard extends Component {
   // wei in the channel
   async updateDisplayValue() {
     const { channelState, connextState } = this.props;
-    if (
-      !channelState ||
-      (channelState.balanceWeiUser === "0" &&
-        channelState.balanceTokenUser === "0")
-    ) {
+    if (!channelState) {
       this.setState({ aggregateBalance: "$0.00" });
       return;
     }
 
-    const usd = getChannelBalanceInUSD(channelState, connextState, false);
+    const usd = getOwedBalanceInUSD(
+      connextState,
+      false
+    );
 
     this.setState({ aggregateBalance: usd });
   }
@@ -138,21 +136,11 @@ class CashOutCard extends Component {
     });
   }
 
-  async checkState() {
-    const { channelState } = this.props;
-    if (channelState.pendingWithdrawalWeiUser !== "0") {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   poller = async () => {
     await interval(
       async (iteration, stop) => {
         const { runtime } = this.props
-
-        if (!runtime.awaitingOnchainTransaction) {
+        if (!hasPendingTransaction(runtime)) {
           stop()
         }
       },
@@ -165,10 +153,8 @@ class CashOutCard extends Component {
   async withdrawalHandler(withdrawEth) {
     const { connext } = this.props;
     const withdrawalVal = await this.updateWithdrawalVals(withdrawEth);
-    this.setState({ addressError: null, balanceError: null });
+    this.setState({ addressError: null });
     // check for valid address
-    // let addressError = null
-    // let balanceError = null
     if (!Web3.utils.isAddress(withdrawalVal.recipient)) {
       const addressError = `${
         withdrawalVal.recipient === "0x0..."
@@ -179,8 +165,7 @@ class CashOutCard extends Component {
       return;
     }
     // check the input balance is under channel balance
-    // TODO: allow partial withdrawals?
-    //invoke withdraw modal
+    // invoke withdraw modal
     this.setState({ withdrawing: true });
 
     console.log(`Withdrawing: ${JSON.stringify(withdrawalVal, null, 2)}`);

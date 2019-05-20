@@ -97,12 +97,14 @@ card-prod: ops/prod.env node-modules $(src)
 	$(log_start)
 	cp -f ops/prod.env .env
 	$(docker_run) "npm run build"
+	cp -f ops/dev.env .env
 	$(log_finish) && touch $(flags)/$@
 
-card-test: ops/dev.env node-modules $(src)
+card-test: ops/test.env node-modules $(src)
 	$(log_start)
-	cp -f ops/dev.env .env
+	cp -f ops/test.env .env
 	$(docker_run) "npm run build"
+	cp -f ops/dev.env .env
 	$(log_finish) && touch $(flags)/$@
 
 node-modules: builder package.json
@@ -113,16 +115,6 @@ node-modules: builder package.json
 builder:
 	$(log_start)
 	docker build --file ops/builder.dockerfile --tag $(project)_builder:latest .
-	$(log_finish) && touch $(flags)/$@
-
-prod-env: .env ops/prod.env
-	$(log_start)
-	cp -f ops/prod.env .env
-	$(log_finish) && touch $(flags)/$@
-
-dev-env: .env ops/dev.env
-	$(log_start)
-	cp -f ops/dev.env .env
 	$(log_finish) && touch $(flags)/$@
 
 hooks: ops/pre-push.sh

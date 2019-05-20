@@ -12,10 +12,9 @@ import Web3Utils from "web3-utils";
 import { getAmountInUSD } from "../utils/currencyFormatting";
 import interval from "interval-promise";
 import MySnackbar from "../components/snackBar";
-import * as Connext from 'connext';
-import { ethers } from "ethers";
-const { Big } = Connext.big
+import { ethers as eth } from "ethers";
 
+const Big = (n) => eth.utils.bigNumberify(n.toString())
 const queryString = require("query-string");
 
 const styles = theme => ({
@@ -487,7 +486,7 @@ class RedeemCard extends Component {
       return errs
     }
     const token = Big(amount.amountToken)
-    if (token.lt(ethers.constants.Zero)) {
+    if (token.lt(eth.constants.Zero)) {
       errs.push("Copied token balance is negative")
     }
     // print amount for easy confirmation

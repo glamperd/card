@@ -23,10 +23,10 @@ import {
 import * as Connext from 'connext';
 import interval from "interval-promise";
 import Web3Utils from "web3-utils";
-import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
+import { getOwedBalanceInUSD } from "../utils/currencyFormatting";
 
+const Big = (n) => eth.utils.bigNumberify(n.toString())
 const { convertPayment } = Connext.types
-const { Big } = Connext.big
 const emptyAddress = eth.constants.AddressZero
 const queryString = require("query-string");
 // $10 capped linked payments
@@ -552,7 +552,7 @@ class PayCard extends Component {
           <Grid container direction="row" justify="center" alignItems="center">
             <Typography variant="h2">
               <span>
-                {getChannelBalanceInUSD(channelState, connextState)}
+                {getOwedBalanceInUSD(connextState)}
               </span>
             </Typography>
           </Grid>
