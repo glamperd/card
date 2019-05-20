@@ -8,8 +8,7 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
 import Radio from '@material-ui/core/Radio';
-import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked';
-import RadioButtonCheckedIcon from '@material-ui/icons/RadioButtonChecked';
+import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import * as eth from 'ethers';
@@ -525,7 +524,7 @@ class PayCard extends Component {
     const { classes, channelState, connextState } = this.props;
     const { paymentState, paymentVal, displayVal, balanceError, addressError, scan, showReceipt, sendError } = this.state;
 
-	
+
     const payAmt = paymentVal.payments[0].amountToken
       ? Web3Utils.fromWei(
           paymentVal.payments[0].amountToken
