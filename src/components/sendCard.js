@@ -7,6 +7,11 @@ import LinkIcon from "@material-ui/icons/Link";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Tooltip from "@material-ui/core/Tooltip";
 import Modal from "@material-ui/core/Modal";
+import Radio from '@material-ui/core/Radio';
+import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked';
+import RadioButtonCheckedIcon from '@material-ui/icons/RadioButtonChecked';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
 import * as eth from 'ethers';
 import QRScan from "./qrScan";
 import {
@@ -233,7 +238,8 @@ class PayCard extends Component {
       paymentState: PaymentStates.None,
       scan: false,
       displayVal: props.scanArgs.amount ? props.scanArgs.amount : "0",
-      showReceipt: false
+      showReceipt: false,
+      paymentType: 'channel'
     };
   }
   async componentDidMount() {
@@ -512,6 +518,9 @@ class PayCard extends Component {
   closeModal = () => {
     this.setState({ showReceipt: false, paymentState: PaymentStates.None });
   };
+  handleChange = event => {
+    this.setState({ paymentType: event.target.value });
+  }
   render() {
     const { classes, channelState, connextState } = this.props;
     const { paymentState, paymentVal, displayVal, balanceError, addressError, scan, showReceipt, sendError } = this.state;
@@ -672,6 +681,16 @@ class PayCard extends Component {
                 <SendIcon style={{ marginLeft: "5px" }} />
               </Button>
             </Grid>
+          </Grid>
+          <Grid>
+            <FormControl component="fieldset" className={classes.formControl}>
+              <RadioGroup value = {this.state.paymentType} onChange={this.handleChange} >
+                <FormControlLabel value="channel" control={<Radio />} label="Channel" />
+                <FormControlLabel value="thread" control={<Radio />} label="Thread" />
+                <FormControlLabel value="custodial" control={<Radio />} label="Custodial" />
+                <FormControlLabel value="optimistic" control={<Radio />} label="Optimistic" />
+              </RadioGroup>
+            </FormControl>
           </Grid>
         </Grid>
         <Grid item xs={12}>
