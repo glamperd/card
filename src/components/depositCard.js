@@ -11,7 +11,7 @@ import { withStyles } from "@material-ui/core";
 import * as Connext from 'connext';
 
 const { Currency, CurrencyConvertable, CurrencyType } = Connext.types
-const { getExchangeRates } = Connext.Utils
+const { getExchangeRates } = new Connext.Utils()
 
 const styles = theme => ({
   icon: {
@@ -41,7 +41,7 @@ class DepositCard extends Component {
 
     let minEth//, minDai
     let maxDai, maxEth
-    if (connextState && connextState.runtime.canDeposit && browserMinimumBalance) {
+    if (connextState && browserMinimumBalance) {
       const minConvertable = new CurrencyConvertable(
         CurrencyType.WEI,
         browserMinimumBalance.wei,
