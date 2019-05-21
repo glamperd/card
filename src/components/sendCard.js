@@ -374,7 +374,30 @@ class PayCard extends Component {
   }
   async paymentHandler() {
     const { connext } = this.props;
-    const { paymentVal } = this.state;
+    let { paymentVal, paymentType } = this.state;
+    // Set payment type if not standard PT_CHANNEL
+    if (paymentType !== 'channel') {
+      let pType;
+      switch (paymentType) {
+        case 'thread': pType = 'PT_THREAD'; break;
+        case 'custodial': pType = 'PT_CUSTODIAL'; break;
+        case 'optimistic': pType = 'PT_OPTIMISTIC'; break;
+        default: pType = 'PT_CHANNEL';
+      }
+      const payment = {
+        ...paymentVal.payments[0],
+        type: pType
+      };
+      const updatedPaymentVal = {
+        ...paymentVal,
+        payments: [payment]
+      };
+      // unconditionally set state
+      this.setState({
+        paymentVal: updatedPaymentVal
+      });
+      paymentVal = updatedPaymentVal;
+    }
     // check if the recipient needs collateral
     const needsCollateral = await connext.recipientNeedsCollateral(
       paymentVal.payments[0].recipient,
@@ -517,7 +540,7 @@ class PayCard extends Component {
   closeModal = () => {
     this.setState({ showReceipt: false, paymentState: PaymentStates.None });
   };
-  handleChange = event => {
+  handlePayTypeChange = event => {
     this.setState({ paymentType: event.target.value });
   }
   render() {
@@ -684,7 +707,7 @@ class PayCard extends Component {
           </Grid>
           <Grid>
             <FormControl component="fieldset" className={classes.formControl}>
-              <RadioGroup style={{ display: 'flex' }}  value={this.state.paymentType} onChange={this.handleChange} >
+              <RadioGroup style={{ display: 'flex' }}  value={this.state.paymentType} onChange={this.handlePayTypeChange} >
                 <FormControlLabel value="channel" control={<Radio />} label="Channel" />
                 <FormControlLabel value="thread" control={<Radio />} label="Thread" />
                 <FormControlLabel value="custodial" control={<Radio />} label="Custodial" />
