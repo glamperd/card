@@ -21,7 +21,7 @@ class ChannelCard extends Component {
   render() {
     const { classes, channelState, connextState } = this.props;
     const display = getOwedBalanceInUSD(connextState);
-    const { custodialBalance } = channelState.persistent;
+    const { custodialBalance } = connextState ? connextState.persistent : {};
     //const substr = channelState ? channelState.balanceTokenUser : "0";
     const hubWei = channelState ? getBalanceEth(channelState.balanceWeiHub, connextState) : "0";
     const hubToken = channelState ? getBalanceToken(channelState.balanceTokenHub, connextState) : "0";
