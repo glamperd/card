@@ -20,11 +20,13 @@ const styles = theme => ({
 class ChannelCard extends Component {
   render() {
     const { classes, channelState, connextState } = this.props;
+    const { custodialBalance } = this.state.persistent;
     const display = getOwedBalanceInUSD(connextState);
     //const substr = channelState ? channelState.balanceTokenUser : "0";
     const hubWei = channelState ? getBalanceEth(channelState.balanceWeiHub, connextState) : "0";
     const hubToken = channelState ? getBalanceToken(channelState.balanceTokenHub, connextState) : "0";
     const userWei = channelState ? getBalanceEth(channelState.balanceWeiUser, connextState) : "0";
+    const userCustToken = custodialBalance ? getBalanceToken(custodialBalance.balanceToken, connextState) : "0";
 
     return (
       <Card className={classes.card}>
@@ -55,6 +57,11 @@ class ChannelCard extends Component {
         <Grid item>
             <span>
             {'Hub GZE:' + hubToken}
+            </span>
+        </Grid>
+        <Grid item>
+            <span>
+            {'Custodial GZE:' + userCustToken}
             </span>
         </Grid>
        </Grid>
