@@ -374,7 +374,32 @@ class PayCard extends Component {
   }
   async paymentHandler() {
     const { connext } = this.props;
-    const { paymentVal } = this.state;
+    let { paymentVal, paymentType } = this.state;
+
+    // Set payment type if not standard PT_CHANNEL
+    if (paymentType !== 'channel') {
+      let pType;
+      switch (paymentType) {
+        case 'thread': pType = 'PT_THREAD'; break;
+        case 'custodial': pType = 'PT_CUSTODIAL'; break;
+        case 'optimistic': pType = 'PT_OPTIMISTIC'; break;
+        default: pType = 'PT_CHANNEL';
+      }
+      const payment = {
+        ...paymentVal.payments[0],
+        type: pType
+      };
+      const updatedPaymentVal = {
+        ...paymentVal,
+        payments: [payment]
+      };
+      // unconditionally set state
+      this.setState({
+        paymentVal: updatedPaymentVal
+      });
+      paymentVal = updatedPaymentVal;
+    }
+
     // check if the recipient needs collateral
     const needsCollateral = await connext.recipientNeedsCollateral(
       paymentVal.payments[0].recipient,
