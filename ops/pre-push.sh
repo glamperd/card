@@ -31,10 +31,10 @@ then
   if [[ "$REPLY" =~ ^[Yy]$ ]]
   then
     git tag $tag_prefix-$version || true
-    echo "You should override the remote tag too: git push origin v$version --no-verify --force";echo
+    echo "You should override the remote tag too: git push origin $tag_prefix-$version --no-verify --force";echo
   fi
 else
   echo "connextproject/$image:$version does not exist on docker hub yet"
   git tag $tag_prefix-$version || true
-  echo "You should share this tag: git push origin v$version --no-verify";echo
+  echo "You should share this tag: git push origin $tag_prefix-$version --no-verify";echo
 fi
