@@ -15,8 +15,16 @@ function makePrompt {
 
 MODE="${1:-staging}"
 if [[ "$MODE" == "prod" ]]
-then prod_server="daicard.io"
-else prod_server="staging.connext.network"
+then
+  prod_server="daicard.io"
+  branch="master"
+elif [[ "$MODE" == "2020" ]]
+then
+  prod_server="2020.daicard.io"
+  branch="money2020"
+else
+  prod_server="staging.daicard.io"
+  branch="`git symbolic-ref HEAD | sed -e 's|.*/\(.*\)|\1|'`"
 fi
 
 user=ubuntu
@@ -55,8 +63,8 @@ fi
 # Make sure the prod server has the card repo available
 ssh -i $ssh_key $user@$prod_server "bash -c 'git clone https://github.com/ConnextProject/card.git 2> /dev/null || true'"
 
-# Make sure the prod server's repo is up to date with master
-ssh -i $ssh_key $user@$prod_server "bash -c 'cd card && git fetch && git reset --hard origin/master'"
+# Make sure the prod server's repo is up to date with the branch-of-interest
+ssh -i $ssh_key $user@$prod_server "bash -c 'cd card && git fetch && git checkout --force $branch && git reset --hard origin/$branch'"
 
 echo;echo
 echo "Preparing to re-deploy the card app to $prod_server. Without running any tests. Good luck."

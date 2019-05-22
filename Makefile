@@ -30,8 +30,8 @@ $(shell mkdir -p build .makeflags)
 
 default: hooks dev
 all: hooks dev prod proxy-test
-dev: node-modules proxy
-prod: proxy-prod
+dev: hooks node-modules proxy
+prod: hooks proxy-prod
 
 start: dev
 	bash ops/deploy.dev.sh
