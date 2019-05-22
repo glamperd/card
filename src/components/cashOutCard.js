@@ -1,3 +1,4 @@
+import { ethers as eth } from "ethers";
 import React, { Component } from "react";
 import Button from "@material-ui/core/Button";
 import UnarchiveIcon from "@material-ui/icons/Unarchive";
@@ -13,11 +14,10 @@ import { withStyles, Grid, Typography, CircularProgress } from "@material-ui/cor
 import { getOwedBalanceInUSD } from "../utils/currencyFormatting";
 import interval from "interval-promise";
 import * as Connext from "connext";
+import { CurrencyConvertable, CurrencyType } from "connext/types";
 import Web3 from "web3";
 import { hasPendingTransaction } from '../utils/hasOnchainTransaction'
 
-const { CurrencyConvertable, CurrencyType } = Connext.types
-const { toWeiString } = Connext.big
 const { hasPendingOps, getExchangeRates } = new Connext.Utils();
 
 const styles = theme => ({

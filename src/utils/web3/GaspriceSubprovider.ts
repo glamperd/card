@@ -1,6 +1,8 @@
 import * as Connext from 'connext';
-const { Big, minBN } = Connext.big
 import requestJson from './request';
+
+const Big = (n) => eth.utils.bigNumberify(n.toString())
+const minBN = (lon) => lon.reduce((min: BN, current: BN): BN => min.lt(current) ? min : current, MaxUint256)
 
 export const Subprovider = require('web3-provider-engine/subproviders/subprovider')
 
