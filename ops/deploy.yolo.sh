@@ -61,9 +61,11 @@ then echo "Make sure you're logged into docker & have push permissions: docker l
 fi
 
 # Make sure the prod server has the card repo available
+echo "ssh -i $ssh_key $user@$prod_server \"bash -c 'git clone https://github.com/ConnextProject/card.git 2> /dev/null || true'\""
 ssh -i $ssh_key $user@$prod_server "bash -c 'git clone https://github.com/ConnextProject/card.git 2> /dev/null || true'"
 
 # Make sure the prod server's repo is up to date with the branch-of-interest
+echo "ssh -i $ssh_key $user@$prod_server \"bash -c 'cd card && git fetch && git checkout --force $branch && git reset --hard origin/$branch'\""
 ssh -i $ssh_key $user@$prod_server "bash -c 'cd card && git fetch && git checkout --force $branch && git reset --hard origin/$branch'"
 
 echo;echo
@@ -72,4 +74,5 @@ echo;echo
 sleep 2 # Give the user one last chance to ctrl-c before we pull the trigger
 
 # Deploy!
-ssh -i $ssh_key $user@$prod_server "bash -c 'cd card && DAICARD_DOMAINNAME=$prod_server bash ops/restart.sh prod'"
+echo "ssh -i $ssh_key $user@$prod_server \"bash -c 'cd card && DAICARD_DOMAINNAME=$prod_server DAICARD_MODE=staging bash ops/restart.sh prod'\""
+ssh -i $ssh_key $user@$prod_server "bash -c 'cd card && DAICARD_DOMAINNAME=$prod_server DAICARD_MODE=staging bash ops/restart.sh prod'"
