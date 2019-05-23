@@ -23,7 +23,6 @@ class ChannelCard extends Component {
     const balance = getOwedBalanceInDAI(connextState)
     const whole = balance.substring(0, balance.indexOf('.'))
     const part = balance.substring(balance.indexOf('.'))
-    console.log(`Displaying balance: ${whole}${part}`)
     return (
         <Grid>
           <Grid 

@@ -146,18 +146,19 @@ class CashOutCard extends Component {
   async withdrawalHandler(withdrawEth) {
     const { connext } = this.props;
     const withdrawalVal = await this.updateWithdrawalVals(withdrawEth);
+    const recipient = withdrawalVal.recipient.toLowerCase()
     this.setState({ addressError: null });
     // check for valid address
-    if (
-      !eth.utils.isHexString(withdrawalVal.recipient)
-      || !eth.utils.arrayify(withdrawalVal.recipient).length !== 20
-    ) {
-      const addressError = `${
-        withdrawalVal.recipient === "0x0..."
-          ? "Must provide address."
-          : withdrawalVal.recipient + " is an invalid address"
-      }`;
-      this.setState({ addressError });
+    if (recipient === "0x0...") {
+      this.setState({ addressError: "Please provide an address" });
+      return;
+    }
+    if (!eth.utils.isHexString(recipient)) {
+      this.setState({ addressError: `Invalid hex string: ${recipient}` });
+      return;
+    }
+    if (eth.utils.arrayify(recipient).length !== 20) {
+      this.setState({ addressError: `Invalid length: ${recipient}` });
       return;
     }
     // check the input balance is under channel balance
