@@ -215,7 +215,7 @@ class App extends React.Component {
     this.setState({
       connext,
       tokenAddress: connext.opts.tokenAddress,
-      channelManagerAddress: connext.opts.contractAddress,
+      contractAddress: connext.opts.contractAddress,
       hubWalletAddress: connext.opts.hubAddress,
       ethChainId: connext.opts.ethChainId,
       address,
