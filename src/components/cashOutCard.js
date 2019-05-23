@@ -1,3 +1,4 @@
+import * as Connext from "connext";
 import { ethers as eth } from "ethers";
 import React, { Component } from "react";
 import Button from "@material-ui/core/Button";
@@ -11,14 +12,11 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import Modal from "@material-ui/core/Modal";
 import QRScan from "./qrScan";
 import { withStyles, Grid, Typography, CircularProgress } from "@material-ui/core";
-import { getOwedBalanceInUSD } from "../utils/currencyFormatting";
+import { getOwedBalanceInDAI } from "../utils/currencyFormatting";
 import interval from "interval-promise";
-import * as Connext from "connext";
-import { CurrencyConvertable, CurrencyType } from "connext/types";
-import Web3 from "web3";
 import { hasPendingTransaction } from '../utils/hasOnchainTransaction'
 
-const { hasPendingOps, getExchangeRates } = new Connext.Utils();
+const { hasPendingOps } = new Connext.Utils();
 
 const styles = theme => ({
   icon: {
@@ -68,15 +66,9 @@ class CashOutCard extends Component {
     // set the state to contain the proper withdrawal args for
     // eth or dai withdrawal
     const { channelState, connextState, exchangeRate } = this.props
-    let { withdrawalVal, aggregateBalance } = this.state;
+    let { withdrawalVal } = this.state;
 
     if (withdrawEth && channelState && connextState) {
-      const noComma = (aggregateBalance.split(',')).join('')
-      const totalWd = new CurrencyConvertable(
-        CurrencyType.USD,
-        noComma.split('$')[1],
-        () => getExchangeRates(connextState)
-      )
       // withdraw all channel balance in eth
       withdrawalVal = {
         ...withdrawalVal,
@@ -107,12 +99,9 @@ class CashOutCard extends Component {
       return;
     }
 
-    const usd = getOwedBalanceInUSD(
-      connextState,
-      false
-    );
-
-    this.setState({ aggregateBalance: usd });
+    this.setState({
+      aggregateBalance: getOwedBalanceInDAI(connextState, false)
+    });
   }
 
   // update display value with the exchange rate/
@@ -159,7 +148,10 @@ class CashOutCard extends Component {
     const withdrawalVal = await this.updateWithdrawalVals(withdrawEth);
     this.setState({ addressError: null });
     // check for valid address
-    if (!Web3.utils.isAddress(withdrawalVal.recipient)) {
+    if (
+      !eth.utils.isHexString(withdrawalVal.recipient)
+      || !eth.utils.arrayify(withdrawalVal.recipient).length !== 20
+    ) {
       const addressError = `${
         withdrawalVal.recipient === "0x0..."
           ? "Must provide address."
