@@ -23,7 +23,7 @@ then
   prod_server="2020.daicard.io"
   branch="money2020"
 else
-  prod_server="staging.daicard.io"
+  prod_server="staging.connext.network"
   branch="`git symbolic-ref HEAD | sed -e 's|.*/\(.*\)|\1|'`"
 fi
 
