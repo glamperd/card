@@ -23,6 +23,7 @@ then
   prod_server="2020.daicard.io"
   branch="money2020"
 else
+  rinkeby_hub="DAICARD_RINKEBY_HUB_URL=https://staging.hub.connext.network"
   prod_server="staging.connext.network"
   branch="`git symbolic-ref HEAD | sed -e 's|.*/\(.*\)|\1|'`"
 fi
@@ -74,5 +75,5 @@ echo;echo
 sleep 2 # Give the user one last chance to ctrl-c before we pull the trigger
 
 # Deploy!
-echo "ssh -i $ssh_key $user@$prod_server \"bash -c 'cd card && DAICARD_DOMAINNAME=$prod_server DAICARD_MODE=staging bash ops/restart.sh prod'\""
-ssh -i $ssh_key $user@$prod_server "bash -c 'cd card && DAICARD_DOMAINNAME=$prod_server DAICARD_MODE=staging bash ops/restart.sh prod'"
+echo "ssh -i $ssh_key $user@$prod_server \"bash -c 'cd card && DAICARD_DOMAINNAME=$prod_server DAICARD_MODE=staging $rinkeby_hub bash ops/restart.sh prod'\""
+ssh -i $ssh_key $user@$prod_server "bash -c 'cd card && DAICARD_DOMAINNAME=$prod_server DAICARD_MODE=staging $rinkeby_hub bash ops/restart.sh prod'"
