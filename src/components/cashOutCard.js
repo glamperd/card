@@ -77,8 +77,8 @@ class CashOutCard extends Component {
       withdrawalVal = {
         ...withdrawalVal,
         exchangeRate,
-        tokensToSell: amountToken,
-        withdrawalWeiUser: amountWei,
+        tokensToSell: amountToken.toString(),
+        withdrawalWeiUser: amountWei.toString(),
         weiToSell: "0",
         withdrawalTokenUser: "0"
       };
