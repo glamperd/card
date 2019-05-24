@@ -17,6 +17,7 @@ import interval from "interval-promise";
 import { hasPendingTransaction } from '../utils/hasOnchainTransaction'
 
 const { hasPendingOps } = new Connext.Utils();
+const Big = (n) => eth.utils.bigNumberify(n.toString())
 
 const styles = theme => ({
   icon: {
@@ -69,12 +70,15 @@ class CashOutCard extends Component {
     let { withdrawalVal } = this.state;
 
     if (withdrawEth && channelState && connextState) {
+      const { custodialBalance } = connextState.persistent
+      const amountToken = Big(channelState.balanceTokenUser).add(custodialBalance.balanceToken)
+      const amountWei = Big(channelState.balanceWeiUser).add(custodialBalance.balanceWei)
       // withdraw all channel balance in eth
       withdrawalVal = {
         ...withdrawalVal,
         exchangeRate,
-        tokensToSell: channelState.balanceTokenUser,
-        withdrawalWeiUser: channelState.balanceWeiUser,
+        tokensToSell: amountToken,
+        withdrawalWeiUser: amountWei,
         weiToSell: "0",
         withdrawalTokenUser: "0"
       };
