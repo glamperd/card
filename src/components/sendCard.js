@@ -27,6 +27,7 @@ import { getOwedBalanceInDAI } from "../utils/currencyFormatting";
 
 const Big = (n) => eth.utils.bigNumberify(n.toString())
 const convertPayment = Connext.convert.Payment
+const convertChannelState = Connext.convert.ChannelState
 const emptyAddress = eth.constants.AddressZero
 const queryString = require("query-string");
 // $10 capped linked payments
