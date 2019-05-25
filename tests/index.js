@@ -93,6 +93,7 @@ describe('Daicard', () => {
         })
       })
     })
+
   })
 
   describe('Settings', () => {
@@ -110,24 +111,18 @@ describe('Daicard', () => {
       my.burnCard()
     })
 
-    it(`Should decollateralize while burning a card with non-zero balance`, () => {
-      my.getMnemonic().then(mnemonic => {
+    it(`Should restore the same address & balance after importing a mnemoic`, () => {
+      my.getAccount().then(account => {
         my.deposit(depositEth).then(tokensDeposited => {
-          my.burnCard(true)
-          my.restoreMnemonic(mnemonic)
+          my.burnCard()
+          my.restoreMnemonic(account.mnemonic)
           cy.resolve(my.getBalance).should('contain', tokensDeposited)
+          my.goToDeposit()
+          cy.contains('button', my.addressRegex).invoke('text').should('eql', account.address)
         })
       })
     })
 
-    it(`Should restore the same address after importing the provided mnemonic`, () => {
-      my.getAccount().then(account => {
-        my.burnCard()
-        my.restoreMnemonic(account.mnemonic)
-        my.goToDeposit()
-        cy.contains('button', my.addressRegex).invoke('text').should('eql', account.address)
-      })
-    })
   })
 
   describe('Withdraw', () => {
@@ -147,8 +142,9 @@ describe('Daicard', () => {
         my.goToCashout()
         cy.get('input[type="text"]').clear().type('0xabc123')
         cy.contains('button', /cash out eth/i).click()
-        cy.contains('p', /invalid address/i).should('exist')
+        cy.contains('p', /invalid/i).should('exist')
       })
     })
+
   })
 })

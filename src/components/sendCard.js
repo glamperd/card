@@ -1,3 +1,4 @@
+import * as Connext from 'connext';
 import React, { Component } from "react";
 import Button from "@material-ui/core/Button";
 import SendIcon from "@material-ui/icons/Send";
@@ -20,13 +21,12 @@ import {
   DialogContentText,
   DialogActions
 } from "@material-ui/core";
-import * as Connext from 'connext';
 import interval from "interval-promise";
 import Web3 from "web3";
-import { getChannelBalanceInUSD } from "../utils/currencyFormatting";
+import { getOwedBalanceInDAI } from "../utils/currencyFormatting";
 
-const { convertPayment, convertChannelState } = Connext.types
-const { Big } = Connext.big
+const Big = (n) => eth.utils.bigNumberify(n.toString())
+const convertPayment = Connext.convert.Payment
 const emptyAddress = eth.constants.AddressZero
 const queryString = require("query-string");
 // $10 capped linked payments
@@ -276,7 +276,7 @@ class PayCard extends Component {
     if (decimal && decimal.length > 18) {
       tokenVal = value.startsWith('.') ? value.substr(0, 19) : value.split('.')[0] + '.' + decimal.substr(0, 18)
       balanceError = `Value too precise! Using ${tokenVal}`
-    }    
+    }
     await this.setState(oldState => {
       oldState.paymentVal.payments[0].amountToken = value
         ? Web3.utils.toWei(`${tokenVal}`, "ether")
@@ -638,7 +638,7 @@ class PayCard extends Component {
   };
 
   render() {
-    const { classes, channelState, connextState } = this.props;
+    const { classes, connextState } = this.props;
     const { paymentState, paymentVal, displayVal, balanceError, addressError, scan, showReceipt, sendError } = this.state;
     return (
       <Grid
@@ -670,7 +670,7 @@ class PayCard extends Component {
           <Grid container direction="row" justify="center" alignItems="center">
             <Typography variant="h2">
               <span>
-                {getChannelBalanceInUSD(channelState, connextState)}
+                {getOwedBalanceInDAI(connextState)}
               </span>
             </Typography>
           </Grid>

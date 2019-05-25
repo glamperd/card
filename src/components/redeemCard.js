@@ -9,13 +9,12 @@ import Tooltip from "@material-ui/core/Tooltip";
 import QRGenerate from "./qrGenerate";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import Web3 from "web3";
-import { getAmountInUSD } from "../utils/currencyFormatting";
+import { getAmountInDAI } from "../utils/currencyFormatting";
 import interval from "interval-promise";
 import MySnackbar from "../components/snackBar";
-import * as Connext from 'connext';
-import { ethers } from "ethers";
-const { Big } = Connext.big
+import { ethers as eth } from "ethers";
 
+const Big = (n) => eth.utils.bigNumberify(n.toString())
 const queryString = require("query-string");
 
 const styles = theme => ({
@@ -249,7 +248,7 @@ function RedeemPaymentDialogContent(redeemPaymentState, amount, connextState) {
           </DialogTitle>
           <DialogContent>
             <DialogContentText variant="body1" style={{ color: "#0F1012" }}>
-              Amount: {getAmountInUSD(amount, connextState)}
+              Amount: {getAmountInDAI(amount, connextState)}
             </DialogContentText>
           </DialogContent>
         </Grid>
@@ -487,13 +486,13 @@ class RedeemCard extends Component {
       return errs
     }
     const token = Big(amount.amountToken)
-    if (token.lt(ethers.constants.Zero)) {
+    if (token.lt(eth.constants.Zero)) {
       errs.push("Copied token balance is negative")
     }
     // print amount for easy confirmation
     // TODO: display more helpful messages here
     if (copied) {
-      errs.push(`Amount: ${getAmountInUSD(amount, connextState)}`)
+      errs.push(`Amount: ${getAmountInDAI(amount, connextState)}`)
       errs.push(`Secret: ${secret.substr(0, 10)}...`)
     }
     

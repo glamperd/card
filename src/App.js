@@ -1,6 +1,6 @@
 import "./App.css";
 import { Paper, withStyles, Grid } from "@material-ui/core";
-import * as eth from "ethers";
+import { ethers as eth } from "ethers";
 import interval from "interval-promise";
 import React from "react";
 import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
@@ -22,8 +22,7 @@ import MySnackbar from "./components/snackBar";
 
 const humanTokenAbi = require("./abi/humanToken.json");
 
-const { Big, minBN } = Connext.big;
-const { CurrencyType, CurrencyConvertable } = Connext.types;
+const Big = (n) => eth.utils.bigNumberify(n.toString())
 const { getExchangeRates, hasPendingOps } = new Connext.Utils();
 
 let publicUrl;
@@ -42,10 +41,9 @@ const overrides = {
 };
 
 // Constants for channel max/min - this is also enforced on the hub
-const DEPOSIT_ESTIMATED_GAS = Big("700000"); // 700k gas
+const DEPOSIT_ESTIMATED_GAS = Big("700000"); // 700k gas // TODO: estimate this dynamically
 const HUB_EXCHANGE_CEILING = eth.constants.WeiPerEther.mul(Big(69)); // 69 TST
 const CHANNEL_DEPOSIT_MAX = eth.constants.WeiPerEther.mul(Big(30)); // 30 TST
-const MAX_GAS_PRICE = Big("20000000000"); // 20 gWei
 
 const styles = theme => ({
   paper: {
@@ -113,7 +111,8 @@ class App extends React.Component {
         type: "",
         reset: false
       },
-      browserMinimumBalance: null
+      minDeposit: null,
+      maxDeposit: null,
     };
 
     this.networkHandler = this.networkHandler.bind(this);
@@ -148,7 +147,7 @@ class App extends React.Component {
     await this.setConnext(rpc, mnemonic);
     await this.setTokenContract();
     await this.pollConnextState();
-    await this.setBrowserWalletMinimumBalance();
+    await this.setDepositLimits();
     await this.poller();
   }
 
@@ -174,18 +173,25 @@ class App extends React.Component {
     switch (rpc) {
       case "LOCALHOST":
         hubUrl = overrides.localHub || `${publicUrl}/api/local/hub`;
-        ethprovider = new eth.providers.JsonRpcProvider("http://localhost:8545");
-        ethUrl = overrides.localEth || null
+        ethUrl = overrides.localEth || undefined
+        ethprovider = overrides.localEth
+          ? new eth.providers.JsonRpcProvider(overrides.localEth)
+          : new eth.providers.JsonRpcProvider("http://localhost:8545")
         break;
       case "RINKEBY":
+      // TODO: overrides so it works with hub
         hubUrl = overrides.rinkebyHub || `${publicUrl}/api/rinkeby/hub`;
-        ethprovider = new eth.getDefaultProvider("rinkeby");
-        ethUrl = overrides.rinkebyEth || null
+        ethUrl = overrides.rinkebyEth || undefined
+        ethprovider = overrides.rinkebyEth
+          ? new eth.providers.JsonRpcProvider(overrides.rinkebyEth)
+          : new eth.getDefaultProvider("rinkeby")
         break;
       case "MAINNET":
         hubUrl = overrides.mainnetHub || `${publicUrl}/api/mainnet/hub`;
-        ethprovider = new eth.getDefaultProvider();
-        ethUrl = overrides.mainnetEth || null
+        ethUrl = overrides.mainnetEth || undefined
+        ethprovider = overrides.mainnetEth
+          ? new eth.providers.JsonRpcProvider(overrides.mainnetEth)
+          : new eth.getDefaultProvider()
         break;
       default:
         throw new Error(`Unrecognized rpc: ${rpc}`);
@@ -196,21 +202,21 @@ class App extends React.Component {
       mnemonic,
       ethUrl,
     };
-    const connext = await Connext.getConnextClient(opts);
+    const connext = await Connext.createClient(opts);
     const address = await connext.wallet.getAddress();
     console.log(`Successfully set up connext! Connext config:`);
     console.log(`  - tokenAddress: ${connext.opts.tokenAddress}`);
     console.log(`  - hubAddress: ${connext.opts.hubAddress}`);
     console.log(`  - contractAddress: ${connext.opts.contractAddress}`);
-    console.log(`  - ethNetworkId: ${connext.opts.ethNetworkId}`);
+    console.log(`  - ethChainId: ${connext.opts.ethChainId}`);
     console.log(`  - public address: ${address}`);
 
     this.setState({
       connext,
       tokenAddress: connext.opts.tokenAddress,
-      channelManagerAddress: connext.opts.contractAddress,
+      contractAddress: connext.opts.contractAddress,
       hubWalletAddress: connext.opts.hubAddress,
-      ethNetworkId: connext.opts.ethNetworkId,
+      ethChainId: connext.opts.ethChainId,
       address,
       ethprovider
     });
@@ -239,8 +245,9 @@ class App extends React.Component {
         channelState: state.persistent.channel,
         connextState: state,
         runtime: state.runtime,
-        exchangeRate: state.runtime.exchangeRate ? state.runtime.exchangeRate.rates.USD : 0
+        exchangeRate: state.runtime.exchangeRate ? state.runtime.exchangeRate.rates.DAI : 0
       });
+      console.log('Connext updated:', state)
       this.checkStatus();
     });
     // start polling
@@ -261,36 +268,24 @@ class App extends React.Component {
     }, 1000);
   }
 
-  async setBrowserWalletMinimumBalance() {
+  async setDepositLimits() {
     const { connextState, ethprovider } = this.state;
-    // let gasEstimateJson = await eth.utils.fetchJson({ url: `https://ethgasstation.info/json/ethgasAPI.json` });
-    let providerGasPrice = await ethprovider.getGasPrice();
-    // let currentGasPrice = Math.round((gasEstimateJson.average / 10) * 2); // multiply gas price by two to be safe
-    // dont let gas price be any higher than the max
-    // currentGasPrice = eth.utils.parseUnits(minBN(Big(currentGasPrice.toString()), MAX_GAS_PRICE).toString(), "gwei");
-    // unless it really needs to be: average eth gas station price w ethprovider's
-    // currentGasPrice = currentGasPrice.add(providerGasPrice).div(eth.constants.Two);
-    
-    providerGasPrice = MAX_GAS_PRICE; // hardcode for now
-    console.log(`Gas Price = ${providerGasPrice}`);
-
+    let gasPrice = await ethprovider.getGasPrice()
+    console.log(`Gas Price: ${gasPrice}`);
     // default connext multiple is 1.5, leave 2x for safety
-    const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS.mul(Big(2)).mul(providerGasPrice);
+    const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS.mul(Big(2)).mul(gasPrice);
 
-    // add dai conversion
-    const minConvertable = new CurrencyConvertable(CurrencyType.WEI, totalDepositGasWei, () => getExchangeRates(connextState));
-    const browserMinimumBalance = {
-      wei: minConvertable.toWEI().amount,
-      dai: minConvertable.toUSD().amount
-    };
-    this.setState({ browserMinimumBalance });
-    return browserMinimumBalance;
+    const minDeposit = Connext.Currency.WEI(totalDepositGasWei, () => getExchangeRates(connextState));
+
+    const maxDeposit = Connext.Currency.DEI(CHANNEL_DEPOSIT_MAX, () => getExchangeRates(connextState));
+
+    this.setState({ maxDeposit, minDeposit });
   }
 
   async autoDeposit() {
-    const { address, tokenContract, connextState, tokenAddress, connext, browserMinimumBalance, ethprovider } = this.state;
+    const { address, tokenContract, connextState, tokenAddress, connext, minDeposit, ethprovider } = this.state;
 
-    if (!connext || !browserMinimumBalance) return;
+    if (!connext || !minDeposit) return;
 
     const balance = await ethprovider.getBalance(address);
 
@@ -307,7 +302,7 @@ class App extends React.Component {
     }
 
     if (balance.gt(eth.constants.Zero) || tokenBalance.gt(eth.constants.Zero)) {
-      const minWei = Big(browserMinimumBalance.wei);
+      const minWei = minDeposit.toWEI().floor()
       if (balance.lt(minWei)) {
         // don't autodeposit anything under the threshold
         // update the refunding variable before returning
@@ -438,7 +433,8 @@ class App extends React.Component {
       connext,
       connextState,
       runtime,
-      browserMinimumBalance,
+      maxDeposit,
+      minDeposit,
       ethprovider,
       status
     } = this.state;
@@ -475,8 +471,8 @@ class App extends React.Component {
 
                     <SetupCard
                       {...props}
-                      browserMinimumBalance={browserMinimumBalance}
-                      maxTokenDeposit={CHANNEL_DEPOSIT_MAX.toString()}
+                      minDeposit={minDeposit}
+                      maxDeposit={maxDeposit}
                       connextState={connextState}
                     />
                   </Grid>
@@ -489,9 +485,9 @@ class App extends React.Component {
                 <DepositCard
                   {...props}
                   address={address}
-                  browserMinimumBalance={browserMinimumBalance}
+                  maxDeposit={maxDeposit}
+                  minDeposit={minDeposit}
                   exchangeRate={exchangeRate}
-                  maxTokenDeposit={CHANNEL_DEPOSIT_MAX.toString()}
                   connextState={connextState}
                 />
               )}
@@ -516,7 +512,7 @@ class App extends React.Component {
                   {...props}
                   address={address}
                   connextState={connextState}
-                  maxTokenDeposit={CHANNEL_DEPOSIT_MAX.toString()}
+                  maxDeposit={maxDeposit}
                   channelState={channelState}
                   publicUrl={publicUrl}
                 />
