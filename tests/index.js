@@ -1,8 +1,12 @@
 import my from './utils'
 import BN from 'bn.js'
 
-const depositEth = '0.05' // = 5e16 wei
-const payTokens = '3.14' // ~= 2e16 eth wei
+const cy = global.cy
+const Cypress = global.Cypress
+
+const depositEth = '0.05'
+const depositToken = '5'
+const payTokens = '3.14'
 
 describe('Daicard', () => {
   beforeEach(() => {
@@ -11,8 +15,12 @@ describe('Daicard', () => {
   })
 
   describe('Deposit', () => {
-    it(`Should accept a deposit to displayed address`, () => {
-      my.deposit(depositEth)
+    it(`Should accept an Eth deposit to displayed address`, () => {
+      my.depositEth(depositEth)
+    })
+
+    it(`Should accept a token deposit to displayed address`, () => {
+      my.depositToken(depositToken)
     })
   })
 
