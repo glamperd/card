@@ -272,7 +272,7 @@ class App extends React.Component {
   async setDepositLimits() {
     const { connextState, ethprovider } = this.state;
     let gasPrice = await ethprovider.getGasPrice()
-    console.log(`Gas Price: ${gasPrice}`);
+
     // default connext multiple is 1.5, leave 2x for safety
     const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS.mul(Big(2)).mul(gasPrice);
 
@@ -284,10 +284,10 @@ class App extends React.Component {
   }
 
   async autoDeposit() {
+    await this.setDepositLimits()
     const { address, tokenContract, connextState, tokenAddress, connext, minDeposit, ethprovider } = this.state;
 
     const gasPrice = (await ethprovider.getGasPrice()).toHexString()
-
     if (!connext || !minDeposit) return;
 
     const balance = await ethprovider.getBalance(address);
@@ -336,6 +336,8 @@ class App extends React.Component {
       if (channelDeposit.amountWei.eq(eth.constants.Zero) && channelDeposit.amountToken.eq(eth.constants.Zero)) {
         return;
       }
+
+      console.log(`Depositing with gas price of ${eth.utils.formatUnits(eth.utils.bigNumberify(gasPrice), 'gwei')} gwei`);
 
       await this.state.connext.deposit({ 
         amountWei: channelDeposit.amountWei.toString(), 
