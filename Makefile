@@ -18,7 +18,7 @@ my_id=$(shell id -u):$(shell id -g)
 id=$(shell if [[ "`uname`" == "Darwin" ]]; then echo 0:0; else echo $(my_id); fi)
 docker_run=docker run --name=$(project)_builder --tty --rm --volume=$(card):/root $(project)_builder $(id)
 
-install=npm install --prefer-offline --unsafe-perm --silent --no-progress
+install=npm install --prefer-offline --unsafe-perm --silent --no-progress > /dev/null
 log_start=@echo "============="; echo "[Makefile] => Start building $@"; date "+%s" > .makeflags/timestamp
 log_finish=@echo "[Makefile] => Finished building $@ in $$((`date "+%s"` - `cat .makeflags/timestamp`)) seconds"; echo "============="; echo
 

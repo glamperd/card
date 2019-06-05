@@ -9,9 +9,9 @@ jobs:
           command: |
             git clone https://github.com/ConnextProject/indra.git
             cd indra
-            make start
+            time make start-test
             cd ..
-            make test-prod
+            time make test-prod
 
   push-images:
     machine: true
