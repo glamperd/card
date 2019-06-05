@@ -131,7 +131,7 @@ my.getAccount = () => {
 
 my.getOnchainBalance = () => {
   return cy.wrap(new Cypress.Promise((resolve, reject) => {
-    return cy.wrap(wallet.provider.getChannelBalance(wallet.address)).then(balance => {
+    return cy.wrap(wallet.provider.getBalance(wallet.address)).then(balance => {
       cy.log(`Onchain balance is ${balance.toString()} for ${wallet.address}`)
       resolve(balance.toString())
     })
@@ -149,7 +149,7 @@ my.getChannelBalance = () => {
   }))
 }
 
-my.depositEth = (value) => {
+my.deposit = (value) => {
   return cy.wrap(new Cypress.Promise((resolve, reject) => {
     my.getAddress().then(address => {
       cy.log(`Depositing ${value} eth into channel ${address}`)
@@ -179,7 +179,7 @@ my.depositToken = (value) => {
         cy.log(`Waiting for tx ${tx.hash} to be mined...`)
         return cy.wrap(wallet.provider.waitForTransaction(tx.hash)).then(() => {
           cy.log(`Deposit successful`)
-          return my.depositEth(gasMoney).then(resolve)
+          return my.deposit(gasMoney).then(resolve)
         })
       })
     })
