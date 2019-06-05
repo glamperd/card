@@ -201,6 +201,7 @@ class App extends React.Component {
       hubUrl,
       mnemonic,
       ethUrl,
+      logLevel: 5,
     };
     const connext = await Connext.createClient(opts);
     const address = await connext.wallet.getAddress();
@@ -285,6 +286,8 @@ class App extends React.Component {
   async autoDeposit() {
     const { address, tokenContract, connextState, tokenAddress, connext, minDeposit, ethprovider } = this.state;
 
+    const gasPrice = (await ethprovider.getGasPrice()).toHexString()
+
     if (!connext || !minDeposit) return;
 
     const balance = await ethprovider.getBalance(address);
@@ -337,7 +340,7 @@ class App extends React.Component {
       await this.state.connext.deposit({ 
         amountWei: channelDeposit.amountWei.toString(), 
         amountToken: channelDeposit.amountToken.toString() 
-      });
+      }, { gasPrice });
     }
   }
 

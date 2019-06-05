@@ -369,7 +369,7 @@ class PayCard extends Component {
 
     // TODO: remove!
     const address = paymentVal.payments[0].recipient;
-    if (address && ADMIN_SECRET && address == ADMIN_SECRET) {
+    if (address && ADMIN_SECRET && address === ADMIN_SECRET) {
       this.setState({ multipleLinks: true })
       return
     } else {

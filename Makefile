@@ -63,7 +63,7 @@ push-live: prod
 # Begin Tests
 
 test-prod: proxy-test
-	DAICARD_MODE=test DAICARD_MAINNET_HUB_URL="http://172.17.0.1:3000" bash ops/restart.sh prod
+	DAICARD_MODE=test DAICARD_MAINNET_HUB_URL="https://172.17.0.1:3001" bash ops/restart.sh prod
 	./node_modules/.bin/cypress install
 	./node_modules/.bin/cypress run --spec tests/index.js --env publicUrl=https://localhost
 
