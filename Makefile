@@ -18,7 +18,7 @@ my_id=$(shell id -u):$(shell id -g)
 id=$(shell if [[ "`uname`" == "Darwin" ]]; then echo 0:0; else echo $(my_id); fi)
 docker_run=docker run --name=$(project)_builder --tty --rm --volume=$(card):/root $(project)_builder $(id)
 
-install=npm install --prefer-offline --unsafe-perm
+install=npm install --prefer-offline --unsafe-perm --silent --no-progress
 log_start=@echo "============="; echo "[Makefile] => Start building $@"; date "+%s" > .makeflags/timestamp
 log_finish=@echo "[Makefile] => Finished building $@ in $$((`date "+%s"` - `cat .makeflags/timestamp`)) seconds"; echo "============="; echo
 
@@ -64,15 +64,15 @@ push-live: prod
 
 test-prod: proxy-test
 	DAICARD_MODE=test DAICARD_MAINNET_HUB_URL="https://172.17.0.1:3001" bash ops/restart.sh prod
-	./node_modules/.bin/cypress install
+	./node_modules/.bin/cypress install > /dev/null
 	./node_modules/.bin/cypress run --spec tests/index.js --env publicUrl=https://localhost
 
 test:
-	./node_modules/.bin/cypress install
+	./node_modules/.bin/cypress install > /dev/null
 	./node_modules/.bin/cypress run --spec tests/index.js
 
 start-test: node-modules
-	./node_modules/.bin/cypress install
+	./node_modules/.bin/cypress install > /dev/null
 	./node_modules/.bin/cypress open
 
 ########################################
