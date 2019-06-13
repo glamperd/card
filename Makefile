@@ -18,7 +18,7 @@ my_id=$(shell id -u):$(shell id -g)
 id=$(shell if [[ "`uname`" == "Darwin" ]]; then echo 0:0; else echo $(my_id); fi)
 docker_run=docker run --name=$(project)_builder --tty --rm --volume=$(card):/root $(project)_builder $(id)
 
-install=npm install --prefer-offline --unsafe-perm
+install=npm install --prefer-offline --unsafe-perm --silent --no-progress > /dev/null 2>&1
 log_start=@echo "============="; echo "[Makefile] => Start building $@"; date "+%s" > .makeflags/timestamp
 log_finish=@echo "[Makefile] => Finished building $@ in $$((`date "+%s"` - `cat .makeflags/timestamp`)) seconds"; echo "============="; echo
 
@@ -28,10 +28,13 @@ $(shell mkdir -p build .makeflags)
 # Begin Shortcut Rules
 .PHONY: default all dev prod stop clean purge push push-live
 
-default: hooks dev
-all: hooks dev prod proxy-test
-dev: node-modules proxy
-prod: proxy-prod
+default: dev
+all: dev prod proxy-test
+dev: hooks node-modules proxy
+prod: hooks proxy-prod
+
+stop:
+	bash ops/stop.sh
 
 start: dev
 	bash ops/deploy.dev.sh
@@ -39,8 +42,9 @@ start: dev
 start-prod: prod
 	bash ops/deploy.prod.sh
 
-stop:
+restart: dev
 	bash ops/stop.sh
+	bash ops/deploy.dev.sh
 
 clean: stop
 	rm -rf $(flags)/*
@@ -63,16 +67,16 @@ push-live: prod
 # Begin Tests
 
 test-prod: proxy-test
-	DAICARD_MODE=test DAICARD_MAINNET_HUB_URL="http://172.17.0.1:3000" bash ops/restart.sh prod
-	./node_modules/.bin/cypress install
+	DAICARD_MODE=test DAICARD_MAINNET_HUB_URL="https://172.17.0.1:3001" bash ops/restart.sh prod
+	./node_modules/.bin/cypress install > /dev/null
 	./node_modules/.bin/cypress run --spec tests/index.js --env publicUrl=https://localhost
 
 test:
-	./node_modules/.bin/cypress install
+	./node_modules/.bin/cypress install > /dev/null
 	./node_modules/.bin/cypress run --spec tests/index.js
 
 start-test: node-modules
-	./node_modules/.bin/cypress install
+	./node_modules/.bin/cypress install > /dev/null
 	./node_modules/.bin/cypress open
 
 ########################################

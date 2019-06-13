@@ -9,8 +9,8 @@ import Typography from "@material-ui/core/Typography";
 import QRGenerate from "./qrGenerate";
 import { withStyles, Grid } from "@material-ui/core";
 import MySnackbar from "./snackBar";
-import Web3Utils from "web3-utils";
-import { getAmountInUSD } from "../utils/currencyFormatting";
+import Web3 from "web3";
+import { getAmountInDAI } from "../utils/currencyFormatting";
 
 const Big = (n) => eth.utils.bigNumberify(n.toString())
 
@@ -63,7 +63,7 @@ class ReceiveCard extends Component {
       amountToken: maxTokenDeposit,
     }
     if (tokenBig.gt(Big(amount.amountToken))) {
-      error = `Channel balances are capped at ${getAmountInUSD(amount, connextState)}`
+      error = `Channel balances are capped at ${getAmountInDAI(amount, connextState)}`
     }
     if (tokenBig.lte(eth.constants.Zero)) {
       error = "Please enter a payment amount above 0"

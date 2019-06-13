@@ -1,8 +1,12 @@
 import my from './utils'
 import BN from 'bn.js'
 
-const depositEth = '0.05' // = 5e16 wei
-const payTokens = '3.14' // ~= 2e16 eth wei
+const cy = global.cy
+const Cypress = global.Cypress
+
+const depositEth = '0.05'
+const depositToken = '5'
+const payTokens = '3.14'
 
 describe('Daicard', () => {
   beforeEach(() => {
@@ -11,8 +15,12 @@ describe('Daicard', () => {
   })
 
   describe('Deposit', () => {
-    it(`Should accept a deposit to displayed address`, () => {
+    it(`Should accept an Eth deposit to displayed address`, () => {
       my.deposit(depositEth)
+    })
+
+    it(`Should accept a token deposit to displayed address`, () => {
+      my.depositToken(depositToken)
     })
   })
 
@@ -28,7 +36,7 @@ describe('Daicard', () => {
             cy.contains('h5', /redeemed successfully/i).should('exist')
             cy.contains('p', payTokens).should('exist')
             my.goHome()
-            cy.resolve(my.getBalance).should('contain', payTokens)
+            cy.resolve(my.getChannelBalance).should('contain', payTokens)
           })
         })
       })
@@ -116,7 +124,7 @@ describe('Daicard', () => {
         my.deposit(depositEth).then(tokensDeposited => {
           my.burnCard()
           my.restoreMnemonic(account.mnemonic)
-          cy.resolve(my.getBalance).should('contain', tokensDeposited)
+          cy.resolve(my.getChannelBalance).should('contain', tokensDeposited)
           my.goToDeposit()
           cy.contains('button', my.addressRegex).invoke('text').should('eql', account.address)
         })
@@ -142,7 +150,7 @@ describe('Daicard', () => {
         my.goToCashout()
         cy.get('input[type="text"]').clear().type('0xabc123')
         cy.contains('button', /cash out eth/i).click()
-        cy.contains('p', /invalid address/i).should('exist')
+        cy.contains('p', /invalid/i).should('exist')
       })
     })
 

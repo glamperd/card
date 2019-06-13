@@ -1,3 +1,4 @@
+import * as Connext from 'connext';
 import React, { Component } from "react";
 import Button from "@material-ui/core/Button";
 import SendIcon from "@material-ui/icons/Send";
@@ -24,17 +25,18 @@ import {
   DialogContentText,
   DialogActions
 } from "@material-ui/core";
-import * as Connext from 'connext';
 import interval from "interval-promise";
-import * as Web3Utils from "web3-utils";
-import { getOwedBalanceInUSD } from "../utils/currencyFormatting";
+import Web3 from "web3";
+import { getOwedBalanceInDAI } from "../utils/currencyFormatting";
 
 const Big = (n) => eth.utils.bigNumberify(n.toString())
-const { convertPayment } = Connext.types
+const convertPayment = Connext.convert.Payment
+const convertChannelState = Connext.convert.ChannelState
 const emptyAddress = eth.constants.AddressZero
 const queryString = require("query-string");
 // $10 capped linked payments
 const LINK_LIMIT = eth.utils.parseEther("10")
+const ADMIN_SECRET = process.env.REACT_APP_ADMIN_SECRET;
 
 const styles = theme => ({
   icon: {
@@ -238,7 +240,9 @@ class PayCard extends Component {
       scan: false,
       displayVal: props.scanArgs.amount ? props.scanArgs.amount : "0",
       showReceipt: false,
-      paymentType: 'channel'
+      paymentType: 'channel',
+      multipleLinks: false, // TODO: remove
+      count: null,
     };
   }
   async componentDidMount() {
@@ -284,6 +288,12 @@ class PayCard extends Component {
     });
     this.setState({ displayVal: value, });
   }
+
+  // TODO: remove
+  updateCount = (count) => {
+    this.setState({ count })
+  }
+
   handleQRData = async scanResult => {
     const { publicUrl } = this.props;
     let data = scanResult.split("/send?");
@@ -344,6 +354,16 @@ class PayCard extends Component {
   async linkHandler() {
     const { connext } = this.props;
     const { paymentVal } = this.state;
+
+    // TODO: remove!
+    const address = paymentVal.payments[0].recipient;
+    if (address && ADMIN_SECRET && address === ADMIN_SECRET) {
+      this.setState({ multipleLinks: true })
+      return
+    } else {
+      this.setState({ multipleLinks: false })
+    }
+
     // generate secret, set type, and set
     // recipient to empty address
     const payment = {
@@ -487,6 +507,77 @@ class PayCard extends Component {
     }
     return CollateralStates.Success;
   }
+
+  // TODO: remove from admin modal
+  // TODO: logging... lol
+  async generateMultipleLinks() {
+    const { channelState, connext } = this.props;
+    const { paymentVal, count } = this.state;
+    if (!paymentVal || !count) {
+      console.warn("Error finding count or paymentVal in state:", this.state)
+      return
+    }
+
+    if (!channelState || !connext) {
+      console.warn("Error finding channelState or connext in props:", this.props)
+      return
+    }
+    const channel = convertChannelState("bn", channelState)
+
+    // get only the amount from the payment
+    const amountToken = Big(paymentVal.payments[0].amountToken)
+    // if balance < count * amountToken, err
+    console.log('******* count', count)
+    console.log('******* amountToken', amountToken.toString())
+    console.log('******* balanceTokenUser', channel.balanceTokenUser.toString())
+    console.log('******* mul', Big(count).mul(amountToken).toString())
+    if (Big(count).mul(amountToken).gt(channel.balanceTokenUser)) {
+      console.error("Insufficient funds for count * amountToken purchase value")
+      return
+    }
+    // generate payments in loop for buy
+    // all payments will have unique secrets, but the same
+    // denominated value
+    let payments = []
+    let i = 0
+    while (i < count) {
+      payments.push({
+        recipient: emptyAddress,
+        amountToken: amountToken.toString(),
+        amountWei: "0",
+        type: "PT_LINK",
+        meta: { secret: connext.generateSecret() }
+      })
+      i++
+    }
+    const purchase = {
+      meta: { reason: `Multiple link generation by ${channelState.user}`},
+      payments,
+    }
+
+    // try to purchase
+    try {
+      const { purchaseId } = await connext.buy(purchase)
+      console.log('************************************')
+      console.log(`Successful creation of multiple linked payments! Prepare for logging......`)
+      console.log(`********* purchaseId: ${purchaseId}`)
+      console.log(`********* link overview:`)
+      console.log(`amountToken in wei on link:`, amountToken.toString())
+      console.log(`total links in purchase:`, purchase.payments.length)
+      console.log('************************************')
+      console.log('************************************')
+      console.log('Here are your secrets:')
+      console.log(payments.map(p => p.meta.secret).toString())
+      console.log('************************************')
+      console.log('************************************')
+      console.log('Here is the submitted purchase:')
+      console.log(JSON.stringify(purchase, null, 2))
+    } catch (e) {
+      console.error("Not successful at making linked payments, please try again, or bug Layne on discord :)")
+      return
+    }
+  }
+
   // returns a string if there was an error, null
   // if successful
   async _sendPayment(paymentVal, isCollateralizing = false) {
@@ -546,7 +637,7 @@ class PayCard extends Component {
     this.setState({ paymentType: event.target.value });
   }
   render() {
-    const { classes, channelState, connextState } = this.props;
+    const { classes, connextState } = this.props;
     const { paymentState, paymentVal, displayVal, balanceError, addressError, scan, showReceipt, sendError } = this.state;
 
 
@@ -586,7 +677,7 @@ class PayCard extends Component {
           <Grid container direction="row" justify="center" alignItems="center">
             <Typography variant="h2">
               <span>
-                {getOwedBalanceInUSD(connextState)}
+                {getOwedBalanceInDAI(connextState)}
               </span>
             </Typography>
           </Grid>
@@ -674,6 +765,43 @@ class PayCard extends Component {
             history={this.props.history}
           />
         </Modal>
+        {/* TODO: remove modal */}
+        <Dialog
+          id="multipleLinks"
+          open={this.state.multipleLinks}
+          onClose={() => this.setState({ multipleLinks: false })}
+        >
+          <DialogContent>
+            <TextField
+              id="outlined-number"
+              label="Number of Links"
+              value={this.state.count || 0}
+              type="number"
+              margin="normal"
+              variant="outlined"
+              onChange={evt => this.updateCount(evt.target.value)}
+            />
+            <TextField
+              id="outlined-number"
+              label="Amount Dai in Link"
+              value={displayVal}
+              type="number"
+              margin="normal"
+              variant="outlined"
+              onChange={evt => this.updatePaymentHandler(evt.target.value)}
+            />
+            <DialogActions>
+              <Button
+                className={classes.button}
+                variant="contained"
+                onClick={() => this.generateMultipleLinks()}
+              >
+                Send
+                <SendIcon style={{ marginLeft: "5px" }} />
+              </Button>
+            </DialogActions>
+          </DialogContent>
+        </Dialog>
         <Grid item xs={12}>
           <Grid
             container

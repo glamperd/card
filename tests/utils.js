@@ -1,7 +1,15 @@
 const eth = require('ethers')
+const tokenAbi = require('human-standard-token-abi')
+
+const cy = global.cy
+const Cypress = global.Cypress
+
 const provider = new eth.providers.JsonRpcProvider(Cypress.env('provider'))
 const wallet = eth.Wallet.fromMnemonic(Cypress.env('mnemonic')).connect(provider)
 const origin = Cypress.env('publicUrl').substring(Cypress.env('publicUrl').indexOf('://')+3)
+const token = new eth.Contract(Cypress.env('tokenAddress'), tokenAbi, wallet)
+
+const gasMoney = '0.025'
 
 // Exported object, attach anything to this that you want available in tests
 const my = {}
@@ -72,7 +80,7 @@ my.cashout = () => {
   cy.contains('span', /processing withdrawal/i).should('exist')
   cy.contains('span', /processing withdrawal/i).should('not.exist')
   cy.contains('span', /withdraw confirmed/i).should('exist')
-  my.getBalance().should('contain', '0.00')
+  my.getChannelBalance().should('contain', '0.00')
 }
 
 ////////////////////////////////////////
@@ -130,7 +138,7 @@ my.getOnchainBalance = () => {
   }))
 }
 
-my.getBalance = () => {
+my.getChannelBalance = () => {
   return cy.wrap(new Cypress.Promise((resolve, reject) => {
     cy.get('h1').children('span').invoke('text').then(whole => {
       cy.get('h3').children('span').invoke('text').then(fraction => {
@@ -149,12 +157,30 @@ my.deposit = (value) => {
         to: address,
         value: eth.utils.parseEther(value)
       })).then(tx => {
-        return cy.wrap(wallet.provider.waitForTransaction(tx.hash).then(() => {
+        return cy.wrap(wallet.provider.waitForTransaction(tx.hash)).then(() => {
           cy.contains('span', /processing deposit/i).should('exist')
           cy.contains('span', /deposit confirmed/i).should('exist')
-          cy.resolve(my.getBalance).should('not.contain', '0.00')
-          my.getBalance().then(resolve)
-        }))
+          cy.resolve(my.getChannelBalance).should('not.contain', '0.00')
+          my.getChannelBalance().then(resolve)
+        })
+      })
+    })
+  }))
+}
+
+my.depositToken = (value) => {
+  return cy.wrap(new Cypress.Promise((resolve, reject) => {
+    my.getAddress().then(address => {
+      cy.log(`Depositing ${value} tokens into channel ${address}`)
+      return cy.wrap(token.transfer(
+        address,
+        eth.utils.parseEther(value).toHexString(),
+      )).then(tx => {
+        cy.log(`Waiting for tx ${tx.hash} to be mined...`)
+        return cy.wrap(wallet.provider.waitForTransaction(tx.hash)).then(() => {
+          cy.log(`Deposit successful`)
+          return my.deposit(gasMoney).then(resolve)
+        })
       })
     })
   }))
