@@ -279,7 +279,7 @@ class RedeemCard extends Component {
     this.setState({
       secret: query.secret,
       amount: {
-        amountToken: Web3Utils.toWei(query.amountToken, "ether"),
+        amountToken: Web3.utils.toWei(query.amountToken, "ether"),
         amountWei: "0" // TODO: add wei
       }
     });
@@ -320,7 +320,7 @@ class RedeemCard extends Component {
     // TODO: add wei
     const url = `${publicUrl}/redeem?secret=${
       secret ? secret : ""
-    }&amountToken=${amount ? Web3Utils.fromWei(amount.amountToken, "ether") : "0"}`;
+    }&amountToken=${amount ? Web3.utils.fromWei(amount.amountToken, "ether") : "0"}`;
     return url;
   }
 
@@ -476,7 +476,7 @@ class RedeemCard extends Component {
       return errs
     }
     // valid secret
-    if (!Web3Utils.isHex(secret)) {
+    if (!Web3.utils.isHex(secret)) {
       errs.push("Secret copied is invalid")
     }
     // valid amount
