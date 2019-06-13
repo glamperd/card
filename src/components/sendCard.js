@@ -228,7 +228,7 @@ class PayCard extends Component {
               ? props.scanArgs.recipient
               : "",
             amountToken: props.scanArgs.amount
-              ? Web3Utils.toWei(props.scanArgs.amount)
+              ? Web3.utils.toWei(props.scanArgs.amount)
               : "0",
             amountWei: "0",
           }
@@ -250,7 +250,7 @@ class PayCard extends Component {
     const query = queryString.parse(location.search);
     if (query.amountToken) {
       await this.setState(oldState => {
-        oldState.paymentVal.payments[0].amountToken = Web3Utils.toWei(
+        oldState.paymentVal.payments[0].amountToken = Web3.utils.toWei(
           query.amountToken
         );
         oldState.displayVal = query.amountToken;
@@ -279,7 +279,7 @@ class PayCard extends Component {
     }
     await this.setState(oldState => {
       oldState.paymentVal.payments[0].amountToken = value
-        ? Web3Utils.toWei(`${tokenVal}`, "ether")
+        ? Web3.utils.toWei(`${tokenVal}`, "ether")
         : "0";
       if (balanceError) {
         oldState.balanceError = balanceError;
@@ -337,7 +337,7 @@ class PayCard extends Component {
     // validate recipient is valid address OR the empty address
     // recipient address can be empty
     const isLink = paymentVal.payments[0].type === "PT_LINK";
-    const isValidRecipient = Web3Utils.isAddress(address) &&
+    const isValidRecipient = Web3.utils.isAddress(address) &&
       (isLink ? address === emptyAddress : address !== emptyAddress);
     if (!isValidRecipient) {
       addressError = address + " is an invalid address";
@@ -605,7 +605,7 @@ class PayCard extends Component {
           pathname: "/redeem",
           // TODO: add wei
           search: `?secret=${secret}&amountToken=${
-            Web3Utils.fromWei(amountToken, "ether")
+            Web3.utils.fromWei(amountToken, "ether")
           }`,
           state: { isConfirm: true, secret, amountToken }
         });
@@ -642,7 +642,7 @@ class PayCard extends Component {
 
 
     const payAmt = paymentVal.payments[0].amountToken
-      ? Web3Utils.fromWei(
+      ? Web3.utils.fromWei(
           paymentVal.payments[0].amountToken
         )
       : "0"
