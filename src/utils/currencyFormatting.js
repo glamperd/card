@@ -40,9 +40,9 @@ export function getBalanceEth(amount, connextState) {
     return "$0.00"
   }
 
-  const balance = new CurrencyConvertable(CurrencyType.WEI, amount, () => getExchangeRates(connextState))
+  const balance = Connext.Currency.DEI( amount, () => getExchangeRates(connextState))
 
-  const totalBalance = Currency.ETH(
+  const totalBalance = Connext.Currency.ETH(
     balance.toETH().amountBigNumber
   ).format({})
 
@@ -54,9 +54,9 @@ export function getBalanceToken(amount, connextState) {
     return "$0.00"
   }
 
-  const balance = new CurrencyConvertable(CurrencyType.BEI, amount, () => getExchangeRates(connextState))
+  const balance = Connext.Currency.DEI(amount, () => getExchangeRates(connextState))
 
-  const totalBalance = Currency.BOOTY(
+  const totalBalance = Connext.Currency.BOOTY(
     balance.toBOOTY().amountBigNumber
   ).format({})
 
