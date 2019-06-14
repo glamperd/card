@@ -34,3 +34,31 @@ export function getAmountInDAI(amounts, connextState, onlyTokens = true) {
   const totalAmount = Connext.Currency.WEI(totalWei, rateGetter).toDAI()
   return totalAmount.format({ withSymbol: false })
 }
+
+export function getBalanceEth(amount, connextState) {
+  if (!amount || !connextState) {
+    return "$0.00"
+  }
+
+  const balance = new CurrencyConvertable(CurrencyType.WEI, amount, () => getExchangeRates(connextState))
+
+  const totalBalance = Currency.ETH(
+    balance.toETH().amountBigNumber
+  ).format({})
+
+  return totalBalance
+}
+
+export function getBalanceToken(amount, connextState) {
+  if (!amount || !connextState) {
+    return "$0.00"
+  }
+
+  const balance = new CurrencyConvertable(CurrencyType.BEI, amount, () => getExchangeRates(connextState))
+
+  const totalBalance = Currency.BOOTY(
+    balance.toBOOTY().amountBigNumber
+  ).format({})
+
+  return totalBalance
+}
