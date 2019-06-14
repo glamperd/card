@@ -20,7 +20,7 @@ const styles = theme => ({
 class ChannelCard extends Component {
   render() {
     const { classes, channelState, connextState } = this.props;
-    const { custodialBalance } = this.state.persistent;
+    const custodialBalance = 0.00; // this.state.persistent;
     //const substr = channelState ? channelState.balanceTokenUser : "0";
     const hubWei = channelState ? getBalanceEth(channelState.balanceWeiHub, connextState) : "0";
     const hubToken = channelState ? getBalanceToken(channelState.balanceTokenHub, connextState) : "0";
