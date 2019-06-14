@@ -87,7 +87,7 @@ class ReceiveCard extends Component {
     }
     this.setState({
       qrUrl: this.generateQrUrl(value),
-      amountToken: Web3Utils.toWei(tokenVal, "ether"),
+      amountToken: Web3.utils.toWei(tokenVal, "ether"),
       displayValue: value,
       error,
     });
