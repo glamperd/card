@@ -22,10 +22,10 @@ class ChannelCard extends Component {
     const { classes, channelState, connextState } = this.props;
     const custodialBalance = 0.00; // this.state.persistent;
     //const substr = channelState ? channelState.balanceTokenUser : "0";
-    const hubWei = channelState ? getBalanceEth(channelState.balanceWeiHub, connextState) : "0";
-    const hubToken = channelState ? getBalanceToken(channelState.balanceTokenHub, connextState) : "0";
-    const userWei = channelState ? getBalanceEth(channelState.balanceWeiUser, connextState) : "0";
-    const userCustToken = custodialBalance ? getBalanceToken(custodialBalance.balanceToken, connextState) : "0";
+    const hubWei = "0.00"; //channelState ? getBalanceEth(channelState.balanceWeiHub, connextState) : "0";
+    const hubToken = "0.00"; // channelState ? getBalanceToken(channelState.balanceTokenHub, connextState) : "0";
+    const userWei = "0.00"; //channelState ? getBalanceEth(channelState.balanceWeiUser, connextState) : "0";
+    const userCustToken = "0.00"; //custodialBalance ? getBalanceToken(custodialBalance.balanceToken, connextState) : "0";
     const balance = getOwedBalanceInDAI(connextState)
     const whole = balance.substring(0, balance.indexOf('.'))
     const part = balance.substring(balance.indexOf('.'))
