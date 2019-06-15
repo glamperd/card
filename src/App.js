@@ -288,7 +288,7 @@ class App extends React.Component {
 
     const minDeposit = Connext.Currency.WEI(totalDepositGasWei, () => getExchangeRates(connextState));
 
-    const maxDeposit = Connext.Currency.DEI(CHANNEL_DEPOSIT_MAX, () => getExchangeRates(connextState));
+    const maxDeposit = Connext.Currency.DAI(CHANNEL_DEPOSIT_MAX, () => getExchangeRates(connextState));
 
     this.setState({ maxDeposit, minDeposit });
   }
