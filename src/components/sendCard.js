@@ -860,7 +860,7 @@ class PayCard extends Component {
           amountToken={
             paymentVal.payments[0].amountToken
               ? Web3.utils.fromWei(
-                  paymentVal.payments[0].amountToken
+                  paymentVal.payments[0].amountToken, "ether"
                 )
               : "0"
           }
