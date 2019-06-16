@@ -860,7 +860,7 @@ class PayCard extends Component {
           sendError={sendError}
           amountToken={
             paymentVal.payments[0].amountToken
-              ? Web3Utils.fromWei(
+              ? Web3.fromWei(
                   paymentVal.payments[0].amountToken
                 )
               : "0"
