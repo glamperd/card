@@ -26,7 +26,7 @@ import {
   DialogActions
 } from "@material-ui/core";
 import interval from "interval-promise";
-import Web3 from "web3";
+import * as Web3 from "web3";
 import { getOwedBalanceInDAI } from "../utils/currencyFormatting";
 
 const Big = (n) => eth.utils.bigNumberify(n.toString())
