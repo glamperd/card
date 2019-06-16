@@ -10,7 +10,7 @@ export function getOwedBalanceInDAI(connextState, onlyTokens = true) {
   }
   const rateGetter = () => getExchangeRates(connextState)
   const totalOwed = getCustodialAndChannelBalance(connextState)
-  const tokensOwed = Connext.Currency.DAI(totalOwed.amountToken, rateGetter)
+  const tokensOwed = Connext.Currency.DEI(totalOwed.amountToken, rateGetter)
   if (onlyTokens) {
     return tokensOwed.toDAI().format({ withSymbol: false })
   }
@@ -25,7 +25,7 @@ export function getAmountInDAI(amounts, connextState, onlyTokens = true) {
     return "0.00"
   }
   const rateGetter = () => getExchangeRates(connextState)
-  const tokenAmount = Connext.Currency.DAI(amounts.amountToken, rateGetter)
+  const tokenAmount = Connext.Currency.DEI(amounts.amountToken, rateGetter)
   if (onlyTokens) {
     return tokenAmount.toDAI().format({ withSymbol: false })
   }
@@ -40,7 +40,7 @@ export function getBalanceEth(amount, connextState) {
     return "$0.00"
   }
 
-  const balance = Connext.Currency.DAI( amount, () => getExchangeRates(connextState))
+  const balance = Connext.Currency.DEI( amount, () => getExchangeRates(connextState))
 
   const totalBalance = Connext.Currency.ETH(
     balance.toETH().amountBigNumber
@@ -54,7 +54,7 @@ export function getBalanceToken(amount, connextState) {
     return "$0.00"
   }
 
-  const balance = Connext.Currency.DAI(amount, () => getExchangeRates(connextState))
+  const balance = Connext.Currency.DEI(amount, () => getExchangeRates(connextState))
 
   const totalBalance = Connext.Currency.BOOTY(
     balance.toBOOTY().amountBigNumber
