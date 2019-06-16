@@ -26,11 +26,11 @@ import {
   DialogActions
 } from "@material-ui/core";
 import interval from "interval-promise";
-import Web3 from "web3";
+import Web3Utils from "web3-utils";
 import { getOwedBalanceInDAI } from "../utils/currencyFormatting";
 
 const Big = (n) => eth.utils.bigNumberify(n.toString())
-const { fromWei } = Web3.utils;
+//const { fromWei } = Web3.utils;
 const convertPayment = Connext.convert.Payment
 const convertChannelState = Connext.convert.ChannelState
 const emptyAddress = eth.constants.AddressZero
@@ -229,7 +229,7 @@ class PayCard extends Component {
               ? props.scanArgs.recipient
               : "",
             amountToken: props.scanArgs.amount
-              ? Web3.utils.toWei(props.scanArgs.amount)
+              ? Web3Utils.toWei(props.scanArgs.amount)
               : "0",
             amountWei: "0",
           }
@@ -251,7 +251,7 @@ class PayCard extends Component {
     const query = queryString.parse(location.search);
     if (query.amountToken) {
       await this.setState(oldState => {
-        oldState.paymentVal.payments[0].amountToken = Web3.utils.toWei(
+        oldState.paymentVal.payments[0].amountToken = Web3Utils.toWei(
           query.amountToken
         );
         oldState.displayVal = query.amountToken;
@@ -280,7 +280,7 @@ class PayCard extends Component {
     }
     await this.setState(oldState => {
       oldState.paymentVal.payments[0].amountToken = value
-        ? Web3.utils.toWei(`${tokenVal}`, "ether")
+        ? Web3Utils.toWei(`${tokenVal}`, "ether")
         : "0";
       if (balanceError) {
         oldState.balanceError = balanceError;
@@ -338,7 +338,7 @@ class PayCard extends Component {
     // validate recipient is valid address OR the empty address
     // recipient address can be empty
     const isLink = paymentVal.payments[0].type === "PT_LINK";
-    const isValidRecipient = Web3.utils.isAddress(address) &&
+    const isValidRecipient = Web3Utils.isAddress(address) &&
       (isLink ? address === emptyAddress : address !== emptyAddress);
     if (!isValidRecipient) {
       addressError = address + " is an invalid address";
@@ -606,7 +606,7 @@ class PayCard extends Component {
           pathname: "/redeem",
           // TODO: add wei
           search: `?secret=${secret}&amountToken=${
-            Web3.utils.fromWei(amountToken, "ether")
+            Web3Utils.fromWei(amountToken, "ether")
           }`,
           state: { isConfirm: true, secret, amountToken }
         });
@@ -860,7 +860,7 @@ class PayCard extends Component {
           sendError={sendError}
           amountToken={
             paymentVal.payments[0].amountToken
-              ? fromWei(
+              ? Web3Utils.fromWei(
                   paymentVal.payments[0].amountToken
                 )
               : "0"
