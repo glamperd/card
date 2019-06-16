@@ -30,7 +30,7 @@ import Web3 from "web3";
 import { getOwedBalanceInDAI } from "../utils/currencyFormatting";
 
 const Big = (n) => eth.utils.bigNumberify(n.toString())
-const Web3Utils = Web3.utils;
+const { fromWei } = Web3.utils;
 const convertPayment = Connext.convert.Payment
 const convertChannelState = Connext.convert.ChannelState
 const emptyAddress = eth.constants.AddressZero
@@ -860,7 +860,7 @@ class PayCard extends Component {
           sendError={sendError}
           amountToken={
             paymentVal.payments[0].amountToken
-              ? Web3.fromWei(
+              ? fromWei(
                   paymentVal.payments[0].amountToken
                 )
               : "0"
