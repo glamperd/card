@@ -38,6 +38,8 @@ jobs:
               git reset --hard origin/$CIRCLE_BRANCH
               export DAICARD_DOMAINNAME="$STAGING_URL"
               export DAICARD_MODE="staging"
+              export DAICARD_MAINNET_HUB_URL="https://staging.hub.connext.network"
+              export DAICARD_RINKEBY_HUB_URL="https://staging.hub.connext.network"
               bash ops/restart.sh prod
             EOF
 
