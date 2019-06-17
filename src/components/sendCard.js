@@ -230,7 +230,7 @@ class PayCard extends Component {
               ? props.scanArgs.recipient
               : "",
             amountToken: props.scanArgs.amount
-              ? Web3.utils.toWei(props.scanArgs.amount)
+              ? web3.utils.toWei(props.scanArgs.amount)
               : "0",
             amountWei: "0",
           }
@@ -252,7 +252,7 @@ class PayCard extends Component {
     const query = queryString.parse(location.search);
     if (query.amountToken) {
       await this.setState(oldState => {
-        oldState.paymentVal.payments[0].amountToken = Web3.utils.toWei(
+        oldState.paymentVal.payments[0].amountToken = web3.utils.toWei(
           query.amountToken
         );
         oldState.displayVal = query.amountToken;
@@ -281,7 +281,7 @@ class PayCard extends Component {
     }
     await this.setState(oldState => {
       oldState.paymentVal.payments[0].amountToken = value
-        ? Web3.utils.toWei(`${tokenVal}`, "ether")
+        ? web3.utils.toWei(`${tokenVal}`, "ether")
         : "0";
       if (balanceError) {
         oldState.balanceError = balanceError;
@@ -339,7 +339,7 @@ class PayCard extends Component {
     // validate recipient is valid address OR the empty address
     // recipient address can be empty
     const isLink = paymentVal.payments[0].type === "PT_LINK";
-    const isValidRecipient = Web3.utils.isAddress(address) &&
+    const isValidRecipient = web3.utils.isAddress(address) &&
       (isLink ? address === emptyAddress : address !== emptyAddress);
     if (!isValidRecipient) {
       addressError = address + " is an invalid address";
