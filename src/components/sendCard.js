@@ -29,6 +29,7 @@ import interval from "interval-promise";
 import Web3 from "web3";
 import { getOwedBalanceInDAI } from "../utils/currencyFormatting";
 
+const web3 = new Web3();
 const Big = (n) => eth.utils.bigNumberify(n.toString())
 //const { fromWei } = Web3.utils;
 const convertPayment = Connext.convert.Payment
@@ -606,7 +607,7 @@ class PayCard extends Component {
           pathname: "/redeem",
           // TODO: add wei
           search: `?secret=${secret}&amountToken=${
-            Web3.utils.fromWei(amountToken, "ether")
+            web3.utils.fromWei(amountToken, "ether")
           }`,
           state: { isConfirm: true, secret, amountToken }
         });
@@ -860,7 +861,7 @@ class PayCard extends Component {
           sendError={sendError}
           amountToken={
             paymentVal.payments[0].amountToken
-              ? Web3.utils.fromWei(
+              ? web3.utils.fromWei(
                   paymentVal.payments[0].amountToken
                 )
               : "0"
