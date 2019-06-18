@@ -41,7 +41,7 @@ const overrides = {
 };
 
 // Constants for channel max/min - this is also enforced on the hub
-const DEPOSIT_ESTIMATED_GAS = Big("700000"); // 700k gas // TODO: estimate this dynamically
+const DEPOSIT_ESTIMATED_GAS = Big("800000"); // 700k gas // TODO: estimate this dynamically
 const HUB_EXCHANGE_CEILING = eth.constants.WeiPerEther.mul(Big(69)); // 69 TST
 const CHANNEL_DEPOSIT_MAX = eth.constants.WeiPerEther.mul(Big(30)); // 30 TST
 
