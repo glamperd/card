@@ -8,6 +8,7 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import { formatTxDateObj } from '../utils/datetimeFormatting';
 
 const styles = theme => ({
   table: {
@@ -65,6 +66,7 @@ class TransactionsCard extends Component {
 
     let type;
     let address;
+    let date;
     if (tx.recipient === this.props.address) {
       type = 'receive';
       address = tx.sender;
@@ -73,13 +75,9 @@ class TransactionsCard extends Component {
       type = 'send';
       address = tx.recipient;
     }
+    date = formatTxDateObj(new Date(tx.createdOn));
 
-    return {
-      address,
-      type,
-      amount,
-      'date': tx.createdOn
-    };
+    return {address, type, amount, date};
   }
 
   render() {
