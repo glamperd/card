@@ -53,6 +53,7 @@ class TransactionsCard extends Component {
           </Typography>
           <TransactionsTable
             txHistory={txHistory}
+            address={this.props.address}
           />
         </Grid>
         <Grid item xs={12}>
