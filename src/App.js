@@ -19,6 +19,7 @@ import RedeemCard from "./components/redeemCard";
 import SetupCard from "./components/setupCard";
 import Confirmations from "./components/Confirmations";
 import MySnackbar from "./components/snackBar";
+import TransactionsCard from "./components/transactionsCard";
 
 const humanTokenAbi = require("./abi/humanToken.json");
 
@@ -565,6 +566,16 @@ class App extends React.Component {
               )}
             />
             <Route path="/support" render={props => <SupportCard {...props} channelState={channelState} />} />
+            <Route
+              path="/transactions"
+              render={props => (
+                <TransactionsCard
+                  {...props}
+                  address={address}
+                  connext={connext}
+                />
+              )}
+            />
           </Paper>
         </Grid>
       </Router>
