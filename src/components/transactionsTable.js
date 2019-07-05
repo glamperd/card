@@ -1,11 +1,13 @@
 import React, { Component } from "react";
-import { withStyles } from "@material-ui/core";
 import Web3 from "web3";
 
+import { withStyles } from "@material-ui/core";
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
+import TableFooter from '@material-ui/core/TableFooter';
 import TableHead from '@material-ui/core/TableHead';
+import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import { formatTxDateObj } from '../utils/datetimeFormatting';
 
@@ -15,7 +17,7 @@ const styles = theme => ({
     whiteSpace: 'nowrap'
   },
   tableCell: {
-    width: "25%",
+    width: "100%",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis"
@@ -27,8 +29,36 @@ class TransactionsTable extends Component {
     super(props);
 
     this.state = {
-      page: 1,
+      page: 0,
     };
+    this.paginationPerPage = 4;
+    this.processedTxHistory = [];
+  }
+
+  componentDidMount() {
+    const { paginationPerPage } = this.props;
+
+    // Set pagination options
+    if (paginationPerPage) this.paginationPerPage = paginationPerPage;
+
+    // Set processed txHistory
+    this.setProcessedTxHistory()
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.txHistory !== prevProps.txHistory) {
+      // Set processed txHistory
+      this.setProcessedTxHistory()
+    }
+  }
+
+  setProcessedTxHistory = () => {
+    const { filter, txHistory } = this.props;
+    let newTxHistory;
+
+    newTxHistory = this.filterTxHistory(txHistory, filter);
+    newTxHistory = this.formatTxHistory(newTxHistory, filter);
+    this.processedTxHistory = newTxHistory;
   }
 
   filterTxHistory = (txHistory, filter) => {
@@ -49,11 +79,6 @@ class TransactionsTable extends Component {
         return txHistory;
     }
   }
-
-  // truncateTxHistory = txHistory => {
-  //   txHistory
-  //   this.state.page
-  // }
 
   formatAmount = amountObj => {
     let formattedAmount;
@@ -109,16 +134,25 @@ class TransactionsTable extends Component {
     return {address, amount, date};
   }
 
-  getFormattedTxHistory = () => {
-    const { txHistory, filter } = this.props;
+  formatTxHistory = (txHistory, filter) => {
     const txs = [];
     if (txHistory) {
-      // Filter the txs for the specified table
-      const filteredTxHistory = this.filterTxHistory(txHistory, filter);
-      // address, type, amount, date
-      for (const tx of filteredTxHistory) txs.push(this.formatRawTx(tx, filter));
+      for (const tx of txHistory) txs.push(this.formatRawTx(tx, filter));
     }
     return txs;
+  }
+
+  getSelectedTxHistory = () => {
+    const { page } = this.state;
+    const { pagination } = this.props;
+    const { processedTxHistory, paginationPerPage } = this;
+
+    if (pagination) {
+      const offset = Math.ceil(page * paginationPerPage);
+      return processedTxHistory.slice(offset).slice(0, paginationPerPage);
+    }
+
+    return processedTxHistory
   }
 
   getTableBodyData = txHistory => {
@@ -153,6 +187,7 @@ class TransactionsTable extends Component {
               align="center"
               padding="none"
               style={{textTransform: "capitalize"}}
+              className={this.props.classes.tableCell}
             >
               {label}
             </TableCell>)}
@@ -161,9 +196,14 @@ class TransactionsTable extends Component {
     return tableHeadData;
   }
 
+  handleChangePage = (event, page) => {
+    this.setState({ page });
+  };
+
   render() {
+    const { page } = this.state;
     const { classes } = this.props;
-    const txHistory = this.getFormattedTxHistory();
+    const txHistory = this.getSelectedTxHistory();
 
     const tableHeadData = this.getTableHeadData(txHistory);
     const tableBodyData = this.getTableBodyData(txHistory);
@@ -179,6 +219,17 @@ class TransactionsTable extends Component {
         <TableBody>
           {tableBodyData}
         </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TablePagination
+              count={this.processedTxHistory.length}
+              rowsPerPage={this.paginationPerPage}
+              rowsPerPageOptions={[this.paginationPerPage]}
+              onChangePage={this.handleChangePage}
+              page={page}
+            />
+          </TableRow>
+        </TableFooter>
       </Table>
     );
   }
