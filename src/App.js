@@ -114,7 +114,7 @@ class App extends React.Component {
       },
       minDeposit: null,
       maxDeposit: null,
-      txHistory: null
+      txHistory: []
     };
 
     this.networkHandler = this.networkHandler.bind(this);
