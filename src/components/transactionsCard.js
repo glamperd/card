@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Button from "@material-ui/core/Button";
 import { Grid, Typography } from "@material-ui/core";
 
+import QrCode from "qrcode.react";
 import TransactionsTable from './transactionsTable';
 
 class TransactionsCard extends Component {
@@ -32,6 +33,7 @@ class TransactionsCard extends Component {
 
   render() {
     const { txHistory } = this.state;
+    const { address } = this.props;
 
     return (
       <Grid
@@ -47,13 +49,38 @@ class TransactionsCard extends Component {
           justifyContent: "center"
         }}
       >
+        <Grid item xs={12} style={{marginBottom: "30px"}}>
+          <QrCode
+            value={address}
+            size={45}
+            style={{
+              float: "left",
+              marginRight: "30px"
+            }}
+          />
+          <Typography
+            noWrap
+            color="primary"
+            variant="h6"
+            style={{
+              border: "1px solid #FCA311",
+              borderRadius: "5px",
+              padding: "5px 10px",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis"
+            }}
+          >
+            {address}
+          </Typography>
+        </Grid>
         <Grid item xs={12}>
           <Typography variant="h5">
             Transactions
           </Typography>
           <TransactionsTable
             txHistory={txHistory}
-            address={this.props.address}
+            address={address}
           />
         </Grid>
         <Grid item xs={12}>
