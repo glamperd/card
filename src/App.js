@@ -258,11 +258,6 @@ class App extends React.Component {
     this.setState({ loadingConnext: false });
   }
 
-  async setTxHistory() {
-    const txHistory = await this.state.connext.getPaymentHistory();
-    this.setState({ txHistory });
-  }
-
   async poller() {
     await this.autoDeposit();
     await this.autoSwap();
@@ -373,6 +368,11 @@ class App extends React.Component {
     if (channelState && weiBalance.gt(Big("0")) && tokenBalance.lte(HUB_EXCHANGE_CEILING)) {
       await this.state.connext.exchange(channelState.balanceWeiUser, "wei");
     }
+  }
+
+  async setTxHistory() {
+    const txHistory = await this.state.connext.getPaymentHistory();
+    this.setState({ txHistory });
   }
 
   async checkStatus() {
