@@ -114,6 +114,7 @@ class App extends React.Component {
       },
       minDeposit: null,
       maxDeposit: null,
+      txHistory: null
     };
 
     this.networkHandler = this.networkHandler.bind(this);
@@ -247,7 +248,8 @@ class App extends React.Component {
         channelState: state.persistent.channel,
         connextState: state,
         runtime: state.runtime,
-        exchangeRate: state.runtime.exchangeRate ? state.runtime.exchangeRate.rates.DAI : 0
+        exchangeRate: state.runtime.exchangeRate ? state.runtime.exchangeRate.rates.DAI : 0,
+        txHistory: this.fetchTxHistory()
       });
       console.log('Connext updated:', state)
       this.checkStatus();
@@ -255,6 +257,13 @@ class App extends React.Component {
     // start polling
     await connext.start();
     this.setState({ loadingConnext: false });
+  }
+
+  async fetchTxHistory() {
+    const txHistory = await this.state.connext.getPaymentHistory();
+    return Promise.resolve(txHistory) === txHistory ? txHistory : null
+    // if (txHistory instanceof Promise) return null;
+    // return txHistory;
   }
 
   async poller() {
@@ -447,7 +456,8 @@ class App extends React.Component {
       maxDeposit,
       minDeposit,
       ethprovider,
-      status
+      status,
+      txHistory
     } = this.state;
     const { classes } = this.props;
     return (
@@ -572,7 +582,8 @@ class App extends React.Component {
                 <TransactionsCard
                   {...props}
                   address={address}
-                  connext={connext}
+                  // connext={connext}
+                  txHistory={txHistory}
                 />
               )}
             />

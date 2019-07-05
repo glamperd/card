@@ -23,6 +23,14 @@ const styles = theme => ({
 });
 
 class TransactionsTable extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      page: 1,
+    };
+  }
+
   filterTxHistory = (txHistory, filter) => {
     switch (filter) {
       case 'send':
@@ -41,6 +49,11 @@ class TransactionsTable extends Component {
         return txHistory;
     }
   }
+
+  // truncateTxHistory = txHistory => {
+  //   txHistory
+  //   this.state.page
+  // }
 
   formatAmount = amountObj => {
     let formattedAmount;
@@ -99,7 +112,9 @@ class TransactionsTable extends Component {
   getFormattedTxHistory = () => {
     const { txHistory, filter } = this.props;
     const txs = [];
-    if (txHistory) {
+    if (txHistory && !(txHistory instanceof Promise)) {
+      console.log(txHistory);
+
       // Filter the txs for the specified table
       const filteredTxHistory = this.filterTxHistory(txHistory, filter);
       // address, type, amount, date
