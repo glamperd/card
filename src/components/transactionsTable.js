@@ -214,7 +214,7 @@ class TransactionsTable extends Component {
 
   render() {
     const { page } = this.state;
-    const { classes } = this.props;
+    const { classes, pagination } = this.props;
     const txHistory = this.getSelectedTxHistory();
 
     const tableHeadData = this.getTableHeadData(txHistory);
@@ -231,17 +231,19 @@ class TransactionsTable extends Component {
         <TableBody>
           {tableBodyData}
         </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TablePagination
-              count={this.processedTxHistory.length}
-              rowsPerPage={this.paginationPerPage}
-              rowsPerPageOptions={[this.paginationPerPage]}
-              onChangePage={this.handleChangePage}
-              page={page}
-            />
-          </TableRow>
-        </TableFooter>
+        {pagination &&
+          <TableFooter>
+            <TableRow>
+              <TablePagination
+                count={this.processedTxHistory.length}
+                rowsPerPage={this.paginationPerPage}
+                rowsPerPageOptions={[this.paginationPerPage]}
+                onChangePage={this.handleChangePage}
+                page={page}
+              />
+            </TableRow>
+          </TableFooter>
+        }
       </Table>
     );
   }
