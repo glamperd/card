@@ -55,6 +55,7 @@ class TransactionsCard extends Component {
           <TransactionsTable
             txHistory={txHistory}
             address={address}
+            pagination={true}
           />
         </Grid>
         <Grid item xs={12}>
