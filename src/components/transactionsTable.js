@@ -23,26 +23,44 @@ const styles = theme => ({
 });
 
 class TransactionsTable extends Component {
-  getFormattedTxHistory = () => {
-    const { txHistory } = this.props;
-    const txs = [];
-    if (txHistory) {
-      // address, type, amount, date
-      for (const tx of txHistory) txs.push(this.formatRawTx(tx));
+  filterTxHistory = (txHistory, filter) => {
+    switch (filter) {
+      case 'send':
+        return txHistory.filter(tx =>
+          tx.type === 'PT_CHANNEL' &&
+          tx.sender === this.props.address
+        );
+      case 'receive':
+        return txHistory.filter(tx =>
+          tx.type === 'PT_CHANNEL' &&
+          tx.recipient === this.props.address
+        );
+      case 'deposit': // TODO
+      case 'withdrawal':  // TODO
+      default:
+        return txHistory;
     }
-    return txs;
   }
 
-  formatRawTx = (tx) => {
-    // console.log(tx);
+  formatRawTx = (tx, filter) => {
+    switch (filter) {
+      case 'send':
+      case 'receive':
+      case 'deposit':
+      case 'withdrawal':
+        return this.formatRawTxNoType(tx);
+      default:
+        return this.formatRawTxDefault(tx);
+    }
+  }
+
+
+  formatRawTxDefault = tx => {
     const convertedAmount = Web3.utils.fromWei(tx.amount.amountToken, "ether");
     const amount = tx.amountWei ? `${convertedAmount}ETH` : `$${convertedAmount}`;
 
-    let type;
-    let address;
-    let date;
+    let address, type;
     if (tx.recipient === this.props.address) {
-      console.log(tx)
       type = 'receive';
       address = tx.sender;
     }
@@ -50,14 +68,80 @@ class TransactionsTable extends Component {
       type = 'send';
       address = tx.recipient;
     }
-    date = formatTxDateObj(new Date(tx.createdOn));
+    const date = formatTxDateObj(new Date(tx.createdOn));
 
     return {address, type, amount, date};
+  }
+
+  formatRawTxNoType = tx => {
+    const convertedAmount = Web3.utils.fromWei(tx.amount.amountToken, "ether");
+    const amount = tx.amountWei ? `${convertedAmount}ETH` : `$${convertedAmount}`;
+
+    const address = tx.recipient;
+
+    const date = formatTxDateObj(new Date(tx.createdOn));
+
+    return {address, amount, date};
+  }
+
+  getFormattedTxHistory = () => {
+    const { txHistory, filter } = this.props;
+    const txs = [];
+    if (txHistory) {
+      // Filter the txs for the specified table
+      const filteredTxHistory = this.filterTxHistory(txHistory, filter);
+      // address, type, amount, date
+      for (const tx of filteredTxHistory) txs.push(this.formatRawTx(tx, filter));
+    }
+    return txs;
+  }
+
+  getTableBodyData = txHistory => {
+    let tableBodyData;
+    if (txHistory.length) {
+      tableBodyData = txHistory.map((tx, i) => (
+        <TableRow key={i}>
+          {Object.keys(tx).map((label, j) =>
+            <TableCell
+              key={`${label}-${j}`}
+              align="center"
+              padding="none"
+              className={this.props.classes.tableCell}
+            >
+              {tx[label]}
+            </TableCell>
+          )}
+        </TableRow>
+      ));
+    }
+    return tableBodyData;
+  }
+
+  getTableHeadData = txHistory => {
+    let tableHeadData;
+    if (txHistory.length) {
+      tableHeadData =
+        <TableRow>
+          {Object.keys(txHistory[0]).map((label, i) =>
+            <TableCell
+              key={label}
+              align="center"
+              padding="none"
+              style={{textTransform: "capitalize"}}
+            >
+              {label}
+            </TableCell>)}
+        </TableRow>
+    }
+    return tableHeadData;
   }
 
   render() {
     const { classes } = this.props;
     const txHistory = this.getFormattedTxHistory();
+
+    const tableHeadData = this.getTableHeadData(txHistory);
+    const tableBodyData = this.getTableBodyData(txHistory);
 
     return (
       <Table
@@ -65,22 +149,10 @@ class TransactionsTable extends Component {
         size="small"
       >
         <TableHead>
-          <TableRow>
-            <TableCell align="center" padding="none">Address</TableCell>
-            <TableCell align="center" padding="none">Type</TableCell>
-            <TableCell align="center" padding="none">Amount</TableCell>
-            <TableCell align="center" padding="none">Date</TableCell>
-          </TableRow>
+          {tableHeadData}
         </TableHead>
         <TableBody>
-          {txHistory.map(tx => (
-            <TableRow>
-              <TableCell align="center" padding="none" className={classes.tableCell}>{tx.address}</TableCell>
-              <TableCell align="center" padding="none" className={classes.tableCell}>{tx.type}</TableCell>
-              <TableCell align="center" padding="none" className={classes.tableCell}>{tx.amount}</TableCell>
-              <TableCell align="center" padding="none" className={classes.tableCell}>{tx.date}</TableCell>
-            </TableRow>
-          ))}
+          {tableBodyData}
         </TableBody>
       </Table>
     );
