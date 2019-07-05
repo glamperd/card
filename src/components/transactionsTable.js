@@ -142,6 +142,21 @@ class TransactionsTable extends Component {
     return txs;
   }
 
+  getColLabels = () => {
+    switch (this.props.filter) {
+      case 'send':
+        return ["Recipient", "Amount", "Date"]
+      case 'receive':
+        return ["Sender", "Amount", "Date"]
+      case 'deposit':
+        return ["Recipient", "Amount", "Date"]
+      case 'withdrawal':
+        return ["Recipient", "Amount", "Date"]
+      default:
+        return ["Address", "Type", "Amount", "Date"]
+    }
+  }
+
   getSelectedTxHistory = () => {
     const { page } = this.state;
     const { pagination } = this.props;
@@ -176,29 +191,26 @@ class TransactionsTable extends Component {
     return tableBodyData;
   }
 
-  getTableHeadData = txHistory => {
-    let tableHeadData;
-    if (txHistory.length) {
-      tableHeadData =
-        <TableRow>
-          {Object.keys(txHistory[0]).map((label, i) =>
-            <TableCell
-              key={label}
-              align="center"
-              padding="none"
-              style={{textTransform: "capitalize"}}
-              className={this.props.classes.tableCell}
-            >
-              {label}
-            </TableCell>)}
-        </TableRow>
-    }
-    return tableHeadData;
+  getTableHeadData = () => {
+    return (
+      <TableRow>
+        {this.getColLabels().map((label, i) =>
+          <TableCell
+            key={label}
+            align="center"
+            padding="none"
+            className={this.props.classes.tableCell}
+          >
+            {label}
+          </TableCell>
+        )}
+      </TableRow>
+    );
   }
 
   handleChangePage = (event, page) => {
     this.setState({ page });
-  };
+  }
 
   render() {
     const { page } = this.state;
