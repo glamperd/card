@@ -112,9 +112,7 @@ class TransactionsTable extends Component {
   getFormattedTxHistory = () => {
     const { txHistory, filter } = this.props;
     const txs = [];
-    if (txHistory && !(txHistory instanceof Promise)) {
-      console.log(txHistory);
-
+    if (txHistory) {
       // Filter the txs for the specified table
       const filteredTxHistory = this.filterTxHistory(txHistory, filter);
       // address, type, amount, date

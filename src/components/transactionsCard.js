@@ -6,34 +6,8 @@ import QrCode from "qrcode.react";
 import TransactionsTable from './transactionsTable';
 
 class TransactionsCard extends Component {
-  // constructor(props) {
-  //   super(props);
-
-  //   this.state = {
-  //     txHistory: null,
-  //   };
-  // }
-
-  // componentDidMount() {
-  //   this.fetchTxHistory();
-  // }
-
-  // componentDidUpdate() {
-  //   if (!this.state.txHistory) {
-  //     this.fetchTxHistory();
-  //   }
-  // }
-
-  // fetchTxHistory = async () => {
-  //   if (this.props.connext) {
-  //     const txHistory = await this.props.connext.getPaymentHistory();
-  //     this.setState({ txHistory });
-  //   }
-  // }
-
   render() {
     const { address, txHistory } = this.props;
-    console.log(txHistory);
 
     return (
       <Grid

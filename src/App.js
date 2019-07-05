@@ -248,8 +248,7 @@ class App extends React.Component {
         channelState: state.persistent.channel,
         connextState: state,
         runtime: state.runtime,
-        exchangeRate: state.runtime.exchangeRate ? state.runtime.exchangeRate.rates.DAI : 0,
-        txHistory: this.fetchTxHistory()
+        exchangeRate: state.runtime.exchangeRate ? state.runtime.exchangeRate.rates.DAI : 0
       });
       console.log('Connext updated:', state)
       this.checkStatus();
@@ -259,16 +258,15 @@ class App extends React.Component {
     this.setState({ loadingConnext: false });
   }
 
-  async fetchTxHistory() {
+  async setTxHistory() {
     const txHistory = await this.state.connext.getPaymentHistory();
-    return Promise.resolve(txHistory) === txHistory ? txHistory : null
-    // if (txHistory instanceof Promise) return null;
-    // return txHistory;
+    this.setState({ txHistory });
   }
 
   async poller() {
     await this.autoDeposit();
     await this.autoSwap();
+    await this.setTxHistory();
 
     interval(async (iteration, stop) => {
       await this.autoDeposit();
@@ -277,6 +275,10 @@ class App extends React.Component {
     interval(async (iteration, stop) => {
       await this.autoSwap();
     }, 1000);
+
+    interval(async (iteration, stop) => {
+      await this.setTxHistory();
+    }, 5000);
   }
 
   async setDepositLimits() {
