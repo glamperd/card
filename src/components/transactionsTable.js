@@ -42,6 +42,19 @@ class TransactionsTable extends Component {
     }
   }
 
+  formatAmount = amountObj => {
+    let formattedAmount;
+    // ETH
+    if (amountObj.amountWei > 0) {
+      formattedAmount = `${Web3.utils.fromWei(amountObj.amountWei, "ether")}ETH`;
+    }
+    // DAI
+    else {
+      formattedAmount = `$${Web3.utils.fromWei(amountObj.amountToken, "ether")}`;
+    }
+    return formattedAmount;
+  }
+
   formatRawTx = (tx, filter) => {
     switch (filter) {
       case 'send':
@@ -56,8 +69,7 @@ class TransactionsTable extends Component {
 
 
   formatRawTxDefault = tx => {
-    const convertedAmount = Web3.utils.fromWei(tx.amount.amountToken, "ether");
-    const amount = tx.amountWei ? `${convertedAmount}ETH` : `$${convertedAmount}`;
+    const amount = this.formatAmount(tx.amount);
 
     let address, type;
     if (tx.recipient === this.props.address) {
