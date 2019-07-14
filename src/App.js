@@ -584,7 +584,7 @@ class App extends React.Component {
                 <TransactionsCard
                   {...props}
                   address={address}
-                  // connext={connext}
+                  connextState={connextState}
                   txHistory={txHistory}
                 />
               )}

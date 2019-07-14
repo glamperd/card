@@ -31,7 +31,7 @@ class TransactionsTable extends Component {
     this.state = {
       page: 0,
     };
-    this.paginationPerPage = 4;
+    this.paginationPerPage = 5;
     this.processedTxHistory = [];
   }
 

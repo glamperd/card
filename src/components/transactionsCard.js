@@ -1,13 +1,15 @@
 import React, { Component } from "react";
 import Button from "@material-ui/core/Button";
 import { Grid, Typography } from "@material-ui/core";
+import HistoryIcon from "@material-ui/icons/History";
 
-import QrCode from "qrcode.react";
+import { getOwedBalanceInDAI } from "../utils/currencyFormatting";
+
 import TransactionsTable from './transactionsTable';
 
 class TransactionsCard extends Component {
   render() {
-    const { address, txHistory } = this.props;
+    const { address, txHistory, connextState } = this.props;
 
     return (
       <Grid
@@ -23,35 +25,21 @@ class TransactionsCard extends Component {
           justifyContent: "center"
         }}
       >
-        <Grid item xs={12} style={{marginBottom: "30px"}}>
-          <QrCode
-            value={address}
-            size={45}
-            style={{
-              float: "left",
-              marginRight: "30px"
-            }}
-          />
-          <Typography
-            noWrap
-            color="primary"
-            variant="h6"
-            style={{
-              border: "1px solid #FCA311",
-              borderRadius: "5px",
-              padding: "5px 10px",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis"
-            }}
-          >
-            {address}
-          </Typography>
-        </Grid>
         <Grid item xs={12}>
-          <Typography variant="h5">
-            Transactions
-          </Typography>
+          <Grid item xs={12} style={{ justifyContent: "center" }}>
+            <HistoryIcon
+              style={{ width: "40px", height: "40px" }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Grid container direction="row" justify="center" alignItems="center">
+              <Typography variant="h2">
+                <span>
+                  {getOwedBalanceInDAI(connextState)}
+                </span>
+              </Typography>
+            </Grid>
+          </Grid>
           <TransactionsTable
             txHistory={txHistory}
             address={address}
