@@ -78,7 +78,6 @@ class ReceiveCard extends Component {
     const decimal = (
       value.startsWith('.') ? value.substr(1) : value.split('.')[1]
     )
-
     let error = null
     let tokenVal = value
     if (decimal && decimal.length > 18) {
@@ -87,7 +86,7 @@ class ReceiveCard extends Component {
     }    
     this.setState({
       qrUrl: this.generateQrUrl(value),
-      amountToken: Web3.utils.toWei(tokenVal, "ether"),
+      amountToken: tokenVal ? Web3.utils.toWei(tokenVal, "ether") : null,
       displayValue: value,
       error,
     });
