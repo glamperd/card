@@ -304,7 +304,7 @@ class PayCard extends Component {
       let temp = data[1].split("&");
       let amount = temp[0].split("=")[1];
       let recipient = temp[1].split("=")[1];
-      if (Number(amount)) this.updatePaymentHandler(amount);
+      if (Number(amount) > 0) this.updatePaymentHandler(amount);
       this.updateRecipientHandler(recipient);
     } else {
       this.updateRecipientHandler(scanResult);
