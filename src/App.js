@@ -116,6 +116,9 @@ class App extends React.Component {
     };
 
     this.networkHandler = this.networkHandler.bind(this);
+
+    // set public url
+    publicUrl = window.location.origin.toLowerCase();
   }
 
   // ************************************************* //
@@ -125,9 +128,6 @@ class App extends React.Component {
   async componentDidMount() {
     // on mount, check if you need to refund by removing maxBalance
     localStorage.removeItem("refunding");
-
-    // set public url
-    publicUrl = window.location.origin.toLowerCase();
 
     // Get mnemonic and rpc type
     let mnemonic = localStorage.getItem("mnemonic");
