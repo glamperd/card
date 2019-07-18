@@ -19,6 +19,7 @@ import RedeemCard from "./components/redeemCard";
 import SetupCard from "./components/setupCard";
 import Confirmations from "./components/Confirmations";
 import MySnackbar from "./components/snackBar";
+import TransactionsCard from "./components/transactionsCard";
 
 const humanTokenAbi = require("./abi/humanToken.json");
 
@@ -113,6 +114,7 @@ class App extends React.Component {
       },
       minDeposit: null,
       maxDeposit: null,
+      txHistory: []
     };
 
     this.networkHandler = this.networkHandler.bind(this);
@@ -259,6 +261,7 @@ class App extends React.Component {
   async poller() {
     await this.autoDeposit();
     await this.autoSwap();
+    await this.setTxHistory();
 
     interval(async (iteration, stop) => {
       await this.autoDeposit();
@@ -267,6 +270,10 @@ class App extends React.Component {
     interval(async (iteration, stop) => {
       await this.autoSwap();
     }, 1000);
+
+    interval(async (iteration, stop) => {
+      await this.setTxHistory();
+    }, 5000);
   }
 
   async setDepositLimits() {
@@ -363,6 +370,11 @@ class App extends React.Component {
     }
   }
 
+  async setTxHistory() {
+    const txHistory = await this.state.connext.getPaymentHistory();
+    this.setState({ txHistory });
+  }
+
   async checkStatus() {
     const { runtime, status } = this.state;
     let log = () => {};
@@ -446,7 +458,8 @@ class App extends React.Component {
       maxDeposit,
       minDeposit,
       ethprovider,
-      status
+      status,
+      txHistory
     } = this.state;
     const { classes } = this.props;
     return (
@@ -565,6 +578,17 @@ class App extends React.Component {
               )}
             />
             <Route path="/support" render={props => <SupportCard {...props} channelState={channelState} />} />
+            <Route
+              path="/transactions"
+              render={props => (
+                <TransactionsCard
+                  {...props}
+                  address={address}
+                  connextState={connextState}
+                  txHistory={txHistory}
+                />
+              )}
+            />
           </Paper>
         </Grid>
       </Router>
