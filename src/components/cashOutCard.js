@@ -317,6 +317,7 @@ class CashOutCard extends Component {
                 variant="contained"
                 fullWidth
                 onClick={() => this.withdrawalHandler(false)}
+                disabled={!connextState || hasPendingOps(channelState)}
               >
                 Cash Out Dai
                 <img
