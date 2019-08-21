@@ -24,7 +24,7 @@
     "axios": "^0.18.0",
     "bluebird": "^3.5.3",
     "chai": "^4.2.0",
-    "connext": "^4.1.7",
+    "connext": "^4.1.8",
     "dotenv": "^8.0.0",
     "eth-sig-util": "^2.1.0",
     "ethereum-blockies-png": "^0.1.3",

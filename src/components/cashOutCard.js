@@ -69,22 +69,32 @@ class CashOutCard extends Component {
     const { channelState, connextState, exchangeRate } = this.props
     let { withdrawalVal } = this.state;
 
-    if (withdrawEth && channelState && connextState) {
+    if (channelState && connextState) {
       const { custodialBalance } = connextState.persistent
       const amountToken = Big(channelState.balanceTokenUser).add(custodialBalance.balanceToken)
       const amountWei = Big(channelState.balanceWeiUser).add(custodialBalance.balanceWei)
-      // withdraw all channel balance in eth
-      withdrawalVal = {
-        ...withdrawalVal,
-        exchangeRate,
-        tokensToSell: amountToken.toString(),
-        withdrawalWeiUser: amountWei.toString(),
-        weiToSell: "0",
-        withdrawalTokenUser: "0"
-      };
-    } else {
-      console.error("Not permitting withdrawal of tokens at this time")
-      return
+
+      if (withdrawEth) {
+        // withdraw all channel balance in eth
+        withdrawalVal = {
+          ...withdrawalVal,
+          exchangeRate,
+          tokensToSell: amountToken.toString(),
+          withdrawalWeiUser: amountWei.toString(),
+          weiToSell: "0",
+          withdrawalTokenUser: "0"
+        };
+      } else {
+        // withdraw all channel balance in tokens
+        withdrawalVal = {
+          ...withdrawalVal,
+          exchangeRate,
+          tokensToSell:"0",
+          withdrawalWeiUser: "0",
+          weiToSell: amountWei.toString(),
+          withdrawalTokenUser: amountToken.toString(),
+        };
+      }
     }
 
     this.setState({ withdrawalVal });
@@ -307,7 +317,6 @@ class CashOutCard extends Component {
                 variant="contained"
                 fullWidth
                 onClick={() => this.withdrawalHandler(false)}
-                disabled
               >
                 Cash Out Dai
                 <img
