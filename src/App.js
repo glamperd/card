@@ -19,6 +19,7 @@ import RedeemCard from "./components/redeemCard";
 import SetupCard from "./components/setupCard";
 import Confirmations from "./components/Confirmations";
 import MySnackbar from "./components/snackBar";
+import TransactionsCard from "./components/transactionsCard";
 
 const humanTokenAbi = require("./abi/humanToken.json");
 
@@ -43,7 +44,7 @@ const overrides = {
 };
 
 // Constants for channel max/min - this is also enforced on the hub
-const DEPOSIT_ESTIMATED_GAS = Big("700000"); // 700k gas // TODO: estimate this dynamically
+const DEPOSIT_ESTIMATED_GAS = Big("800000"); // 700k gas // TODO: estimate this dynamically
 const HUB_EXCHANGE_CEILING = eth.constants.WeiPerEther.mul(Big(69)); // 69 TST
 const CHANNEL_DEPOSIT_MAX = eth.constants.WeiPerEther.mul(Big(30)); // 30 TST
 
@@ -115,9 +116,13 @@ class App extends React.Component {
       },
       minDeposit: null,
       maxDeposit: null,
+      txHistory: []
     };
 
     this.networkHandler = this.networkHandler.bind(this);
+
+    // set public url
+    publicUrl = window.location.origin.toLowerCase();
   }
 
   // ************************************************* //
@@ -127,10 +132,6 @@ class App extends React.Component {
   async componentDidMount() {
     // on mount, check if you need to refund by removing maxBalance
     localStorage.removeItem("refunding");
-
-    // set public url
-    publicUrl = window.location.origin.toLowerCase();
-    console.log(publicUrl)
 
     // Get mnemonic and rpc type
     let mnemonic = localStorage.getItem("mnemonic");
@@ -269,6 +270,7 @@ class App extends React.Component {
   async poller() {
     await this.autoDeposit();
     await this.autoSwap();
+    await this.setTxHistory();
 
     interval(async (iteration, stop) => {
       await this.autoDeposit();
@@ -277,14 +279,24 @@ class App extends React.Component {
     interval(async (iteration, stop) => {
       await this.autoSwap();
     }, 1000);
+
+    interval(async (iteration, stop) => {
+      await this.setTxHistory();
+    }, 5000);
   }
 
   async setDepositLimits() {
-    const { connextState, ethprovider } = this.state;
+    const { address, connextState, contractAddress, ethprovider, tokenContract } = this.state;
     let gasPrice = await ethprovider.getGasPrice()
 
     // default connext multiple is 1.5, leave 2x for safety
-    const totalDepositGasWei = DEPOSIT_ESTIMATED_GAS.mul(Big(2)).mul(gasPrice);
+    let totalDepositGasWei = DEPOSIT_ESTIMATED_GAS.mul(Big(2)).mul(gasPrice);
+
+    // Add gas required to increase token allowance if needed
+    const allowance = await tokenContract.allowance(address, contractAddress)
+    if (allowance.eq(eth.constants.Zero)) {
+      totalDepositGasWei = totalDepositGasWei.add(Big('50000'))
+    }
 
     const minDeposit = Connext.Currency.WEI(totalDepositGasWei, () => getExchangeRates(connextState));
 
@@ -296,7 +308,6 @@ class App extends React.Component {
   async autoDeposit() {
     await this.setDepositLimits()
     const { address, tokenContract, connextState, tokenAddress, connext, minDeposit, ethprovider } = this.state;
-
     const gasPrice = (await ethprovider.getGasPrice()).toHexString()
     if (!connext || !minDeposit) return;
 
@@ -366,6 +377,11 @@ class App extends React.Component {
     if (channelState && weiBalance.gt(Big("0")) && tokenBalance.lte(HUB_EXCHANGE_CEILING)) {
       await this.state.connext.exchange(channelState.balanceWeiUser, "wei");
     }
+  }
+
+  async setTxHistory() {
+    const txHistory = await this.state.connext.getPaymentHistory();
+    this.setState({ txHistory });
   }
 
   async checkStatus() {
@@ -451,7 +467,8 @@ class App extends React.Component {
       maxDeposit,
       minDeposit,
       ethprovider,
-      status
+      status,
+      txHistory
     } = this.state;
     const { classes } = this.props;
     return (
@@ -570,6 +587,17 @@ class App extends React.Component {
               )}
             />
             <Route path="/support" render={props => <SupportCard {...props} channelState={channelState} />} />
+            <Route
+              path="/transactions"
+              render={props => (
+                <TransactionsCard
+                  {...props}
+                  address={address}
+                  connextState={connextState}
+                  txHistory={txHistory}
+                />
+              )}
+            />
           </Paper>
         </Grid>
       </Router>
